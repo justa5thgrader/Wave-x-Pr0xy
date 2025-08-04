@@ -422,35 +422,6 @@
             .game-caption { font-size: 12px; max-width: 96px; }
         }
 
-        /* Settings Icon */
-        .settings-icon {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .settings-icon:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-
-        .settings-icon svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
-        }
 
         /* Settings Panel */
         .settings-panel {
@@ -589,12 +560,47 @@
         }
     </style>
     <style>
-        /* Fixed Wave-X logo bottom-left */
-        .wavex-logo {
+        /* Fixed Wave-X logo bottom-left with clock overlay */
+        .wavex-wrap {
             position: fixed;
             left: 16px;
             bottom: 16px;
-            z-index: 1100; /* above content and windows layer (900) and near settings (1000) */
+            z-index: 1100;
+            display: grid;
+            gap: 6px;
+            align-items: start;
+            width: max-content;
+        }
+        /* Secrets eye button (above logo) */
+        .secrets-btn {
+            justify-self: start;
+            margin-left: 2px;
+            padding: 6px 10px;
+            border-radius: 9999px;
+            background: rgba(0, 20, 0, 0.6);
+            color: #cfffcf;
+            border: 1px solid rgba(0,255,0,0.28);
+            box-shadow: 0 0 10px rgba(0,255,0,0.18);
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background .2s ease, border-color .2s ease, transform .1s ease;
+        }
+        .secrets-btn:hover {
+            background: rgba(0, 35, 0, 0.7);
+            border-color: rgba(0,255,0,0.4);
+            box-shadow: 0 0 14px rgba(0,255,0,0.25);
+        }
+        .secrets-btn:active {
+            transform: translateY(1px);
+        }
+        .secrets-btn .eye {
+            filter: drop-shadow(0 0 6px rgba(0,255,0,0.35));
+        }
+        .wavex-logo {
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -627,21 +633,36 @@
             color: #cfffcf;
             text-shadow: 0 0 8px rgba(0,255,0,0.2);
         }
-
+        #wavex-clock {
+            font-family: Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.3;
+            color: #cfffcf;
+            background: rgba(0, 20, 0, 0.6);
+            border: 1px solid rgba(0,255,0,0.28);
+            border-radius: 8px;
+            padding: 6px 8px;
+            box-shadow: 0 0 12px rgba(0,255,0,0.18);
+            text-shadow: 0 0 8px rgba(0,255,0,0.2);
+            max-width: 240px;
+        }
+        #wavex-clock .row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            white-space: nowrap;
+        }
+        #wavex-clock .muted { color: #9f9; opacity: 0.85; }
+        #wavex-clock .strong { color: #eaffea; font-weight: 700; }
         @media (max-width: 768px) {
+            .wavex-wrap { left: 10px; bottom: 10px; gap: 4px; }
             .wavex-logo {
-                left: 10px;
-                bottom: 10px;
                 padding: 6px 8px;
                 border-radius: 8px;
             }
-            .wavex-logo svg {
-                width: 24px;
-                height: 24px;
-            }
-            .wavex-logo .label {
-                font-size: 0.95rem;
-            }
+            .wavex-logo svg { width: 24px; height: 24px; }
+            .wavex-logo .label { font-size: 0.95rem; }
+            #wavex-clock { font-size: 11px; padding: 5px 7px; }
         }
     </style>
     <style>
@@ -776,8 +797,166 @@
             .proxy-view { height: 100%; }
         }
     </style>
+    <style>
+        /* Brainrot mode styles */
+        body.brainrot {
+            animation: br-flicker 8s infinite linear;
+        }
+        @keyframes br-flicker {
+            0%, 92%, 100% { filter: none; }
+            93% { filter: hue-rotate(10deg) saturate(1.2); }
+            94% { filter: hue-rotate(-10deg) saturate(1.2); }
+            95% { filter: none; }
+        }
+        body.brainrot .tab,
+        body.brainrot .secrets-btn,
+        body.brainrot .wavex-logo,
+        body.brainrot .proxy-shell,
+        body.brainrot .game-card::before {
+            box-shadow: 0 0 14px rgba(0,255,0,0.35), 0 0 28px rgba(0,255,0,0.15);
+        }
+        body.brainrot .game-caption {
+            animation: br-wobble 2.2s ease-in-out infinite;
+        }
+        @keyframes br-wobble {
+            0%,100% { transform: translateY(0) rotate(0); text-shadow: 0 0 6px rgba(0,255,0,0.25); }
+            25% { transform: translateY(-1px) rotate(-0.6deg); text-shadow: 0 0 10px rgba(0,255,0,0.35); }
+            50% { transform: translateY(0) rotate(0.6deg); }
+            75% { transform: translateY(1px) rotate(-0.4deg); }
+        }
+        /* subtle chroma shift on canvas text */
+        body.brainrot #matrixCanvas { opacity: 0.98; }
+
+        /* Brainrot clouds & rain */
+        .brainrot-clouds,
+        .brainrot-gif {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1; /* behind main UI but above matrix canvas (which is z-index:-2) */
+        }
+        .brainrot-gif {
+            background: url("https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyeGY0c254enN6M3A5aGV5b2F2bWE1a2J2aHRyb2dmc3Zwcno2cW1nYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Fr5LA2RCQbnVp74CxH/giphy-downsized.gif") center/cover no-repeat;
+            opacity: 0;
+            transition: opacity .6s ease;
+            mix-blend-mode: screen;
+        }
+        body.brainrot .brainrot-gif { opacity: 0.22; }
+
+        .brainrot-clouds {
+            overflow: hidden;
+        }
+        .brainrot-clouds .cloud {
+            position: absolute;
+            top: -120px;
+            width: 320px;
+            height: 120px;
+            background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.12), rgba(255,255,255,0) 60%),
+                        radial-gradient(ellipse at 60% 50%, rgba(255,255,255,0.12), rgba(255,255,255,0) 60%);
+            filter: blur(2px);
+            opacity: 0.35;
+            animation: cloudDrift linear infinite;
+        }
+        /* randomized via inline style for left/time/scale on creation */
+
+        @keyframes cloudDrift {
+            0%   { transform: translateX(-20vw); }
+            100% { transform: translateX(120vw); }
+        }
+
+        .brainrot-clouds .raindrop {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: center/contain no-repeat url("https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg");
+            filter: drop-shadow(0 0 4px rgba(255,255,255,0.25));
+            animation: dogeRain linear infinite;
+            opacity: 0.92;
+        }
+
+        @keyframes dogeRain {
+            0%   { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(120vh) rotate(360deg); }
+        }
+    </style>
+    <style>
+        /* Tips bar fixed at bottom */
+        .tips-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            background: rgba(0, 20, 0, 0.65);
+            border-top: 1px solid rgba(0,255,0,0.2);
+            box-shadow: 0 -6px 18px rgba(0,255,0,0.08);
+            color: #cfeccf;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            z-index: 1200;
+            pointer-events: none; /* let clicks pass through by default */
+        }
+        .tips-bar .tips-track {
+            display: grid;
+            align-items: center;
+            justify-items: center;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        .tips-bar .tip {
+            grid-area: 1 / 1;
+            opacity: 0;
+            transform: translateY(8px) rotateX(12deg);
+            transition: opacity .6s ease, transform .6s ease;
+            white-space: nowrap;
+            text-align: center;
+            padding: 0 10px;
+            color: #dfffd9;
+            text-shadow: 0 0 8px rgba(0,255,0,0.2);
+        }
+        .tips-bar .tip.active {
+            opacity: 1;
+            transform: translateY(0) rotateX(0);
+        }
+        /* progress bar animation helper (width is updated via JS) */
+        .tips-bar #tipsProgressBar {
+            transition: width linear;
+        }
+        /* ensure main desktop grid doesn't hide behind bar */
+        .games-grid { height: calc(100vh - 120px - 34px); }
+        @media (max-width: 1024px) {
+            .games-grid { height: calc(100vh - 140px - 34px); }
+        }
+        @media (max-width: 640px) {
+            .games-grid { height: calc(100vh - 160px - 34px); }
+        }
+    </style>
 </head>
 <body>
+    <!-- Tips Bar -->
+    <div class="tips-bar" aria-live="polite">
+        <div class="tips-track" id="tipsTrack">
+            <div class="tip active">the low taper fade meme is still massive</div>
+            <div class="tip">double click to open an app</div>
+            <div class="tip">click on the secrets button</div>
+            <div class="tip">hi</div>
+            <div class="tip">Ummyah is tuff</div>
+            <div class="tip">wave-x is tuff</div>
+            <div class="tip">[INSERT TIP HERE]</div>
+            <div class="tip">Its not a bug, its a feature.</div>
+            <div class="tip">were goated???</div>
+            <div class="tip">We are better then yandex</div>
+            <div class="tip">Subscribe to nobody bc u can sub to who u want</div>
+            <div class="tip">XD</div>
+            <div class="tip">hehe</div>
+        </div>
+        <div id="tipsProgress" style="position:absolute;left:8px;right:8px;bottom:5px;height:3px;background:rgba(0,255,0,0.12);border-radius:999px;overflow:hidden;pointer-events:none">
+            <div id="tipsProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg, rgba(0,255,120,0.9), rgba(0,180,80,0.9));box-shadow:0 0 8px rgba(0,255,0,0.35);border-radius:999px"></div>
+        </div>
+    </div>
     <!-- Intro Splash -->
     <style>
         #intro {
@@ -1041,23 +1220,38 @@
 
     <!-- Matrix background canvas -->
     <canvas id="matrixCanvas"></canvas>
+    <!-- Brainrot overlays (added/used when brainrot on) -->
+    <div class="brainrot-gif" id="brainrotGif" aria-hidden="true"></div>
+    <div class="brainrot-clouds" id="brainrotClouds" aria-hidden="true"></div>
 
-    <!-- Settings Icon -->
-    <!-- Fixed Wave-X Logo (bottom-left) -->
-    <a class="wavex-logo" href="#" aria-label="Wave-X Home" onclick="event.preventDefault();">
-        <!-- Simple wave + X SVG mark -->
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <!-- Wave path -->
-            <path d="M6,36 C14,28 22,44 30,36 C38,28 46,44 58,34" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- X mark -->
-            <path d="M42,18 L56,32 M56,18 L42,32" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-        <span class="label">WAVE‑X</span>
-    </a>
-    <div class="settings-icon" onclick="toggleSettings()">
-        <svg viewBox="0 0 24 24">
-            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
-        </svg>
+    <!-- Fixed Wave-X Logo (bottom-left) + Clock -->
+    <div class="wavex-wrap">
+        <div class="secrets-wrap" style="display:inline-grid;gap:6px">
+            <button class="secrets-btn" type="button" title="Secrets" onclick="openSecretsApp()">
+                <span class="eye">👁️</span>
+                <span>Secrets</span>
+            </button>
+            <label title="Brainrot mode" style="display:inline-flex;align-items:center;gap:8px;font-family:Consolas,monospace;color:#cfffcf;font-size:12px">
+                <input id="brainrot-toggle" type="checkbox" style="accent-color:#00ff88;width:14px;height:14px" onclick="toggleBrainrot(this.checked)">
+                <span>Brainrot</span>
+            </label>
+        </div>
+        <a class="wavex-logo" href="#" aria-label="Wave-X Home" onclick="event.preventDefault();">
+            <!-- Simple wave + X SVG mark -->
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <!-- Wave path -->
+                <path d="M6,36 C14,28 22,44 30,36 C38,28 46,44 58,34" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- X mark -->
+                <path d="M42,18 L56,32 M56,18 L42,32" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <span class="label">WAVE‑X</span>
+        </a>
+        <div id="wavex-clock" aria-live="polite" title="Local date, time, location, and IP">
+            <div class="row"><span class="muted">Time:</span> <span class="strong" id="clk-time">--:--:--</span></div>
+            <div class="row"><span class="muted">Date:</span> <span class="strong" id="clk-date">----</span></div>
+            <div class="row"><span class="muted">Place:</span> <span class="strong" id="clk-place">Detecting…</span></div>
+            <div class="row"><span class="muted">IP:</span> <span class="strong" id="clk-ip">Detecting…</span></div>
+        </div>
     </div>
 
     <!-- Settings Panel -->
@@ -1100,8 +1294,8 @@
 
     <div class="container">
         <div class="header">
-            <h1>Wave-X</h1>
-            <p>Explore the network. Pierce the veil.</p>
+            <h1></h1>
+            <p></p>
         </div>
 
         <div class="tabs-container">
@@ -1115,6 +1309,11 @@
                 <button class="tab" data-tab="wave-proxy">
                     🌊 Proxy
                 </button>
+                <!-- Games controls placed a little under the Proxy button -->
+                <div id="games-controls" style="margin:6px 0 0 0; padding-left:2px; display:flex; gap:8px; flex-wrap:wrap">
+                    <button id="games-sort-alpha" class="px-btn" title="Sort games A→Z" style="height:28px;padding:0 10px">Sort A→Z</button>
+                    <button id="games-reset-layout" class="px-btn" title="Reset layout to neat rows" style="height:28px;padding:0 10px">Reset Layout</button>
+                </div>
             </div>
         </div>
 
@@ -1350,6 +1549,66 @@
     </div>
 
     <script>
+        // Clock + location + IP (best-effort, privacy-friendly)
+        (function wavexClock() {
+            const elTime = () => document.getElementById('clk-time');
+            const elDate = () => document.getElementById('clk-date');
+            const elPlace = () => document.getElementById('clk-place');
+            const elIp = () => document.getElementById('clk-ip');
+
+            // live time/date from browser locale
+            function tick() {
+                try {
+                    const now = new Date();
+                    const t = now.toLocaleTimeString(undefined, { hour12: true });
+                    const d = now.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                    const tEl = elTime(), dEl = elDate();
+                    if (tEl) tEl.textContent = t;
+                    if (dEl) dEl.textContent = d;
+                } catch {}
+            }
+            tick();
+            setInterval(tick, 1000);
+
+            // location via Intl API (timezone as place fallback)
+            try {
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+                if (tz && elPlace()) elPlace().textContent = tz.replaceAll('_',' ');
+            } catch {
+                if (elPlace()) elPlace().textContent = 'Local';
+            }
+
+            // attempt to refine place using geolocation (user permission)
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    try {
+                        const { latitude, longitude } = pos.coords;
+                        // reverse geocode via free Nominatim (no key, rate-limited)
+                        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+                        const data = await resp.json();
+                        const city = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality;
+                        const state = data.address?.state || data.address?.region || data.address?.county;
+                        const country = data.address?.country_code ? data.address.country_code.toUpperCase() : data.address?.country || '';
+                        const label = [city, state, country].filter(Boolean).join(', ');
+                        if (label && elPlace()) elPlace().textContent = label;
+                    } catch {}
+                }, () => {
+                    // keep timezone text
+                }, { maximumAge: 3600000, timeout: 5000 });
+            }
+
+            // public IP via ipify (simple JSON)
+            (async function fetchIp() {
+                try {
+                    const r = await fetch('https://api.ipify.org?format=json');
+                    const j = await r.json();
+                    if (j?.ip && elIp()) elIp().textContent = j.ip;
+                } catch {
+                    if (elIp()) elIp().textContent = 'Unavailable';
+                }
+            })();
+        })();
+
         // Tab switching functionality
         const tabs = document.querySelectorAll('.tab');
         const contents = document.querySelectorAll('.content');
@@ -1693,7 +1952,18 @@
             return mq.matches ? 220 : 260;
         }
 
-        function createAppWindow(url, titleText) {
+function createAppWindow(url, titleText) {
+    // Always sandbox navigation to our in-site window manager: never open real browser tabs
+    // Force target URLs to load inside iframe, and prevent target=_blank popouts
+    try {
+        // Absolute URL normalization for safety (no javascript:, mailto:, etc.)
+        const a = document.createElement('a');
+        a.href = url || 'about:blank';
+        const safe = a.protocol === 'http:' || a.protocol === 'https:' ? a.href : 'about:blank';
+        url = safe;
+    } catch {
+        url = 'about:blank';
+    }
             const win = document.createElement('div');
             win.className = 'app-window active';
             win.style.setProperty('--sidebar', sidebarWidth() + 'px');
@@ -1729,9 +1999,47 @@
 
             const iframe = document.createElement('iframe');
             iframe.className = 'app-iframe';
-            iframe.src = url;
             iframe.loading = 'lazy';
             iframe.referrerPolicy = 'no-referrer';
+            // Sandbox to stop any window.open/popups and keep navigation inside
+            // allow-same-origin is kept to let images render; disallow top-navigation
+            iframe.sandbox = 'allow-scripts allow-forms allow-same-origin';
+            iframe.src = url;
+
+            // Block attempts by content to open new real browser tabs/windows
+            iframe.addEventListener('load', () => {
+                try {
+                    const w = iframe.contentWindow;
+                    if (!w) return;
+                    // Neutralize window.open to open inside our app window manager instead
+                    w.open = (u, t) => {
+                        // ignore targets; always open another in-site app window
+                        const abs = (() => {
+                            try { const a = w.document.createElement('a'); a.href = u; return a.href; } catch { return 'about:blank'; }
+                        })();
+                        createAppWindow(abs, (u || '').toString().slice(0, 42) || 'Link');
+                        return null;
+                    };
+                    // Intercept anchor clicks with target=_blank and route them to our window manager
+                    w.document.addEventListener('click', (e) => {
+                        const a = e.target && (e.target.closest ? e.target.closest('a') : null);
+                        if (!a) return;
+                        const href = a.getAttribute('href');
+                        if (!href) return;
+                        const tgt = (a.getAttribute('target') || '').toLowerCase();
+                        if (tgt === '_blank') {
+                            e.preventDefault();
+                            // open within site window manager
+                            try {
+                                const abs = new URL(href, w.location.href).href;
+                                createAppWindow(abs, (a.textContent || a.href || 'Link').slice(0, 42));
+                            } catch {
+                                createAppWindow(href, (a.textContent || 'Link').slice(0, 42));
+                            }
+                        }
+                    }, true);
+                } catch {}
+            });
 
             body.appendChild(iframe);
 
@@ -1974,6 +2282,78 @@
         /* =====================
            TEST FEATURES
         ====================== */
+        function openSecretsApp() {
+            const win = createAppWindow('about:blank', 'Secrets');
+            const body = win.querySelector('.app-body');
+            body.innerHTML = `
+                <div style="padding:12px;display:grid;gap:10px;color:#cfc;font-family:Consolas,monospace">
+                    <div style="font-size:18px;display:flex;align-items:center;gap:8px">
+                        <span style="filter:drop-shadow(0 0 6px rgba(0,255,0,0.35))">👁️</span>
+                        <strong>Secrets</strong>
+                    </div>
+                    <div style="font-size:13px;opacity:.9">A hidden panel for quick notes and links.</div>
+                    <textarea id="secrets-notes" placeholder="Type your secrets here..." style="min-height:120px;background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;border-radius:8px;padding:8px;resize:vertical;font-family:Consolas,monospace"></textarea>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <input id="secrets-link" placeholder="https://example.com" style="flex:1;min-width:220px;background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;border-radius:8px;padding:6px;font-family:Consolas,monospace"/>
+                        <button id="secrets-open" class="bgc-btn" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer">Open Link</button>
+                        <button id="secrets-save" class="bgc-btn" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer">Save</button>
+                        <span id="secrets-status" style="align-self:center;font-size:12px;color:#9f9;opacity:.9"></span>
+                    </div>
+                    <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
+                        <label style="display:inline-flex;align-items:center;gap:8px;">
+                            <input id="brainrot-toggle-inapp" type="checkbox" style="accent-color:#00ff88;width:14px;height:14px"/>
+                            <span>Brainrot mode</span>
+                        </label>
+                        <span id="brainrot-state" style="font-size:12px;opacity:.8"></span>
+                    </div>
+                </div>
+            `;
+            const notesEl = body.querySelector('#secrets-notes');
+            const linkEl = body.querySelector('#secrets-link');
+            const statusEl = body.querySelector('#secrets-status');
+            const brToggle = body.querySelector('#brainrot-toggle-inapp');
+            const brState = body.querySelector('#brainrot-state');
+
+            // Load persisted notes/link
+            try {
+                notesEl.value = localStorage.getItem('wavex.secrets.notes') || '';
+                linkEl.value = localStorage.getItem('wavex.secrets.link') || '';
+            } catch {}
+
+            // Initialize brainrot toggle based on global state
+            const isBr = !!JSON.parse(localStorage.getItem('wavex.brainrot') || 'false');
+            brToggle.checked = isBr;
+            brState.textContent = isBr ? '(on)' : '(off)';
+
+            brToggle.addEventListener('change', () => {
+                toggleBrainrot(brToggle.checked);
+                brState.textContent = brToggle.checked ? '(on)' : '(off)';
+                // sync outer quick toggle if present
+                const outer = document.getElementById('brainrot-toggle');
+                if (outer) outer.checked = brToggle.checked;
+            });
+
+            body.querySelector('#secrets-open').addEventListener('click', () => {
+                const url = (linkEl.value || '').trim();
+                if (!url) { statusEl.textContent = 'Enter a link first.'; return; }
+                // Open inside a new app window using our window manager
+                const u = /^(https?:\/\/)/i.test(url) ? url : `https://${url}`;
+                createAppWindow(u, 'Secret Link');
+            });
+
+            body.querySelector('#secrets-save').addEventListener('click', () => {
+                try {
+                    localStorage.setItem('wavex.secrets.notes', notesEl.value || '');
+                    localStorage.setItem('wavex.secrets.link', linkEl.value || '');
+                    statusEl.textContent = 'Saved.';
+                    setTimeout(()=> statusEl.textContent = '', 1500);
+                } catch {
+                    statusEl.textContent = 'Save failed.';
+                    setTimeout(()=> statusEl.textContent = '', 1500);
+                }
+            });
+        }
+
         function openTestFeatures() {
             const html = `
                 <div style="padding:12px;display:grid;gap:10px;color:#cfc;font-family:Consolas,monospace">
@@ -2017,14 +2397,157 @@
 
         // Close settings panel when clicking outside
         document.addEventListener('click', (e) => {
-            const panel = document.getElementById('settingsPanel');
-            const settingsIcon = document.querySelector('.settings-icon');
-            
-            if (!panel.contains(e.target) && !settingsIcon.contains(e.target) && panel.classList.contains('open')) {
-                panel.classList.remove('open');
-                document.body.classList.remove('scroll-lock');
-            }
+        const panel = document.getElementById('settingsPanel');
+        const settingsIcon = document.querySelector('.settings-icon');
+        
+        if (!panel.contains(e.target) && !settingsIcon && panel.classList.contains('open')) {
+            panel.classList.remove('open');
+            document.body.classList.remove('scroll-lock');
+        }
         });
+
+        // Brainrot runtime toggle (global)
+        function toggleBrainrot(on) {
+            try {
+                if (on) {
+                    document.body.classList.add('brainrot');
+                    ensureBrainrotEffects();
+                    startBrainrotRain();
+                    startBrainrotTabs();
+                } else {
+                    document.body.classList.remove('brainrot');
+                    stopBrainrotRain();
+                    stopBrainrotTabs();
+                }
+                localStorage.setItem('wavex.brainrot', JSON.stringify(!!on));
+            } catch {}
+        }
+
+        // Brainrot visual helpers
+        let __brRainTimer = 0;
+        let __brTabTimer = 0;
+        const BRAINROT_TABS = [
+            { title: "skibidi", url: "https://substackcdn.com/image/fetch/$s_!INYk!,w_520,h_272,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc5d565fe-8522-40e9-a7f9-77009865ed04_686x386.jpeg" },
+            { title: "tralalero tralala", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLXHHDb7PzhhlVYvp9QnsQe4BzZDIQnZ0ynA&s" },
+            { title: "tung tung tung sahur", url: "https://brushme.com/static/uploads/media/products/product_thumb_12927_68348a383fe072.97120940.jpg" },
+            { title: "jhon pork", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzV_h4QEYhyBmaHBABLWME2dwGEMnmObwhTw&s" },
+            { title: "handsome squidward", url: "https://i.ytimg.com/vi/LQt88uZLujo/maxresdefault.jpg" }
+        ];
+        function ensureBrainrotEffects() {
+            const gif = document.getElementById('brainrotGif');
+            const clouds = document.getElementById('brainrotClouds');
+            if (!gif || !clouds) return;
+
+            // Seed some clouds if none
+            if (!clouds.querySelector('.cloud')) {
+                const count = 6;
+                for (let i = 0; i < count; i++) {
+                    const c = document.createElement('div');
+                    c.className = 'cloud';
+                    const top = Math.random() * 30 + 5;      // 5vh - 35vh
+                    const scale = Math.random() * 0.7 + 0.7; // 0.7 - 1.4
+                    const dur = Math.random() * 20 + 35;     // 35s - 55s
+                    const delay = -Math.random() * dur;      // spread start
+                    c.style.cssText = `
+                        top: ${top}vh;
+                        left: -25vw;
+                        transform-origin: left center;
+                        transform: scale(${scale});
+                        animation-duration: ${dur}s;
+                        animation-delay: ${delay}s;
+                    `;
+                    clouds.appendChild(c);
+                }
+            }
+        }
+
+        function startBrainrotRain() {
+            stopBrainrotRain(); // reset
+            const clouds = document.getElementById('brainrotClouds');
+            if (!clouds) return;
+
+            // spawn doge "raindrops" at an interval
+            function spawn() {
+                if (!document.body.classList.contains('brainrot')) return; // stop if mode off
+                const d = document.createElement('div');
+                d.className = 'raindrop';
+                // random horizontal position
+                const x = Math.random() * 100; // vw
+                const size = Math.random() * 48 + 42; // 42 - 90px (bigger)
+                const dur = Math.random() * 2.5 + 3.5; // 3.5s - 6s
+                const rotStart = Math.floor(Math.random() * 360);
+                d.style.cssText = `
+                    left: ${x}vw;
+                    top: -12vh;
+                    width: ${size}px;
+                    height: ${size}px;
+                    animation-duration: ${dur}s;
+                    transform: rotate(${rotStart}deg);
+                `;
+                clouds.appendChild(d);
+                // cleanup after animation ends
+                setTimeout(() => d.remove(), (dur + 0.2) * 1000);
+            }
+            // faster spawn rate for "rain"
+            __brRainTimer = window.setInterval(spawn, 160);
+        }
+
+        // Periodically open random tabs/windows with specified meme images
+        // Note: "open tabs in the site" = use in-page window manager only (no external window.open).
+        function startBrainrotTabs() {
+            // Guard: ensure our override for window.open is active globally to prevent accidental real tabs
+            try {
+                // Override the page-level window.open as a last line of defense
+                window.open = (u, t) => {
+                    const abs = (() => { try { return new URL(u, location.href).href; } catch { return 'about:blank'; } })();
+                    createAppWindow(abs, (u || '').toString().slice(0, 42) || 'Link');
+                    return null;
+                };
+            } catch {}
+            stopBrainrotTabs();
+            function openRandom() {
+                if (!document.body.classList.contains('brainrot')) return;
+                const pick = BRAINROT_TABS[Math.floor(Math.random() * BRAINROT_TABS.length)];
+                // Only open inside our site using the app window manager
+                try {
+                    createAppWindow(pick.url, pick.title);
+                } catch {}
+            }
+            // every ~10 seconds, but add a small jitter to avoid perfect cadence
+            const base = 10000;
+            __brTabTimer = window.setInterval(() => {
+                // small random delay 0-1200ms
+                setTimeout(openRandom, Math.random() * 1200);
+            }, base);
+        }
+
+        function stopBrainrotTabs() {
+            if (__brTabTimer) {
+                clearInterval(__brTabTimer);
+                __brTabTimer = 0;
+            }
+        }
+
+        function stopBrainrotRain() {
+            if (__brRainTimer) {
+                clearInterval(__brRainTimer);
+                __brRainTimer = 0;
+            }
+            const clouds = document.getElementById('brainrotClouds');
+            if (clouds) {
+                clouds.querySelectorAll('.raindrop').forEach(n => n.remove());
+            }
+        }
+        // initialize from persisted state + sync any toggle UI if present
+        (function initBrainrot() {
+            const saved = !!JSON.parse(localStorage.getItem('wavex.brainrot') || 'false');
+            if (saved) {
+                document.body.classList.add('brainrot');
+                ensureBrainrotEffects();
+            }
+            const outer = document.getElementById('brainrot-toggle');
+            if (outer) outer.checked = saved;
+        })();
 
         // Proxy tab logic (Chrome OS-like)
         (function proxyApp() {
@@ -2214,6 +2737,38 @@
             // ensure initial tab/frame exists
             setActiveTab(0);
         })();
+        // Tips rotator with 10s duration and progress bar
+        (function tipsRotator(){
+            const tips = Array.from(document.querySelectorAll('.tips-bar .tip'));
+            const bar = document.getElementById('tipsProgressBar');
+            if (!tips.length || !bar) return;
+            let i = tips.findIndex(t => t.classList.contains('active'));
+            if (i < 0) i = 0;
+            const DUR = 10000; // 10s per tip
+            function setProgress(pct, ms) {
+                // set transition duration dynamically to sync with remaining time
+                bar.style.transitionDuration = (ms/1000) + 's';
+                requestAnimationFrame(() => { bar.style.width = pct + '%'; });
+            }
+            function cycle() {
+                // move to next tip
+                const prev = tips[i];
+                i = (i + 1) % tips.length;
+                const next = tips[i];
+                if (prev) prev.classList.remove('active');
+                if (next) next.classList.add('active');
+                // reset and animate progress
+                bar.style.transitionDuration = '0s';
+                bar.style.width = '0%';
+                // allow layout to apply then animate to 100%
+                setTimeout(() => setProgress(100, DUR), 30);
+            }
+            // kick off initial progress for current active tip
+            bar.style.width = '0%';
+            setTimeout(() => setProgress(100, DUR), 30);
+            setInterval(cycle, DUR);
+        })();
+
         // INTRO SEQUENCE
         (function introSequence() {
             const intro = document.getElementById('intro');
@@ -2296,8 +2851,8 @@
             const STORAGE_POS_APPS  = 'wavex.apps.pos.v1';
 
             const desktops = [
-                { root: document.querySelector('#games .games-grid'), key: STORAGE_POS_GAMES },
-                { root: document.querySelector('#apps  .games-grid'), key: STORAGE_POS_APPS  }
+                { root: document.querySelector('#games .games-grid'), key: STORAGE_POS_GAMES, type: 'games' },
+                { root: document.querySelector('#apps  .games-grid'), key: STORAGE_POS_APPS,  type: 'apps'  }
             ].filter(x => x.root);
 
             function ensureId(el, idx) {
@@ -2319,16 +2874,20 @@
                 return Math.max(4, Math.round(v / GRID_SIZE) * GRID_SIZE);
             }
 
-            desktops.forEach(({ root, key }) => {
+            desktops.forEach(({ root, key, type }) => {
                 const bounds = () => root.getBoundingClientRect();
                 const positions = loadPositions(key);
+                // Keep a copy of initial DOM order by title for sort reset/reference
+                const initialOrder = Array.from(root.querySelectorAll('.game-card')).map(el => el);
+                root.__initialOrder = initialOrder;
 
                 // Reflow icons responsively on first paint and when container size changes (no saved positions)
                 const ro = new ResizeObserver(() => {
                     const b = bounds();
                     const hasAnySaved = Object.keys(positions).length > 0;
                     if (hasAnySaved) return; // keep user's saved layout
-                    const cards = Array.from(root.querySelectorAll('.game-card'));
+                const cards = Array.from(root.querySelectorAll('.game-card'));
+                root.__cards = cards;
                     const COL_W = 160;
                     const ROW_H = 140;
                     const LEFT_PAD = 12;
@@ -2355,6 +2914,18 @@
 
                 // compute how many columns fit
                 const cols = Math.max(1, Math.floor((b0.width - LEFT_PAD * 2) / COL_W));
+                root.__autoLayout = function(cardsList) {
+                    const b = bounds();
+                    const cols2 = Math.max(1, Math.floor((b.width - LEFT_PAD * 2) / COL_W));
+                    (cardsList || Array.from(root.querySelectorAll('.game-card'))).forEach((card, idx) => {
+                        const col = idx % cols2;
+                        const row = Math.floor(idx / cols2);
+                        const x = snap(LEFT_PAD + col * COL_W);
+                        const y = snap(TOP_PAD  + row * ROW_H);
+                        card.style.left = x + 'px';
+                        card.style.top  = y + 'px';
+                    });
+                };
 
                 cards.forEach((card, idx) => {
                     const id = ensureId(card, idx);
@@ -2634,6 +3205,38 @@
                     });
                     savePositions(key, positions);
                 });
+
+                // Hook up header controls for games desktop only
+                if (type === 'games' && root.id !== 'windows-layer') {
+                    const sortBtn = document.getElementById('games-sort-alpha');
+                    const resetBtn = document.getElementById('games-reset-layout');
+
+                    // Sort A→Z by data-title, clear saved positions, reflow neatly
+                    sortBtn && sortBtn.addEventListener('click', () => {
+                        const list = Array.from(root.querySelectorAll('.game-card'));
+                        list.sort((a,b) => {
+                            const ta = (a.getAttribute('data-title') || '').toLowerCase();
+                            const tb = (b.getAttribute('data-title') || '').toLowerCase();
+                            return ta.localeCompare(tb);
+                        });
+                        // Append in sorted order to keep DOM order (drag logic unaffected)
+                        list.forEach(el => root.appendChild(el));
+                        // Clear saved positions so auto layout applies
+                        localStorage.removeItem(STORAGE_POS_GAMES);
+                        // Lay out neatly in rows
+                        root.__autoLayout(list);
+                    });
+
+                    // Reset Layout: restore original DOM order and auto layout, clearing saved positions
+                    resetBtn && resetBtn.addEventListener('click', () => {
+                        const original = root.__initialOrder || [];
+                        if (original.length) {
+                            original.forEach(el => root.appendChild(el));
+                        }
+                        localStorage.removeItem(STORAGE_POS_GAMES);
+                        root.__autoLayout(original.length ? original : Array.from(root.querySelectorAll('.game-card')));
+                    });
+                }
             });
         })();
     </script>
