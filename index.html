@@ -2381,47 +2381,46 @@ function attachProxyLaunch() {
     const launch = document.getElementById('proxy-launch');
     if (!launch) return false;
 launch.addEventListener('click', () => {
-        // Compose scripted sequence: fake proxy boot + prompts
+        // Compose scripted sequence: slow boot proxy subsystem + confirm flow (no fast crash/animation)
         const lines = [
             "> boot proxy subsystem …",
             "> resolving upstream via uvv2",
             "> hydrating tunnel: chacha20 · ok",
             "> peer sync: 3/3",
             "",
-            "Launch Wave‑X?",
-            "Yes.",
             "Confirm?",
             "Yes.",
+            "Launching…",
         ];
 
-        // Run script; when done: crash shake, open window, reset, resume normal
+        // Run script; when done: open window only (no crash shake), then reset typing
         try {
             window.__MatrixFX && window.__MatrixFX.runScript(lines, () => {
-                // shake
-                try { window.__MatrixFX && window.__MatrixFX.crash(); } catch {}
-                // open small window
                 const url = 'https://uvv2.rhw.one/active/';
                 const win = createAppWindow(url, 'Wave‑X Proxy');
                 try {
-                    win.style.width = '720px';
-                    win.style.height = '460px';
+                    // Larger initial size by default
+                    const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+                    const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+                    const targetW = Math.floor(Math.min(1100, vw - 40));
+                    const targetH = Math.floor(Math.min(740, vh - 120));
+                    win.style.width = targetW + 'px';
+                    win.style.height = targetH + 'px';
                     const grid = document.querySelector('.games-grid') || document.body;
                     const gb = grid.getBoundingClientRect();
-                    const wb = win.getBoundingClientRect();
-                    const left = Math.max(12, gb.left + (gb.width - wb.width) * 0.55);
-                    const top  = Math.max(56, gb.top + 40);
+                    const left = Math.max(12, gb.left + (gb.width - targetW) * 0.5);
+                    const top  = Math.max(56, gb.top + 24);
                     win.style.left = left + 'px';
                     win.style.top  = top  + 'px';
                 } catch {}
-                // reset effect back to normal code typing
-                setTimeout(() => { try { window.__MatrixFX && window.__MatrixFX.reset(); } catch {} }, 900);
+                // reset effect back to normal code typing (no crash/reset animation)
+                setTimeout(() => { try { window.__MatrixFX && window.__MatrixFX.reset(); } catch {} }, 200);
             });
         } catch {
-            // fallback to immediate behavior if scripting API missing
-            try { window.__MatrixFX && window.__MatrixFX.crash(); } catch {}
+            // Fallback: open immediately if scripting API missing
             const url = 'https://uvv2.rhw.one/active/';
             createAppWindow(url, 'Wave‑X Proxy');
-            setTimeout(() => { try { window.__MatrixFX && window.__MatrixFX.reset(); } catch {} }, 900);
+            setTimeout(() => { try { window.__MatrixFX && window.__MatrixFX.reset(); } catch {} }, 200);
         }
     });
     return true;
