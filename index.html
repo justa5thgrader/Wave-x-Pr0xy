@@ -791,7 +791,9 @@
             height: 100%;
             border: 0;
             background: #000;
-            object-fit: contain;          /* keep landscape content centered if applicable */
+            display: block;
+            /* Ensure iframe takes up all available space without letterboxing */
+            object-fit: fill;
         }
         @media (max-width: 768px) {
             .proxy-view { height: 100%; }
@@ -934,8 +936,176 @@
             .games-grid { height: calc(100vh - 160px - 34px); }
         }
     </style>
-</head>
-<body>
+    <style>
+        /* macOS-style top menu bar */
+        .mac-menubar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 8px;
+            padding: 0 10px;
+            background: rgba(0, 15, 0, 0.85);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(0,255,0,0.18);
+            color: #cfeccf;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, "Consolas", monospace;
+            z-index: 1500;
+            user-select: none;
+        }
+        .mac-left, .mac-center, .mac-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .mac-left .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            color: #eaffea;
+            text-shadow: 0 0 8px rgba(0,255,0,0.25);
+            cursor: default;
+        }
+        .mac-left .brand svg {
+            width: 16px;
+            height: 16px;
+            filter: drop-shadow(0 0 4px rgba(0,255,0,0.35));
+        }
+        .mac-menu {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+            flex-wrap: nowrap;
+        }
+        .mac-item {
+            font-size: 13px;
+            color: #cfeccf;
+            padding: 2px 6px;
+            border-radius: 6px;
+            cursor: default;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .mac-item:hover {
+            background: rgba(0,255,0,0.12);
+            border-color: rgba(0,255,0,0.18);
+            color: #eaffea;
+        }
+        .mac-item.active {
+            background: rgba(0,255,0,0.18);
+            border-color: rgba(0,255,0,0.35);
+            color: #eaffea;
+        }
+        /* dropdowns */
+        .mac-dropdown {
+            position: absolute;
+            top: 24px;
+            left: 0;
+            min-width: 180px;
+            background: rgba(0, 20, 0, 0.95);
+            border: 1px solid rgba(0,255,0,0.25);
+            box-shadow: 0 8px 28px rgba(0,255,0,0.15);
+            border-radius: 8px;
+            padding: 6px 6px;
+            display: none;
+            z-index: 2000;
+            backdrop-filter: blur(8px);
+        }
+        .mac-dropdown.open { display: block; }
+        .mac-dd-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            color: #cfeccf;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .mac-dd-item:hover {
+            background: rgba(0,255,0,0.12);
+            color: #eaffea;
+        }
+        .mac-dd-item .kbd {
+            opacity: 0.7;
+            font-family: Consolas, monospace;
+            font-size: 11px;
+        }
+        .mac-dd-sep {
+            height: 1px;
+            margin: 6px 4px;
+            background: rgba(0,255,0,0.15);
+            border: 0;
+        }
+        .mac-center {
+            justify-content: center;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        .mac-right {
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .mac-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #dfffd9;
+            text-shadow: 0 0 6px rgba(0,255,0,0.2);
+        }
+        .mac-status .icon {
+            opacity: 0.9;
+            filter: drop-shadow(0 0 4px rgba(0,255,0,0.25));
+        }
+        /* push layout down so it doesn't hide under the menubar */
+        body { padding-top: 28px; }
+        /* Adjust header top border to start below menubar if needed */
+        .header { margin-top: 0; }
+        /* Ensure bottom tips bar still visible with menubar present (no change needed) */
+    </style>
+  </head>
+  <body>
+    <!-- macOS-style menu bar -->
+    <div class="mac-menubar" role="menubar" aria-label="Wave‑X Menu Bar" id="mac-menubar">
+        <div class="mac-left">
+            <div class="brand" title="Wave‑X">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M6,36 C14,28 22,44 30,36 C38,28 46,44 58,34" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M42,18 L56,32 M56,18 L42,32" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <strong>Wave‑X</strong>
+            </div>
+            <nav class="mac-menu" id="mac-menu">
+                <span class="mac-item active" data-menu="file">File</span>
+                <span class="mac-item" data-menu="edit">Edit</span>
+                <span class="mac-item" data-menu="view">View</span>
+                <span class="mac-item" data-menu="go">Go</span>
+                <span class="mac-item" data-menu="window">Window</span>
+                <span class="mac-item" data-menu="help">Help</span>
+            </nav>
+        </div>
+        <div class="mac-center" id="mac-window-title">Desktop</div>
+        <div class="mac-right">
+            <div class="mac-status">
+                <span class="icon" title="Wi‑Fi">📶</span>
+                <span class="icon" title="Battery">🔋</span>
+                <span class="icon" title="Sound">🔊</span>
+                <span id="mac-clock">--:--</span>
+            </div>
+        </div>
+    </div>
     <!-- Tips Bar -->
     <div class="tips-bar" aria-live="polite">
         <div class="tips-track" id="tipsTrack">
@@ -1298,7 +1468,7 @@
             <p></p>
         </div>
 
-        <div class="tabs-container">
+<div class="tabs-container">
             <div class="tabs">
                 <button class="tab active" data-tab="games">
                     🎮 Games
@@ -1309,16 +1479,16 @@
                 <button class="tab" data-tab="wave-proxy">
                     🌊 Proxy
                 </button>
-                <!-- Games controls placed a little under the Proxy button -->
-                <div id="games-controls" style="margin:6px 0 0 0; padding-left:2px; display:flex; gap:8px; flex-wrap:wrap">
-                    <button id="games-sort-alpha" class="px-btn" title="Sort games A→Z" style="height:28px;padding:0 10px">Sort A→Z</button>
-                    <button id="games-reset-layout" class="px-btn" title="Reset layout to neat rows" style="height:28px;padding:0 10px">Reset Layout</button>
-                </div>
             </div>
         </div>
 
         <div class="content-area">
-            <div class="content active" id="games">
+<div class="content active" id="games">
+                <!-- Games controls (visible only in Games tab) -->
+                <div id="games-controls" style="margin:6px 0 6px 0; padding-left:2px; display:flex; gap:8px; flex-wrap:wrap">
+                    <button id="games-sort-alpha" class="px-btn" title="Sort games A→Z" style="height:28px;padding:0 10px">Sort A→Z</button>
+                    <button id="games-reset-layout" class="px-btn" title="Reset layout to neat rows" style="height:28px;padding:0 10px">Reset Layout</button>
+                </div>
                 <!-- Games Grid -->
 <div class="games-grid">
                     <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/slope/index.html" data-title="Slope.io" data-image="https://storage.classroomsarecool.mex.com/images/slope.png">
@@ -1513,42 +1683,247 @@
                 </div>
             </div>
 
-            <div class="content" id="wave-proxy">
-                <!-- Chrome OS-like minimal browser UI -->
-                <div class="proxy-shell">
-                    <div class="proxy-toolbar">
-                        <div class="proxy-left">
-                            <button class="px-btn px-back" title="Back">←</button>
-                            <button class="px-btn px-forward" title="Forward">→</button>
-                            <button class="px-btn px-reload" title="Reload">⟳</button>
-                        </div>
-                        <div class="proxy-omnibox">
-                            <span class="px-lock">🛡</span>
-                            <input id="proxy-url" type="text" placeholder="Search or type a URL" spellcheck="false" />
-                            <button class="px-go">Go</button>
-                        </div>
-                        <div class="proxy-right">
-                            <button class="px-btn px-newtab" title="New Window">＋</button>
-                            <button class="px-btn px-full" title="Fullscreen">⛶</button>
-                        </div>
-                    </div>
-                    <div class="proxy-tabs">
-                        <div class="px-tab px-active" data-index="0">
-                            <span class="px-tab-fav">🌐</span>
-                            <span class="px-tab-title">New Tab</span>
-                            <button class="px-tab-close" title="Close">✕</button>
-                        </div>
-                        <!-- more tabs will be appended dynamically -->
-                    </div>
-                    <div class="proxy-view">
-                        <iframe id="proxy-frame-0" class="proxy-frame" src="about:blank" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
-                    </div>
+<div class="content" id="wave-proxy" style="padding:0;margin:0;display:grid;place-items:center;position:relative;flex:1 1 auto;min-height:0;background:radial-gradient(1200px 600px at 50% 50%, rgba(0,255,0,0.06), rgba(0,0,0,0))">
+                <!-- Centered big hacker‑green launch button -->
+                <button id="proxy-launch" class="proxy-launch-btn" type="button" title="Open Wave‑X Proxy Window" style="display:inline-grid;grid-auto-flow:column;align-items:center;gap:12px;padding:18px 28px;border-radius:14px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.10);color:#dfffd9;cursor:pointer;font-family:Consolas,monospace;font-size:22px;font-weight:800;letter-spacing:.3px;box-shadow:0 0 20px rgba(0,255,0,0.12), inset 0 0 0 1px rgba(0,255,0,0.10);text-shadow:0 0 8px rgba(0,255,0,0.25);transition:background .22s ease, transform .08s ease, box-shadow .22s ease, border-color .22s ease;">
+                    <span style="filter:drop-shadow(0 0 8px rgba(0,255,0,0.45))">🌊</span>
+                    <span>Launch Wave‑X</span>
+                </button>
+
+                <!-- Fade-in proxy iframe container (initially hidden) -->
+                <div id="proxy-reveal" style="position:absolute;inset:0;display:grid;place-items:stretch;pointer-events:none;opacity:0;transform:scale(0.98);filter:blur(2px);">
+                    <iframe class="proxy-frame" src="https://uvv2.rhw.one/active/" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin" style="width:100%;height:100%;border:0;background:#000;display:block;"></iframe>
+                    <div id="proxy-welcome" style="position:absolute;inset:0;display:grid;place-items:center;font:700 36px/1 Consolas,monospace;color:#cfffcf;text-shadow:0 0 16px rgba(0,255,0,0.35);opacity:0;pointer-events:none;">Welcome to Wave‑X</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // macOS-style menu bar: clock + title sync + functional menus
+        (function macMenuBar() {
+            // Ensure DOM elements exist before wiring events
+            const waitFor = (sel, root = document) => new Promise(res => {
+                const el = root.querySelector(sel);
+                if (el) return res(el);
+                const obs = new MutationObserver(() => {
+                    const el2 = root.querySelector(sel);
+                    if (el2) { obs.disconnect(); res(el2); }
+                });
+                obs.observe(document.documentElement, { childList: true, subtree: true });
+            });
+
+            const clockEl = document.getElementById('mac-clock');
+            const titleEl = document.getElementById('mac-window-title');
+
+            function tick() {
+                try {
+                    const now = new Date();
+                    const t = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+                    if (clockEl) clockEl.textContent = t;
+                } catch {}
+            }
+            tick();
+            setInterval(tick, 30000);
+
+            function setTitle(txt) {
+                if (titleEl) titleEl.textContent = txt;
+            }
+            setTitle('Desktop');
+
+            // Build dropdowns for each top-level menu
+            const menuDefs = {
+                file: [
+                    { label: 'New Window', kbd: '⌘N', action: () => createAppWindow('about:blank', 'New Window') },
+                    { label: 'Open…', kbd: '⌘O', action: () => createAppWindow('about:blank', 'Open…') },
+                    'sep',
+                    { label: 'Close Window', kbd: '⌘W', action: () => {
+                        const top = document.querySelector('.app-window.active') || document.querySelector('.app-window:last-of-type');
+                        if (top) top.remove();
+                    }},
+                    { label: 'Quit Wave‑X', kbd: '⌘Q', action: () => {
+                        // Simulate "quit": close all app windows
+                        document.querySelectorAll('.app-window').forEach(w => w.remove());
+                    }},
+                ],
+                edit: [
+                    { label: 'Undo', kbd: '⌘Z', action: () => document.execCommand && document.execCommand('undo') },
+                    { label: 'Redo', kbd: '⇧⌘Z', action: () => document.execCommand && document.execCommand('redo') },
+                    'sep',
+                    { label: 'Cut', kbd: '⌘X', action: () => document.execCommand && document.execCommand('cut') },
+                    { label: 'Copy', kbd: '⌘C', action: () => document.execCommand && document.execCommand('copy') },
+                    { label: 'Paste', kbd: '⌘V', action: () => document.execCommand && document.execCommand('paste') },
+                ],
+                view: [
+                    { label: 'Show FPS HUD', kbd: '', action: () => ensureFpsHud() },
+                    { label: 'Toggle Brainrot', kbd: '', action: () => {
+                        const on = !document.body.classList.contains('brainrot');
+                        toggleBrainrot(on);
+                        const outer = document.getElementById('brainrot-toggle');
+                        if (outer) outer.checked = on;
+                    }},
+                    'sep',
+                    { label: 'Reset Desktop Layout', kbd: '', action: () => {
+                        const resetBtn = document.getElementById('games-reset-layout');
+                        resetBtn && resetBtn.click();
+                    }},
+                ],
+                go: [
+                    { label: 'Desktop', kbd: '⌘1', action: () => document.querySelector('[data-tab="games"]').click() },
+                    { label: 'Applications', kbd: '⌘2', action: () => document.querySelector('[data-tab="apps"]').click() },
+                    { label: 'Proxy', kbd: '⌘3', action: () => document.querySelector('[data-tab="wave-proxy"]').click() },
+                ],
+                window: [
+                    { label: 'Minimize Active', kbd: '⌘M', action: () => {
+                        const win = document.querySelector('.app-window.active');
+                        if (win) win.style.display = 'none';
+                    }},
+                    { label: 'Zoom (Maximize) Active', kbd: '', action: () => {
+                        const win = document.querySelector('.app-window.active');
+                        if (win) win.classList.toggle('maximized');
+                    }},
+                    { label: 'Bring All to Front', kbd: '', action: () => {
+                        document.querySelectorAll('.app-window').forEach(w => {
+                            w.style.zIndex = String(1000 + Date.now() % 100000);
+                        });
+                    }},
+                ],
+                help: [
+                    { label: 'About Wave‑X', kbd: '', action: () => {
+                        const html = `
+                          <div style="padding:14px;display:grid;gap:10px;color:#cfc;font-family:Consolas,monospace">
+                            <div style="display:flex;align-items:center;gap:8px">
+                              <svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true" style="filter:drop-shadow(0 0 6px rgba(0,255,0,0.35))">
+                                <path d="M6,36 C14,28 22,44 30,36 C38,28 46,44 58,34" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M42,18 L56,32 M56,18 L42,32" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
+                              </svg>
+                              <strong>About Wave‑X</strong>
+                            </div>
+                            <div>macOS‑style menu bar demo with in‑page windows.</div>
+                          </div>
+                        `;
+                        const win = createAppWindow('about:blank', 'About Wave‑X');
+                        const body = win.querySelector('.app-body');
+                        body.innerHTML = html;
+                      } },
+                ],
+            };
+
+            const menuRoot = document.getElementById('mac-menu');
+            if (!menuRoot) {
+                // Defer wiring if menu isn't in DOM yet
+                waitFor('#mac-menu').then(initMenus);
+            } else {
+                initMenus(menuRoot);
+            }
+
+            function initMenus(root = menuRoot || document.getElementById('mac-menu')) {
+                if (!root) return;
+                // wire top-level menu interactions
+                root.querySelectorAll('.mac-item').forEach(item => {
+                    item.style.cursor = 'pointer';
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const key = item.dataset.menu;
+                        if (openState.trigger === item) {
+                            closeDropdown();
+                        } else {
+                            openDropdown(item, key);
+                        }
+                    });
+                    // hover to switch between menus while open (macOS-like)
+                    item.addEventListener('mouseenter', () => {
+                        if (openState.dd) {
+                            const key = item.dataset.menu;
+                            openDropdown(item, key);
+                        }
+                    });
+                });
+            }
+            const openState = { dd: null, trigger: null };
+
+            function buildDropdown(items) {
+                const dd = document.createElement('div');
+                dd.className = 'mac-dropdown';
+                items.forEach(it => {
+                    if (it === 'sep') {
+                        const hr = document.createElement('div');
+                        hr.className = 'mac-dd-sep';
+                        dd.appendChild(hr);
+                        return;
+                    }
+                    const row = document.createElement('div');
+                    row.className = 'mac-dd-item';
+                    row.innerHTML = `<span class="lbl">${it.label}</span><span class="kbd">${it.kbd || ''}</span>`;
+                    row.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        try { it.action && it.action(); } finally { closeDropdown(); }
+                    });
+                    dd.appendChild(row);
+                });
+                return dd;
+            }
+
+            function closeDropdown() {
+                if (openState.dd && openState.dd.parentNode) openState.dd.remove();
+                if (openState.trigger) openState.trigger.classList.remove('active');
+                openState.dd = null;
+                openState.trigger = null;
+            }
+
+            function openDropdown(trigger, key) {
+                closeDropdown();
+                const items = menuDefs[key];
+                if (!items) return;
+                const dd = buildDropdown(items);
+                trigger.classList.add('active');
+                trigger.appendChild(dd);
+                // position: ensure within viewport
+                const rect = trigger.getBoundingClientRect();
+                const ddRect = dd.getBoundingClientRect();
+                if (rect.left + ddRect.width > window.innerWidth - 8) {
+                    dd.style.left = Math.max(0, window.innerWidth - ddRect.width - rect.left - 8) + 'px';
+                }
+                openState.dd = dd;
+                openState.trigger = trigger;
+            }
+
+            document.addEventListener('click', () => closeDropdown());
+            window.addEventListener('blur', () => closeDropdown());
+
+            // keyboard shortcuts (Cmd-like using Ctrl on Windows)
+            document.addEventListener('keydown', (e) => {
+                const meta = e.ctrlKey || e.metaKey;
+                if (!meta) return;
+                const k = e.key.toLowerCase();
+                if (k === 'n') { e.preventDefault(); createAppWindow('about:blank', 'New Window'); }
+                if (k === 'w') { e.preventDefault(); const top = document.querySelector('.app-window.active') || document.querySelector('.app-window:last-of-type'); top && top.remove(); }
+                if (k === 'q') { e.preventDefault(); document.querySelectorAll('.app-window').forEach(w => w.remove()); }
+                if (k === '1') { e.preventDefault(); document.querySelector('[data-tab="games"]').click(); }
+                if (k === '2') { e.preventDefault(); document.querySelector('[data-tab="apps"]').click(); }
+                if (k === '3') { e.preventDefault(); document.querySelector('[data-tab="wave-proxy"]').click(); }
+            });
+
+            // Sync center title on tab switches
+            // If tabs are already in DOM, wire now; otherwise wait for them
+            function wireTabs() {
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const map = { 'games': 'Desktop', 'apps': 'Applications', 'wave-proxy': 'Proxy' };
+                        setTitle(map[tab.dataset.tab] || 'Wave‑X');
+                        document.querySelectorAll('.mac-item').forEach(i => i.classList.remove('active'));
+                        const file = document.querySelector('.mac-item[data-menu="file"]');
+                        if (file) file.classList.add('active');
+                        closeDropdown();
+                    });
+                });
+            }
+            if (document.querySelector('.tab')) {
+                wireTabs();
+            } else {
+                waitFor('.tab').then(() => wireTabs());
+            }
+        })();
         // Clock + location + IP (best-effort, privacy-friendly)
         (function wavexClock() {
             const elTime = () => document.getElementById('clk-time');
@@ -1610,25 +1985,46 @@
         })();
 
         // Tab switching functionality
+        // Top tabs: robust click handler with null checks to avoid "buttons broken"
         const tabs = document.querySelectorAll('.tab');
         const contents = document.querySelectorAll('.content');
 
+        function activateTab(tabEl) {
+            if (!tabEl) return;
+            const targetId = tabEl.dataset ? tabEl.dataset.tab : null;
+            const targetContent = targetId ? document.getElementById(targetId) : null;
+            if (!targetContent) return;
+            // deactivate all
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            // activate selected
+            tabEl.classList.add('active');
+            // defer to allow CSS transition
+            setTimeout(() => targetContent.classList.add('active'), 0);
+        }
+
         tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs and contents
-                tabs.forEach(t => t.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
-
-                // Add active class to clicked tab
-                tab.classList.add('active');
-
-                // Show corresponding content with smooth transition
-                const targetContent = document.getElementById(tab.dataset.tab);
-                setTimeout(() => {
-                    targetContent.classList.add('active');
-                }, 100);
+            // ensure they are focusable/clickable
+            tab.setAttribute('type', 'button');
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                activateTab(tab);
+            });
+            // also support keyboard activation
+            tab.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activateTab(tab);
+                }
             });
         });
+
+        // Ensure there is always one active on load and that its panel is shown
+        (function ensureInitialActive() {
+            const currentActive = document.querySelector('.tab.active') || document.querySelector('.tab');
+            activateTab(currentActive);
+        })();
 
         // Settings functionality
         function toggleSettings() {
@@ -1668,10 +2064,19 @@
             // document.getElementsByTagName('head')[0].appendChild(link);
         }
 
-        // Single stream, slow left-to-right real-time typing from just past the sidebar
-        (function singleLineTypingBG() {
+/* Single stream, slow left-to-right real-time typing from just past the sidebar
+   Enhanced with a scripted prompt sequence used by Launch Wave‑X:
+   - prints fake proxy boot lines
+   - asks "Launch Wave‑X?" then prints "Yes."
+   - asks "Confirm?" then prints "Yes."
+   - triggers crash shake, opens window, then resumes normal typing
+*/
+(function singleLineTypingBG() {
             const canvas = document.getElementById('matrixCanvas');
             const ctx = canvas.getContext('2d');
+            // expose small API to orchestrate effects on demand
+            const MatrixFX = { crash: () => {}, reset: () => {}, runScript: async () => {} };
+            window.__MatrixFX = MatrixFX;
 
             // Extended code snippets to provide more variety/length
             const codeLines = [
@@ -1729,7 +2134,17 @@
             let currentChar = 0;
             let currentX = 12; // will be set based on sidebar width in resize()
             let currentY = 24; // slightly lower so it's clearly visible
-            let frame = 0;
+let frame = 0;
+
+// scripted sequence state (drives custom prompts)
+let scripting = false;
+let script = null; // { lines: string[], index, char, atX, atY, after: function }
+const SCRIPT_LINE_PAUSE = 1400; // ms between lines (slower boot pacing)
+
+            // crash state
+            let crashing = false;
+            let crashT = 0;              // time since crash began (frames)
+            let shards = [];             // flying text shards
 
             function resize() {
                 width = canvas.width = window.innerWidth;
@@ -1751,34 +2166,40 @@
             resize();
             window.addEventListener('resize', resize);
 
-            function draw() {
+function draw() {
                 // very slow fade to leave trails but keep readable
-                ctx.fillStyle = 'rgba(0,0,0,0.08)';
+                ctx.fillStyle = crashing ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0.08)';
                 ctx.fillRect(0, 0, width, height);
 
-                const fullLine = codeLines[currentLineIndex];
+                // choose what to type: scripted or normal
+                let fullLine;
+                if (scripting && script) {
+                    fullLine = script.lines[script.index] || '';
+                } else {
+                    fullLine = codeLines[currentLineIndex];
+                }
                 const visibleChars = Math.min(fullLine.length, currentChar);
                 const textToDraw = fullLine.slice(0, visibleChars);
 
-                // Draw current partial line at current cursor position
-                ctx.shadowColor = 'rgba(0,255,0,0.35)';
-                ctx.shadowBlur = 8;
-                ctx.fillStyle = '#0f0';
-                ctx.fillText(textToDraw, currentX, currentY);
+/* Draw current partial line at current cursor position */
+ctx.shadowColor = 'rgba(0,255,0,0.35)';
+ctx.shadowBlur = 8;
+ctx.fillStyle = '#0f0';
+ctx.fillText(textToDraw, currentX, currentY);
 
-                // blinking cursor
-                ctx.shadowBlur = 0;
-                if ((frame % 60) < 30) {
-                    ctx.fillStyle = '#9f9';
-                    const w = ctx.measureText(textToDraw).width;
-                    ctx.fillRect(currentX + w + 1, currentY + 2, 8, Math.max(2, fontSize - 6));
-                }
+// blinking cursor
+ctx.shadowBlur = 0;
+if (!crashing && (frame % 60) < 30) {
+    ctx.fillStyle = '#9f9';
+    const w = ctx.measureText(textToDraw).width;
+    ctx.fillRect(currentX + w + 1, currentY + 2, 8, Math.max(2, fontSize - 6));
+}
 
-                // advance typing to allow longer visible lines before newline
-                // Use pixel-based width to decide when to wrap, so it can run across the whole page
-                if (frame % 2 === 0) { // slightly faster for longer lines
-                    currentChar++;
-                }
+// advance typing
+// Slow the per-character typing to make the boot/proxy script feel "way slower"
+if (!crashing && frame % 6 === 0) { // slower cadence (was every 2 frames)
+    currentChar++;
+}
 
                 // Determine when to go to next line:
                 // 1) We typed the whole string and paused sufficiently, OR
@@ -1787,23 +2208,96 @@
                 const rightMargin = 32;
                 const nearRightEdge = currentX + typedWidth > width - rightMargin;
 
-                if ((currentChar > fullLine.length + 28) || nearRightEdge) {
-                    // move caret to next line start (stay aligned past sidebar)
-                    const sidebarBase = (width <= 1024 ? 220 : 260);
-                    currentX = Math.floor(sidebarBase + 24);
-                    currentY += lineHeight;
+if (!crashing) {
+    if (scripting && script) {
+        const typedWidth = ctx.measureText(textToDraw).width;
+        const rightMargin = 32;
+        const nearRightEdge = currentX + typedWidth > width - rightMargin;
 
-                    // wrap back to top if we reach bottom
-                    if (currentY + lineHeight > height - 16) {
-                        currentY = 24;
-                        // clear a little stronger when looping
-                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                        ctx.fillRect(0, 0, width, height);
+        // finish line when done or edge reached
+        if ((currentChar > fullLine.length + 2) || nearRightEdge) {
+            // move to next line
+            const sidebarBase = (width <= 1024 ? 220 : 260);
+            currentX = Math.floor(sidebarBase + 24);
+            currentY += lineHeight;
+
+            // clamp and soft-clear if needed
+            if (currentY + lineHeight > height - 16) {
+                currentY = 24;
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.fillRect(0, 0, width, height);
+            }
+
+            // move script index after a pause
+            const next = () => {
+                script.index++;
+                currentChar = 0;
+                if (script.index >= script.lines.length) {
+                    // script finished → run after callback then exit scripting
+                    const after = script.after;
+                    script = null;
+                    scripting = false;
+                    after && after();
+                }
+            };
+            // pause to mimic thinking
+            setTimeout(next, SCRIPT_LINE_PAUSE);
+        }
+    } else {
+        // normal free typing
+        if ((currentChar > fullLine.length + 28) || nearRightEdge) {
+            const sidebarBase = (width <= 1024 ? 220 : 260);
+            currentX = Math.floor(sidebarBase + 24);
+            currentY += lineHeight;
+
+            if (currentY + lineHeight > height - 16) {
+                currentY = 24;
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.fillRect(0, 0, width, height);
+            }
+
+            currentLineIndex = (currentLineIndex + 1) % codeLines.length;
+            currentChar = 0;
+        }
+    }
+}
+
+                // if crashing, animate shards flying inwards and colliding
+                if (crashing) {
+                    crashT++;
+                    // periodically emit shards from left/right edges
+                    if (frame % 3 === 0 && shards.length < 400) {
+                        const y = Math.random() * height;
+                        const s = {
+                            x: Math.random() < 0.5 ? -40 : width + 40,
+                            y,
+                            vx:  (Math.random() < 0.5 ? 1 : -1) * (2 + Math.random() * 3),
+                            vy:  (Math.random() - 0.5) * 1.2,
+                            txt: codeLines[(currentLineIndex + Math.floor(Math.random()*codeLines.length)) % codeLines.length].slice(0, 6 + Math.floor(Math.random()*8)),
+                            size: fontSize,
+                            life: 240
+                        };
+                        // aim toward center
+                        s.vx = s.x < 0 ? (3 + Math.random()*2) : (-3 - Math.random()*2);
+                        shards.push(s);
                     }
-
-                    // next code line
-                    currentLineIndex = (currentLineIndex + 1) % codeLines.length;
-                    currentChar = 0;
+                    // draw/update shards
+                    ctx.font = `${fontSize}px Consolas, 'Courier New', monospace`;
+                    ctx.fillStyle = '#8f8';
+                    ctx.shadowColor = 'rgba(0,255,0,0.35)';
+                    ctx.shadowBlur = 6;
+                    for (let i = shards.length - 1; i >= 0; i--) {
+                        const p = shards[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        // slight gravity toward center line to create “collision”
+                        const cx = width / 2;
+                        p.vx += (cx - p.x) * 0.0006;
+                        p.vy *= 0.99;
+                        ctx.fillText(p.txt, p.x, p.y);
+                        if (--p.life <= 0) shards.splice(i,1);
+                    }
+                    ctx.shadowBlur = 0;
                 }
 
                 frame++;
@@ -1811,6 +2305,37 @@
             }
 
             draw();
+
+/* crash API */
+MatrixFX.crash = () => { crashing = true; crashT = 0; };
+MatrixFX.reset = () => { crashing = false; crashT = 0; shards = []; };
+
+/* scripted prompt API used by Launch Wave‑X
+   lines: array of strings to type line-by-line
+   after: callback executed when script finishes
+*/
+MatrixFX.runScript = (lines, after) => {
+    if (!Array.isArray(lines) || !lines.length) return;
+    // prime script session
+    scripting = true;
+    script = {
+        lines,
+        index: 0,
+        char: 0,
+        atX: Math.floor((width <= 1024 ? 220 : 260) + 24),
+        atY: Math.floor(height * 0.30),
+        after
+    };
+    currentX = script.atX;
+    currentY = script.atY;
+    currentChar = 0;
+
+    // wipe a bit stronger to draw attention
+    try {
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillRect(0, 0, width, height);
+    } catch {}
+};
         })();
 
         // Add smooth scroll effect on tab click
@@ -1823,6 +2348,92 @@
                 }, 300);
             });
         });
+
+        // Launch Wave‑X: button in Proxy tab opens as an app window (like games)
+        (function wireLaunchWaveX(){
+            // hover effects for big green button (delegated once)
+            document.addEventListener('mouseover', (e) => {
+                const b = e.target.closest('#proxy-launch');
+                if (!b) return;
+                b.style.background = 'rgba(0,255,0,0.18)';
+                b.style.borderColor = 'rgba(0,255,0,0.45)';
+                b.style.boxShadow = '0 0 28px rgba(0,255,0,0.28), inset 0 0 0 1px rgba(0,255,0,0.14)';
+                b.style.transform = 'translateY(-1px)';
+            }, true);
+            document.addEventListener('mouseout', (e) => {
+                const b = e.target.closest('#proxy-launch');
+                if (!b) return;
+                b.style.background = 'rgba(0,255,0,0.10)';
+                b.style.borderColor = 'rgba(0,255,0,0.35)';
+                b.style.boxShadow = '0 0 20px rgba(0,255,0,0.12), inset 0 0 0 1px rgba(0,255,0,0.10)';
+                b.style.transform = 'translateY(0)';
+            }, true);
+            // sidebar button (optional) still switches to Proxy tab
+            const sideBtn = document.getElementById('launch-wavex');
+            if (sideBtn) {
+                sideBtn.addEventListener('click', () => {
+                    const proxyTab = document.querySelector('.tab[data-tab="wave-proxy"]');
+                    proxyTab && proxyTab.click();
+                });
+            }
+/* proxy tab launch button now opens an app-window containing the proxy iframe */
+function attachProxyLaunch() {
+    const launch = document.getElementById('proxy-launch');
+    if (!launch) return false;
+launch.addEventListener('click', () => {
+        // Compose scripted sequence: fake proxy boot + prompts
+        const lines = [
+            "> boot proxy subsystem …",
+            "> resolving upstream via uvv2",
+            "> hydrating tunnel: chacha20 · ok",
+            "> peer sync: 3/3",
+            "",
+            "Launch Wave‑X?",
+            "Yes.",
+            "Confirm?",
+            "Yes.",
+        ];
+
+        // Run script; when done: crash shake, open window, reset, resume normal
+        try {
+            window.__MatrixFX && window.__MatrixFX.runScript(lines, () => {
+                // shake
+                try { window.__MatrixFX && window.__MatrixFX.crash(); } catch {}
+                // open small window
+                const url = 'https://uvv2.rhw.one/active/';
+                const win = createAppWindow(url, 'Wave‑X Proxy');
+                try {
+                    win.style.width = '720px';
+                    win.style.height = '460px';
+                    const grid = document.querySelector('.games-grid') || document.body;
+                    const gb = grid.getBoundingClientRect();
+                    const wb = win.getBoundingClientRect();
+                    const left = Math.max(12, gb.left + (gb.width - wb.width) * 0.55);
+                    const top  = Math.max(56, gb.top + 40);
+                    win.style.left = left + 'px';
+                    win.style.top  = top  + 'px';
+                } catch {}
+                // reset effect back to normal code typing
+                setTimeout(() => { try { window.__MatrixFX && window.__MatrixFX.reset(); } catch {} }, 900);
+            });
+        } catch {
+            // fallback to immediate behavior if scripting API missing
+            try { window.__MatrixFX && window.__MatrixFX.crash(); } catch {}
+            const url = 'https://uvv2.rhw.one/active/';
+            createAppWindow(url, 'Wave‑X Proxy');
+            setTimeout(() => { try { window.__MatrixFX && window.__MatrixFX.reset(); } catch {} }, 900);
+        }
+    });
+    return true;
+}
+            // try now; if content panel not yet active, observe for it
+            if (!attachProxyLaunch()) {
+                const obs = new MutationObserver(() => {
+                    if (attachProxyLaunch()) obs.disconnect();
+                });
+                obs.observe(document.body, { childList: true, subtree: true });
+            }
+        })();
 
         // Minimal "OS-like" window manager for game cards
         const windowsLayer = document.getElementById('windows-layer');
@@ -2737,14 +3348,14 @@ function createAppWindow(url, titleText) {
             // ensure initial tab/frame exists
             setActiveTab(0);
         })();
-        // Tips rotator with 10s duration and progress bar
+        // Tips rotator with 5s duration and progress bar
         (function tipsRotator(){
             const tips = Array.from(document.querySelectorAll('.tips-bar .tip'));
             const bar = document.getElementById('tipsProgressBar');
             if (!tips.length || !bar) return;
             let i = tips.findIndex(t => t.classList.contains('active'));
             if (i < 0) i = 0;
-            const DUR = 10000; // 10s per tip
+            const DUR = 5000; // 5s per tip
             function setProgress(pct, ms) {
                 // set transition duration dynamically to sync with remaining time
                 bar.style.transitionDuration = (ms/1000) + 's';
