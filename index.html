@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wave-X Educational Hub</title>
+    <title>Wave-X</title>
     <style>
         * {
             margin: 0;
@@ -15,30 +15,18 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             height: 100vh;
-            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #a55eea 100%);
+            background: #000; /* base black */
             position: relative;
+            color: #0f0; /* matrix green text */
         }
 
+        /* Remove old gradient background layer */
         .wave-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #a55eea 100%);
+            display: none;
         }
 
-        .wave {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 200%;
-            height: 100%;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' opacity='.25' fill='%23ff6b9d'%3E%3C/path%3E%3Cpath d='M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z' opacity='.5' fill='%23c44569'%3E%3C/path%3E%3Cpath d='M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,120.23-6.3,179.23,6.47,30.2,6.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z' opacity='.75' fill='%23a55eea'%3E%3C/path%3E%3C/svg%3E");
-            background-size: 50% 100%;
-            animation: waveMove 15s linear infinite;
-        }
+        /* Remove colorful wave backgrounds */
+        .wave { display: none; }
 
         .wave:nth-child(2) {
             animation-delay: -5s;
@@ -76,22 +64,16 @@
             }
         }
 
+        /* Remove floating shapes visuals */
         .floating-shapes {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             z-index: -1;
             overflow: hidden;
+            pointer-events: none;
         }
 
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            animation: float 20s infinite linear;
-        }
+        .shape { display: none; }
 
         .shape:nth-child(1) {
             width: 80px;
@@ -125,81 +107,83 @@
             animation-delay: -15s;
         }
 
-        @keyframes float {
-            0% {
-                transform: translateY(0px) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) rotate(360deg);
-                opacity: 0;
-            }
+        /* Code-typing background canvas behind content */
+        #matrixCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: #000;
         }
 
         .container {
             position: relative;
             z-index: 1;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 260px 1fr; /* sidebar + main */
         }
 
         .header {
-            text-align: center;
-            padding: 2rem 0;
-            color: white;
+            grid-column: 1 / -1;
+            text-align: left;
+            padding: 1.25rem 1.5rem;
+            color: #0f0;
+            border-bottom: 1px solid rgba(0,255,0,0.15);
+            background: rgba(0,0,0,0.6);
         }
 
         .header h1 {
-            font-size: 4rem;
-            font-weight: 300;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(45deg, #ffffff, #e0e0e0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #0f0;
+            text-shadow: 0 0 12px rgba(0,255,0,0.35);
         }
 
         .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
+            font-size: 0.95rem;
+            opacity: 0.85;
+            color: #8f8;
         }
 
+        /* Sidebar */
         .tabs-container {
-            display: flex;
-            justify-content: center;
-            margin: 2rem 0;
+            grid-row: 2 / -1;
+            grid-column: 1 / 2;
+            display: block;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.75), rgba(0,0,0,0.4));
+            border-right: 1px solid rgba(0,255,0,0.15);
+            overflow-y: auto;
         }
 
         .tabs {
             display: flex;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 50px;
-            padding: 0.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: transparent;
+            backdrop-filter: none;
+            border-radius: 0;
+            border: 0;
+            box-shadow: none;
         }
 
         .tab {
-            padding: 1rem 2rem;
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 500;
+            padding: 0.85rem 1rem;
+            background: rgba(0,255,0,0.06);
+            border: 1px solid rgba(0,255,0,0.18);
+            color: #9f9;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            border-radius: 40px;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            font-family: "Consolas", "Courier New", monospace;
         }
 
         .tab::before {
@@ -209,40 +193,55 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0,255,0,0.25), transparent);
             transition: left 0.5s;
         }
 
         .tab:hover::before {
             left: 100%;
         }
+        .tab:hover {
+            color: #cfffcf;
+            box-shadow: 0 0 12px rgba(0,255,0,0.25);
+            transform: translateX(2px);
+        }
 
         .tab.active {
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: rgba(0,255,0,0.12);
+            color: #dfffdf;
+            border-color: rgba(0,255,0,0.35);
+            box-shadow: inset 0 0 0 1px rgba(0,255,0,0.25), 0 0 20px rgba(0,255,0,0.15);
         }
 
         .content-area {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            grid-column: 2 / -1;
+            grid-row: 2 / -1;
+            display: grid;
+            place-items: center;          /* perfectly center with available screen space */
             padding: 2rem;
+            align-content: center;        /* ensure vertical centering even if content shorter */
         }
 
         .content {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 3rem;
-            text-align: center;
-            color: white;
-            max-width: 600px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 25, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            padding: 2rem;
+            text-align: left;
+            color: #cfc;
+            width: min(1000px, 92vw);      /* allow a bit wider content and responsive width */
+            max-height: calc(100vh - 6rem); /* keep within viewport height */
+            overflow: auto;                 /* scroll if content exceeds */
+            box-shadow: 0 0 30px rgba(0,255,0,0.08);
+            border: 1px solid rgba(0,255,0,0.18);
             opacity: 0;
             transform: translateY(20px);
-            transition: all 0.5s ease;
+            transition: all 0.45s ease;
+            margin: 0 auto;                 /* center the panel itself */
+            display: flex;                  /* center children like Tools grid & Proxy shell */
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
         }
 
         .content.active {
@@ -251,21 +250,127 @@
         }
 
         .content h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 300;
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            color: #9f9;
+            text-shadow: 0 0 10px rgba(0,255,0,0.25);
         }
 
         .content p {
-            font-size: 1.1rem;
+            font-size: 1rem;
             line-height: 1.6;
-            opacity: 0.9;
+            opacity: 0.92;
         }
 
         .content-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.8;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 6px rgba(0,255,0,0.35));
+        }
+
+        /* Games grid */
+        .games-grid {
+            margin-top: 1.25rem;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            text-align: left;
+            max-width: 900px;
+            justify-items: stretch;  /* ensure equal width columns */
+            margin-left: auto;
+            margin-right: auto;
+            align-items: stretch;    /* make rows align heights */
+        }
+
+        .game-card {
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 30, 0, 0.6);
+            border: 1px solid rgba(0,255,0,0.25);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            backdrop-filter: blur(8px);
+            cursor: pointer; /* clickable */
+            min-height: 220px;         /* enforce consistent minimum height */
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            background: rgba(0, 50, 0, 0.7);
+            box-shadow: 0 0 20px rgba(0,255,0,0.15);
+        }
+
+        .game-thumb {
+            aspect-ratio: 16 / 9;
+            width: 100%;
+            background: radial-gradient( ellipse at 30% 30%, rgba(0,255,0,0.25), rgba(0,0,0,0.1) 60% );
+            position: relative;
+            flex: 0 0 auto;          /* fixed height by aspect ratio */
+        }
+
+        /* placeholder image pattern */
+        .game-thumb::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(0,255,0,0.15) 1px, transparent 1px) 0 0/20px 100%,
+                linear-gradient(0deg, rgba(0,255,0,0.08) 1px, transparent 1px) 0 0/100% 20px;
+            opacity: 0.5;
+        }
+
+        .game-info {
+            padding: 0.9rem 1rem 1rem;
+            color: #cfc;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex: 1 1 auto;          /* fill remaining space uniformly */
+        }
+
+        .game-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+            color: #9f9;
+        }
+
+        .game-desc {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            line-height: 1.35rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .game-btn {
+            align-self: start;
+            padding: 0.5rem 0.9rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(0,255,0,0.35);
+            background: rgba(0,255,0,0.12);
+            color: #cfc;
+            cursor: not-allowed;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        @media (max-width: 1024px) {
+            .games-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                max-width: 700px;
+                align-items: stretch;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                align-items: stretch;
+            }
         }
 
         /* Settings Icon */
@@ -394,47 +499,176 @@
             display: block;
         }
 
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 220px 1fr;
+            }
+        }
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2.5rem;
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
             }
-            
+            .tabs-container {
+                grid-column: 1 / -1;
+                grid-row: 2 / 3;
+                border-right: 0;
+                border-bottom: 1px solid rgba(0,255,0,0.15);
+            }
             .tabs {
-                flex-direction: column;
-                border-radius: 20px;
+                flex-direction: row;
+                flex-wrap: wrap;
             }
-            
             .tab {
-                border-radius: 15px;
-                margin: 0.2rem 0;
+                border-radius: 8px;
+                margin: 0.25rem;
+                flex: 1 1 45%;
             }
-            
+            .content-area {
+                grid-column: 1 / -1;
+                display: grid;
+                place-items: center;  /* keep centered on small screens */
+            }
             .content {
-                padding: 2rem;
+                padding: 1.25rem;
                 margin: 1rem;
             }
-
             .settings-panel {
                 width: 100%;
                 right: -100%;
             }
         }
     </style>
+    <style>
+        /* Proxy (Chrome OS-like) */
+        .proxy-shell {
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 20, 0, 0.45);
+            border: 1px solid rgba(0,255,0,0.18);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 24px rgba(0,255,0,0.08);
+            width: min(1000px, 92vw);    /* constrain width to match site content */
+            margin: 0 auto;              /* center within the content panel */
+            align-self: center;          /* ensure centering within .content flex */
+        }
+        .proxy-toolbar {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(0, 35, 0, 0.75);
+            border-bottom: 1px solid rgba(0,255,0,0.18);
+        }
+        .px-btn {
+            height: 30px;
+            min-width: 32px;
+            padding: 0 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,255,0,0.25);
+            background: rgba(0,255,0,0.08);
+            color: #bfffbf;
+            cursor: pointer;
+            font-family: Consolas, monospace;
+        }
+        .px-btn:hover {
+            background: rgba(0,255,0,0.18);
+            color: #eaffea;
+            box-shadow: 0 0 10px rgba(0,255,0,0.18);
+        }
+        .proxy-omnibox {
+            display: grid;
+            grid-template-columns: 24px 1fr auto;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 15, 0, 0.9);
+            border: 1px solid rgba(0,255,0,0.2);
+            border-radius: 9999px;
+            padding: 0 0.4rem 0 0.6rem;
+            height: 34px;
+            box-shadow: inset 0 0 0 1px rgba(0,255,0,0.06);
+        }
+        .proxy-omnibox .px-lock { opacity: 0.8; }
+        #proxy-url {
+            width: 100%;
+            outline: none;
+            border: none;
+            background: transparent;
+            color: #dfffd9;
+            font-family: Consolas, monospace;
+            font-size: 0.95rem;
+        }
+        .px-go {
+            height: 28px;
+            padding: 0 12px;
+            border-radius: 9999px;
+            border: 1px solid rgba(0,255,0,0.25);
+            background: rgba(0,255,0,0.12);
+            color: #cfc;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .px-go:hover {
+            background: rgba(0,255,0,0.18);
+        }
+        .proxy-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 6px;
+            background: rgba(0, 30, 0, 0.65);
+            border-bottom: 1px solid rgba(0,255,0,0.18);
+            overflow-x: auto;
+        }
+        .px-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: rgba(0,255,0,0.06);
+            border: 1px solid rgba(0,255,0,0.18);
+            border-radius: 8px;
+            min-width: 120px;
+            max-width: 240px;
+            cursor: pointer;
+            color: #bfffbf;
+            user-select: none;
+        }
+        .px-tab:hover { background: rgba(0,255,0,0.12); }
+        .px-tab.px-active {
+            background: rgba(0,255,0,0.18);
+            border-color: rgba(0,255,0,0.35);
+            color: #eaffea;
+        }
+        .px-tab-fav { filter: drop-shadow(0 0 6px rgba(0,255,0,0.25)); }
+        .px-tab-close {
+            background: transparent;
+            border: 0;
+            color: #9f9;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .px-tab-close:hover { color: #dfffd9; }
+        .proxy-view {
+            height: 60vh;
+            background: #000;
+            border-top: 1px solid rgba(0,255,0,0.1);
+        }
+        .proxy-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            background: #000;
+        }
+        @media (max-width: 768px) {
+            .proxy-view { height: 50vh; }
+        }
+    </style>
 </head>
 <body>
-    <div class="wave-background"></div>
-    
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
-    
-    <div class="floating-shapes">
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
-    </div>
+    <!-- Matrix background canvas -->
+    <canvas id="matrixCanvas"></canvas>
 
     <!-- Settings Icon -->
     <div class="settings-icon" onclick="toggleSettings()">
@@ -483,20 +717,20 @@
 
     <div class="container">
         <div class="header">
-            <h1>Wave-X Educational Hub</h1>
-            <p>Discover, Learn, and Explore Educational Resources</p>
+            <h1>Wave-X</h1>
+            <p>Explore the network. Pierce the veil.</p>
         </div>
 
         <div class="tabs-container">
             <div class="tabs">
                 <button class="tab active" data-tab="games">
-                    🎮 Educational Games
+                    🎮 Games
                 </button>
                 <button class="tab" data-tab="apps">
-                    📱 Learning Apps
+                    🛠️ Tools
                 </button>
                 <button class="tab" data-tab="wave-proxy">
-                    🌊 Wave Proxy
+                    🌊 Proxy
                 </button>
             </div>
         </div>
@@ -504,20 +738,102 @@
         <div class="content-area">
             <div class="content active" id="games">
                 <div class="content-icon">🎮</div>
-                <h2>Educational Games</h2>
-                <p>Discover interactive learning games that make education fun and engaging. From math puzzles to science simulations, enhance your knowledge through play.</p>
+                <h2>Games</h2>
+                <p>Dive into curated games. Low profile, high signal.</p>
+
+                <!-- Games Grid -->
+                <div class="games-grid">
+                    <div class="game-card" data-url="https://example.com/game1" data-title="Placeholder Game 1">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">Placeholder Game 1</div>
+                    </div>
+                    <div class="game-card" data-url="https://example.com/game2" data-title="Placeholder Game 2">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">Placeholder Game 2</div>
+                    </div>
+                    <div class="game-card" data-url="https://example.com/game3" data-title="Placeholder Game 3">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">Placeholder Game 3</div>
+                    </div>
+                    <div class="game-card" data-url="https://example.com/game4" data-title="Placeholder Game 4">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">Placeholder Game 4</div>
+                    </div>
+                    <div class="game-card" data-url="https://example.com/game5" data-title="Placeholder Game 5">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">Placeholder Game 5</div>
+                    </div>
+                    <div class="game-card" data-url="https://example.com/game6" data-title="Placeholder Game 6">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">Placeholder Game 6</div>
+                    </div>
+                </div>
             </div>
+
+    <!-- App Windows Layer -->
+    <div id="windows-layer" aria-live="polite"></div>
 
             <div class="content" id="apps">
                 <div class="content-icon">📱</div>
-                <h2>Learning Apps</h2>
-                <p>Explore educational applications designed to enhance your learning experience. From study tools to interactive lessons, we've got everything you need.</p>
+                <h2>Tools</h2>
+                <p>Utilities and web apps for the Wave-X stack.</p>
+
+                <!-- Tools Grid (OS-like buttons that open windows) -->
+                <div class="games-grid">
+                    <div class="game-card tool-fps" data-title="FPS Counter">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">FPS Counter</div>
+                    </div>
+                    <div class="game-card tool-bg" data-title="Background Changer">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">Background Changer</div>
+                    </div>
+                    <div class="game-card tool-test" data-title="Test Features">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">Test Features</div>
+                    </div>
+                    <div class="game-card tool-none" data-title="(None now)">
+                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-caption">(None now)</div>
+                    </div>
+                </div>
             </div>
 
             <div class="content" id="wave-proxy">
                 <div class="content-icon">🌊</div>
-                <h2>Wave Proxy</h2>
-                <p>Access educational resources seamlessly with our advanced proxy solution. Fast, secure, and reliable - your gateway to unrestricted learning.</p>
+                <h2>Proxy</h2>
+                <p style="margin-bottom: 1rem;">Fast, resilient routing through the noise.</p>
+
+                <!-- Chrome OS-like minimal browser UI -->
+                <div class="proxy-shell" style="margin-left:auto;margin-right:auto;">
+                    <div class="proxy-toolbar">
+                        <div class="proxy-left">
+                            <button class="px-btn px-back" title="Back">←</button>
+                            <button class="px-btn px-forward" title="Forward">→</button>
+                            <button class="px-btn px-reload" title="Reload">⟳</button>
+                        </div>
+                        <div class="proxy-omnibox">
+                            <span class="px-lock">🛡</span>
+                            <input id="proxy-url" type="text" placeholder="Search or type a URL" spellcheck="false" />
+                            <button class="px-go">Go</button>
+                        </div>
+                        <div class="proxy-right">
+                            <button class="px-btn px-newtab" title="New Window">＋</button>
+                            <button class="px-btn px-full" title="Fullscreen">⛶</button>
+                        </div>
+                    </div>
+                    <div class="proxy-tabs">
+                        <div class="px-tab px-active" data-index="0">
+                            <span class="px-tab-fav">🌐</span>
+                            <span class="px-tab-title">New Tab</span>
+                            <button class="px-tab-close" title="Close">✕</button>
+                        </div>
+                        <!-- more tabs will be appended dynamically -->
+                    </div>
+                    <div class="proxy-view">
+                        <iframe id="proxy-frame-0" class="proxy-frame" src="about:blank" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -558,15 +874,15 @@
             
             // Update page title based on theme
             const titles = {
-                'default': 'Wave-X Educational Hub',
-                'math': 'Wave-X Math Learning',
-                'science': 'Wave-X Science Lab',
-                'history': 'Wave-X History Explorer',
-                'literature': 'Wave-X Literature Corner',
-                'art': 'Wave-X Creative Arts'
+                'default': 'Wave-X',
+                'math': 'Wave-X',
+                'science': 'Wave-X',
+                'history': 'Wave-X',
+                'literature': 'Wave-X',
+                'art': 'Wave-X'
             };
             
-            document.title = titles[theme] || 'Wave-X Educational Hub';
+            document.title = titles[theme] || 'Wave-X';
             
             // You can also change the actual favicon here
             // const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
@@ -576,20 +892,150 @@
             // document.getElementsByTagName('head')[0].appendChild(link);
         }
 
-        // Add some interactive effects
-        document.addEventListener('mousemove', (e) => {
-            const shapes = document.querySelectorAll('.shape');
-            const mouseX = e.clientX / window.innerWidth;
-            const mouseY = e.clientY / window.innerHeight;
+        // Single stream, slow left-to-right real-time typing from just past the sidebar
+        (function singleLineTypingBG() {
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
 
-            shapes.forEach((shape, index) => {
-                const speed = (index + 1) * 0.5;
-                const x = (mouseX - 0.5) * speed;
-                const y = (mouseY - 0.5) * speed;
-                
-                shape.style.transform = `translate(${x}px, ${y}px)`;
-            });
-        });
+            // Extended code snippets to provide more variety/length
+            const codeLines = [
+                "init(); // boot sequence",
+                "const key = generateKey(256);",
+                "connect('wss://node-17');",
+                "auth(handshake(key));",
+                "let session = openTunnel({ cipher: 'chacha20' });",
+                "for (let i = 0; i < 3; i++) scanPort(10_000 + i);",
+                "const payload = encode({ id: uid(), ts: Date.now() });",
+                "send(session, payload);",
+                "await delay(150);",
+                "if (ack()) log('ACK received'); else retry();",
+                "trace('channel open');",
+                "map(nodes, n => probe(n.ip));",
+                "let hash = sha256(JSON.stringify(payload)).slice(0,16);",
+                "updateState({ ready: true, hash });",
+                "commit('pipeline.stage.3');",
+                "emit('ready');",
+                "// --- diagnostics ---",
+                "const st = stats(session); log(JSON.stringify(st));",
+                "route.add('alpha', { ttl: 30000 });",
+                "on('packet', p => analyze(p));",
+                "const sig = sign(payload, key); verify(sig);",
+                "buffer.write(hex(rand(32)));",
+                "queue.push({ job: 'persist', data: payload });",
+                "flush(queue);",
+                "done();",
+                "// --- extended pipeline ---",
+                "const cfg = loadConfig('net.yaml');",
+                "const peers = discover({ region: 'us-west' });",
+                "peers.forEach(p => link(p).negotiate());",
+                "sync.clock(peers);",
+                "let window = new SlidingWindow(128);",
+                "stream = multiplex(session, window);",
+                "stream.write(encrypt(payload, key));",
+                "stream.flush();",
+                "audit.track({ event: 'stream.flush', ts: Date.now() });",
+                "const ack2 = await until(() => stream.acked(), { timeout: 2000 });",
+                "if (!ack2) { backoff *= 2; retry(); }",
+                "rotateKeyIfNeeded(key, usageCount);",
+                "gc.cleanup({ ttl: 600000 });",
+                "heartbeat.tick();",
+                "telemetry.push(sampleCPU(), sampleMem());",
+                "kv.put('hash', hash);",
+                "kv.expire('hash', 120000);",
+                "bus.emit('sync', { peers: peers.length });",
+                "finalize(session);"
+            ];
+
+            let width = 0, height = 0;
+            let fontSize = 16;
+            let lineHeight = 22;
+            let currentLineIndex = 0;
+            let currentChar = 0;
+            let currentX = 12; // will be set based on sidebar width in resize()
+            let currentY = 24; // slightly lower so it's clearly visible
+            let frame = 0;
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+
+                // Slightly smaller font to fit more characters horizontally
+                fontSize = Math.max(12, Math.min(16, Math.floor(height / 50)));
+                lineHeight = Math.round(fontSize * 1.4);
+                ctx.font = `${fontSize}px Consolas, 'Courier New', monospace`;
+                ctx.textBaseline = 'top';
+
+                // Align start position slightly past the sidebar so it's clearly visible
+                const sidebarBase = (width <= 1024 ? 220 : 260);
+                currentX = Math.floor(sidebarBase + 24); // 24px padding past the sidebar
+                // keep Y within top area
+                if (currentY < 24) currentY = 24;
+            }
+
+            resize();
+            window.addEventListener('resize', resize);
+
+            function draw() {
+                // very slow fade to leave trails but keep readable
+                ctx.fillStyle = 'rgba(0,0,0,0.08)';
+                ctx.fillRect(0, 0, width, height);
+
+                const fullLine = codeLines[currentLineIndex];
+                const visibleChars = Math.min(fullLine.length, currentChar);
+                const textToDraw = fullLine.slice(0, visibleChars);
+
+                // Draw current partial line at current cursor position
+                ctx.shadowColor = 'rgba(0,255,0,0.35)';
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = '#0f0';
+                ctx.fillText(textToDraw, currentX, currentY);
+
+                // blinking cursor
+                ctx.shadowBlur = 0;
+                if ((frame % 60) < 30) {
+                    ctx.fillStyle = '#9f9';
+                    const w = ctx.measureText(textToDraw).width;
+                    ctx.fillRect(currentX + w + 1, currentY + 2, 8, Math.max(2, fontSize - 6));
+                }
+
+                // advance typing to allow longer visible lines before newline
+                // Use pixel-based width to decide when to wrap, so it can run across the whole page
+                if (frame % 2 === 0) { // slightly faster for longer lines
+                    currentChar++;
+                }
+
+                // Determine when to go to next line:
+                // 1) We typed the whole string and paused sufficiently, OR
+                // 2) The typed width reaches near the right edge (leave some margin)
+                const typedWidth = ctx.measureText(textToDraw).width;
+                const rightMargin = 32;
+                const nearRightEdge = currentX + typedWidth > width - rightMargin;
+
+                if ((currentChar > fullLine.length + 28) || nearRightEdge) {
+                    // move caret to next line start (stay aligned past sidebar)
+                    const sidebarBase = (width <= 1024 ? 220 : 260);
+                    currentX = Math.floor(sidebarBase + 24);
+                    currentY += lineHeight;
+
+                    // wrap back to top if we reach bottom
+                    if (currentY + lineHeight > height - 16) {
+                        currentY = 24;
+                        // clear a little stronger when looping
+                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                        ctx.fillRect(0, 0, width, height);
+                    }
+
+                    // next code line
+                    currentLineIndex = (currentLineIndex + 1) % codeLines.length;
+                    currentChar = 0;
+                }
+
+                frame++;
+                requestAnimationFrame(draw);
+            }
+
+            draw();
+        })();
 
         // Add smooth scroll effect on tab click
         tabs.forEach(tab => {
@@ -602,6 +1048,487 @@
             });
         });
 
+        // Minimal "OS-like" window manager for game cards
+        const windowsLayer = document.getElementById('windows-layer');
+
+        // Styles for windows injected once
+        (function injectWindowStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+            #windows-layer {
+                position: fixed;
+                inset: 0;
+                pointer-events: none; /* allow clicks through except on windows */
+                z-index: 900; /* above content but below settings icon */
+            }
+            .app-window {
+                position: absolute;
+                top: 80px;
+                left: 320px;
+                width: min(900px, 70vw);
+                height: min(600px, 65vh);
+                background: rgba(0, 20, 0, 0.85);
+                border: 1px solid rgba(0,255,0,0.35);
+                border-radius: 10px;
+                box-shadow: 0 10px 40px rgba(0,255,0,0.15), 0 0 0 1px rgba(0,255,0,0.15) inset;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                pointer-events: auto; /* capture interactions */
+                backdrop-filter: blur(6px);
+                transition: box-shadow 0.2s ease, transform 0.2s ease;
+            }
+            .app-window:focus-within, .app-window.active {
+                box-shadow: 0 10px 50px rgba(0,255,0,0.25), 0 0 0 1px rgba(0,255,0,0.35) inset;
+            }
+            .app-titlebar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.5rem 0.75rem;
+                background: rgba(0, 40, 0, 0.9);
+                border-bottom: 1px solid rgba(0,255,0,0.25);
+                user-select: none;
+                cursor: move;
+                font-family: Consolas, monospace;
+                color: #9f9;
+            }
+            .app-titlebar .title {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-weight: 700;
+            }
+            .app-controls {
+                display: flex;
+                gap: 0.5rem;
+            }
+            .app-btn {
+                width: 28px;
+                height: 24px;
+                display: grid;
+                place-items: center;
+                background: rgba(0,255,0,0.1);
+                border: 1px solid rgba(0,255,0,0.25);
+                color: #9f9;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+            .app-btn:hover {
+                background: rgba(0,255,0,0.2);
+                color: #dfffd9;
+                box-shadow: 0 0 10px rgba(0,255,0,0.25);
+            }
+            .app-iframe {
+                width: 100%;
+                height: 100%;
+                border: 0;
+                background: #000;
+            }
+            .app-body {
+                flex: 1;
+                min-height: 0;
+            }
+            .app-resizer {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                width: 14px;
+                height: 14px;
+                cursor: nwse-resize;
+                background: linear-gradient(135deg, transparent 50%, rgba(0,255,0,0.35) 50%);
+                opacity: 0.8;
+            }
+            .app-window.maximized {
+                top: 56px !important;
+                left: calc((var(--sidebar, 260px)) + 8px) !important;
+                width: calc(100vw - (var(--sidebar, 260px)) - 16px) !important;
+                height: calc(100vh - 72px) !important;
+                border-radius: 10px;
+            }
+            @media (max-width: 1024px) {
+                .app-window {
+                    left: 260px;
+                    width: min(900px, 74vw);
+                }
+                .app-window.maximized {
+                    left: calc((var(--sidebar, 220px)) + 8px) !important;
+                    width: calc(100vw - (var(--sidebar, 220px)) - 16px) !important;
+                }
+            }
+            @media (max-width: 768px) {
+                .app-window {
+                    left: 12px;
+                    width: calc(100vw - 24px);
+                }
+                .app-window.maximized {
+                    left: 8px !important;
+                    width: calc(100vw - 16px) !important;
+                }
+            }
+            `;
+            document.head.appendChild(style);
+        })();
+
+        function sidebarWidth() {
+            const mq = window.matchMedia('(max-width: 1024px)');
+            return mq.matches ? 220 : 260;
+        }
+
+        function createAppWindow(url, titleText) {
+            const win = document.createElement('div');
+            win.className = 'app-window active';
+            win.style.setProperty('--sidebar', sidebarWidth() + 'px');
+
+            const titlebar = document.createElement('div');
+            titlebar.className = 'app-titlebar';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'title';
+            titleEl.innerHTML = `<span style="filter: drop-shadow(0 0 4px rgba(0,255,0,0.35))">🗔</span> <span>${titleText}</span>`;
+
+            const controls = document.createElement('div');
+            controls.className = 'app-controls';
+
+            const btnFullscreen = document.createElement('button');
+            btnFullscreen.className = 'app-btn';
+            btnFullscreen.title = 'Fullscreen';
+            btnFullscreen.innerHTML = '⛶';
+
+            const btnClose = document.createElement('button');
+            btnClose.className = 'app-btn';
+            btnClose.title = 'Close';
+            btnClose.innerHTML = '✕';
+
+            controls.appendChild(btnFullscreen);
+            controls.appendChild(btnClose);
+
+            titlebar.appendChild(titleEl);
+            titlebar.appendChild(controls);
+
+            const body = document.createElement('div');
+            body.className = 'app-body';
+
+            const iframe = document.createElement('iframe');
+            iframe.className = 'app-iframe';
+            iframe.src = url;
+            iframe.loading = 'lazy';
+            iframe.referrerPolicy = 'no-referrer';
+
+            body.appendChild(iframe);
+
+            const resizer = document.createElement('div');
+            resizer.className = 'app-resizer';
+
+            win.appendChild(titlebar);
+            win.appendChild(body);
+            win.appendChild(resizer);
+
+            // bring to front when interacted
+            win.addEventListener('mousedown', () => {
+                document.querySelectorAll('.app-window').forEach(w => w.classList.remove('active'));
+                win.classList.add('active');
+                // bump z-index based on time
+                win.style.zIndex = String(1000 + Date.now() % 100000);
+            });
+
+            // drag logic
+            (function makeDraggable() {
+                let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+                titlebar.addEventListener('mousedown', (e) => {
+                    if (win.classList.contains('maximized')) return;
+                    dragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    const rect = win.getBoundingClientRect();
+                    startLeft = rect.left;
+                    startTop = rect.top;
+                    document.body.style.userSelect = 'none';
+                });
+                window.addEventListener('mousemove', (e) => {
+                    if (!dragging) return;
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    win.style.left = Math.max(8, startLeft + dx) + 'px';
+                    win.style.top = Math.max(56, startTop + dy) + 'px';
+                });
+                window.addEventListener('mouseup', () => {
+                    dragging = false;
+                    document.body.style.userSelect = '';
+                });
+            })();
+
+            // resize logic (bottom-right handle)
+            (function makeResizable() {
+                let resizing = false, startX = 0, startY = 0, startW = 0, startH = 0;
+                resizer.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                    if (win.classList.contains('maximized')) return;
+                    resizing = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    const rect = win.getBoundingClientRect();
+                    startW = rect.width;
+                    startH = rect.height;
+                    document.body.style.userSelect = 'none';
+                });
+                window.addEventListener('mousemove', (e) => {
+                    if (!resizing) return;
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    win.style.width = Math.max(400, startW + dx) + 'px';
+                    win.style.height = Math.max(300, startH + dy) + 'px';
+                });
+                window.addEventListener('mouseup', () => {
+                    resizing = false;
+                    document.body.style.userSelect = '';
+                });
+            })();
+
+            // fullscreen toggle
+            btnFullscreen.addEventListener('click', () => {
+                win.classList.toggle('maximized');
+                // if maximizing, snap near sidebar; otherwise keep current position
+                if (win.classList.contains('maximized')) {
+                    win.style.top = '';
+                    win.style.left = '';
+                    win.style.width = '';
+                    win.style.height = '';
+                }
+            });
+
+            // close
+            btnClose.addEventListener('click', () => {
+                win.remove();
+            });
+
+            windowsLayer.appendChild(win);
+            return win;
+        }
+
+        // click handlers for game cards to open windows or run tools
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const title = card.getAttribute('data-title') || 'App';
+
+                // Tool: FPS Counter (spawns a floating HUD with average/instant FPS)
+                if (card.classList.contains('tool-fps')) {
+                    ensureFpsHud();
+                    return;
+                }
+
+                // Tool: Background Changer (opens OS-like window with controls)
+                if (card.classList.contains('tool-bg')) {
+                    openBackgroundChanger();
+                    return;
+                }
+
+                // Tool: Test Features (opens a small panel with toggles/demos)
+                if (card.classList.contains('tool-test')) {
+                    openTestFeatures();
+                    return;
+                }
+
+                // Tool: None → open placeholder window
+                if (card.classList.contains('tool-none')) {
+                    const win = createAppWindow('about:blank', '(None now)');
+                    return;
+                }
+
+                // Fallback: open as iframe window using data-url
+                const url = card.getAttribute('data-url') || 'about:blank';
+                createAppWindow(url, title);
+            });
+        });
+
+        /* =====================
+           FPS COUNTER (HUD)
+        ====================== */
+        let __fpsHud;
+        function ensureFpsHud() {
+            if (!__fpsHud) {
+                __fpsHud = document.createElement('div');
+                __fpsHud.id = 'fps-hud';
+                __fpsHud.style.cssText = `
+                    position: fixed;
+                    top: 12px;
+                    left: calc(260px + 16px);
+                    padding: 6px 10px;
+                    background: rgba(0, 25, 0, 0.85);
+                    color: #cfc;
+                    border: 1px solid rgba(0,255,0,0.35);
+                    border-radius: 8px;
+                    font-family: Consolas, monospace;
+                    font-size: 12px;
+                    z-index: 1200;
+                    display: grid;
+                    grid-auto-flow: column;
+                    gap: 12px;
+                    align-items: center;
+                    box-shadow: 0 0 12px rgba(0,255,0,0.2);
+                `;
+                __fpsHud.innerHTML = `<span>FPS: <b id="fps-now">--</b></span><span>Avg: <b id="fps-avg">--</b></span><button id="fps-close" style="background:transparent;border:1px solid rgba(0,255,0,0.35);color:#9f9;border-radius:6px;padding:2px 6px;cursor:pointer">✕</button>`;
+                document.body.appendChild(__fpsHud);
+                document.getElementById('fps-close').onclick = () => {
+                    cancelAnimationFrame(fpsAnimId);
+                    __fpsSamples.length = 0;
+                    __fpsHud.remove();
+                    __fpsHud = null;
+                };
+                // reposition on resize based on sidebar width
+                window.addEventListener('resize', () => {
+                    const sidebar = window.matchMedia('(max-width: 1024px)').matches ? 220 : 260;
+                    __fpsHud.style.left = `calc(${sidebar}px + 16px)`;
+                });
+            }
+            startFpsLoop();
+        }
+        let fpsAnimId = 0;
+        const __fpsSamples = [];
+        let __last = performance.now();
+        function startFpsLoop() {
+            function tick(now) {
+                const dt = now - __last;
+                __last = now;
+                const fps = dt > 0 ? 1000 / dt : 0;
+                __fpsSamples.push(fps);
+                if (__fpsSamples.length > 120) __fpsSamples.shift(); // keep last ~2s at 60fps
+
+                const fpsNow = document.getElementById('fps-now');
+                const fpsAvg = document.getElementById('fps-avg');
+                if (fpsNow && fpsAvg) {
+                    fpsNow.textContent = Math.round(fps).toString();
+                    const avg = __fpsSamples.reduce((a,b)=>a+b,0) / __fpsSamples.length;
+                    fpsAvg.textContent = Math.round(avg).toString();
+                }
+                fpsAnimId = requestAnimationFrame(tick);
+            }
+            cancelAnimationFrame(fpsAnimId);
+            fpsAnimId = requestAnimationFrame(tick);
+        }
+
+        /* =====================
+           BACKGROUND CHANGER
+        ====================== */
+        function openBackgroundChanger() {
+            const html = `
+                <div style="padding:10px;display:grid;gap:10px;color:#cfc;font-family:Consolas,monospace">
+                    <div style="display:grid;gap:8px">
+                        <label>Theme:</label>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button class="bgc-btn" data-bg="matrix" title="Matrix">Matrix</button>
+                            <button class="bgc-btn" data-bg="grid" title="Scan Grid">Scan Grid</button>
+                            <button class="bgc-btn" data-bg="plain" title="Plain Black">Plain</button>
+                        </div>
+                    </div>
+                    <div style="display:grid;gap:8px">
+                        <label>Primary color (hex):</label>
+                        <input id="bgc-color" value="#00ff00" style="background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;padding:6px;border-radius:6px" />
+                    </div>
+                    <div style="opacity:0.85;font-size:12px">Note: Matrix mode uses the live typing effect already on the site.</div>
+                </div>
+            `;
+            const win = createAppWindow('about:blank', 'Background Changer');
+            const doc = win.querySelector('.app-body');
+            doc.innerHTML = html;
+
+            // style buttons
+            doc.querySelectorAll('.bgc-btn').forEach(btn => {
+                btn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer';
+                btn.addEventListener('mouseenter', ()=> btn.style.background='rgba(0,255,0,0.18)');
+                btn.addEventListener('mouseleave', ()=> btn.style.background='rgba(0,255,0,0.08)');
+            });
+
+            const colorInput = doc.querySelector('#bgc-color');
+
+            function applyBg(mode) {
+                const canvas = document.getElementById('matrixCanvas');
+                if (!canvas) return;
+                const color = colorInput.value || '#00ff00';
+                // Set CSS variable color influence by updating document style where we used fixed green
+                // For simplicity, adjust canvas fade and body color theme
+                if (mode === 'plain') {
+                    canvas.style.background = '#000';
+                } else if (mode === 'grid') {
+                    // draw faint grid overlay via CSS
+                    canvas.style.background = `
+                        radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.2) 100%),
+                        linear-gradient(90deg, ${hexToRgba(color,0.08)} 1px, transparent 1px) 0 0/24px 100%,
+                        linear-gradient(0deg, ${hexToRgba(color,0.06)} 1px, transparent 1px) 0 0/100% 24px, #000
+                    `;
+                } else {
+                    canvas.style.background = '#000'; // matrix typing runs as canvas content already
+                }
+                // tint header and borders using chosen color
+                document.documentElement.style.setProperty('--accent', color);
+                // optional: update some border colors live
+                document.querySelectorAll('.content, .game-card, .proxy-shell').forEach(el=>{
+                    el.style.borderColor = hexToRgba(color, 0.25);
+                });
+            }
+
+            doc.addEventListener('click', (e) => {
+                const t = e.target;
+                if (t.classList && t.classList.contains('bgc-btn')) {
+                    applyBg(t.getAttribute('data-bg'));
+                }
+            });
+            colorInput.addEventListener('change', ()=> applyBg('grid'));
+
+            function hexToRgba(hex, a=1) {
+                const m = hex.replace('#','');
+                const bigint = parseInt(m.length===3? m.split('').map(s=>s+s).join(''): m,16);
+                const r = (bigint>>16)&255, g=(bigint>>8)&255, b=bigint&255;
+                return `rgba(${r},${g},${b},${a})`;
+            }
+        }
+
+        /* =====================
+           TEST FEATURES
+        ====================== */
+        function openTestFeatures() {
+            const html = `
+                <div style="padding:12px;display:grid;gap:10px;color:#cfc;font-family:Consolas,monospace">
+                    <label><input type="checkbox" id="tf-center" /> Force center content</label>
+                    <label><input type="checkbox" id="tf-hide-sidebar" /> Hide sidebar</label>
+                    <label><input type="checkbox" id="tf-raise-contrast" /> Raise contrast</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+                        <button id="tf-reset" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer">Reset</button>
+                    </div>
+                </div>
+            `;
+            const win = createAppWindow('about:blank', 'Test Features');
+            const doc = win.querySelector('.app-body');
+            doc.innerHTML = html;
+
+            const qs = sel => doc.querySelector(sel);
+            const toggle = (cond, on, off) => cond ? on() : off && off();
+
+            qs('#tf-center').addEventListener('change', (e)=> {
+                toggle(e.target.checked,
+                    ()=> document.querySelector('.content-area').style.placeItems = 'center',
+                    ()=> document.querySelector('.content-area').style.placeItems = '');
+            });
+            qs('#tf-hide-sidebar').addEventListener('change', (e)=> {
+                toggle(e.target.checked,
+                    ()=> document.querySelector('.tabs-container').style.display = 'none',
+                    ()=> document.querySelector('.tabs-container').style.display = '');
+            });
+            qs('#tf-raise-contrast').addEventListener('change', (e)=> {
+                toggle(e.target.checked,
+                    ()=> document.body.style.color = '#0f0',
+                    ()=> document.body.style.color = '');
+            });
+            qs('#tf-reset').addEventListener('click', ()=> {
+                document.querySelector('.content-area').style.placeItems = '';
+                document.querySelector('.tabs-container').style.display = '';
+                document.body.style.color = '';
+                doc.querySelectorAll('input[type="checkbox"]').forEach(cb=> cb.checked = false);
+            });
+        }
+
         // Close settings panel when clicking outside
         document.addEventListener('click', (e) => {
             const panel = document.getElementById('settingsPanel');
@@ -611,6 +1538,195 @@
                 panel.classList.remove('open');
             }
         });
+
+        // Proxy tab logic (Chrome OS-like)
+        (function proxyApp() {
+            const shell = document.querySelector('#wave-proxy .proxy-shell');
+            if (!shell) return;
+
+            const tabsBar = shell.querySelector('.proxy-tabs');
+            const view = shell.querySelector('.proxy-view');
+            const urlInput = shell.querySelector('#proxy-url');
+            const btnGo = shell.querySelector('.px-go');
+            const btnBack = shell.querySelector('.px-back');
+            const btnFwd = shell.querySelector('.px-forward');
+            const btnReload = shell.querySelector('.px-reload');
+            const btnNewTab = shell.querySelector('.px-newtab');
+            const btnFull = shell.querySelector('.px-full');
+
+            let activeIndex = 0;
+            const frames = new Map(); // index -> iframe
+            const histories = new Map(); // index -> { stack: [url], pos: number }
+
+            function createFrame(index, src = 'about:blank') {
+                const iframe = document.createElement('iframe');
+                iframe.className = 'proxy-frame';
+                iframe.id = `proxy-frame-${index}`;
+                iframe.referrerPolicy = 'no-referrer';
+                iframe.sandbox = 'allow-scripts allow-forms allow-same-origin';
+                iframe.src = src;
+                view.innerHTML = '';
+                view.appendChild(iframe);
+                frames.set(index, iframe);
+                // init history
+                histories.set(index, { stack: src === 'about:blank' ? [] : [src], pos: src === 'about:blank' ? -1 : 0 });
+                bindFrameEvents(iframe, index);
+                return iframe;
+            }
+
+            function bindFrameEvents(iframe, index) {
+                iframe.addEventListener('load', () => {
+                    try {
+                        const title = iframe.contentDocument?.title || urlInput.value || 'New Tab';
+                        const tab = tabsBar.querySelector(`.px-tab[data-index="${index}"] .px-tab-title`);
+                        if (tab) tab.textContent = title.substring(0, 28);
+                    } catch {
+                        // cross-origin title access may fail
+                    }
+                });
+            }
+
+            function normalizeUrl(input) {
+                const trimmed = input.trim();
+                if (!trimmed) return '';
+                const looksLikeUrl = /^(https?:\/\/)|^localhost|^\d{1,3}(\.\d{1,3}){3}|^[\w-]+\.[a-z]{2,}/i.test(trimmed);
+                if (looksLikeUrl) {
+                    return trimmed.match(/^https?:\/\//i) ? trimmed : `https://${trimmed}`;
+                }
+                // default to search
+                const q = encodeURIComponent(trimmed);
+                return `https://duckduckgo.com/?q=${q}`;
+            }
+
+            function setActiveTab(index) {
+                activeIndex = index;
+                tabsBar.querySelectorAll('.px-tab').forEach(t => t.classList.remove('px-active'));
+                const tab = tabsBar.querySelector(`.px-tab[data-index="${index}"]`);
+                if (tab) tab.classList.add('px-active');
+
+                // show the matching frame (we recreate in view to keep simple)
+                const iframe = frames.get(index);
+                if (iframe) {
+                    view.innerHTML = '';
+                    view.appendChild(iframe);
+                    try {
+                        urlInput.value = iframe.contentWindow?.location?.href || '';
+                    } catch {
+                        urlInput.value = histories.get(index)?.stack[histories.get(index).pos] || '';
+                    }
+                } else {
+                    createFrame(index);
+                }
+            }
+
+            function addTab(src = 'about:blank') {
+                const idx = Date.now(); // lightweight unique id
+                const tab = document.createElement('div');
+                tab.className = 'px-tab';
+                tab.dataset.index = String(idx);
+                tab.innerHTML = `<span class="px-tab-fav">🌐</span><span class="px-tab-title">New Tab</span><button class="px-tab-close" title="Close">✕</button>`;
+                tabsBar.appendChild(tab);
+
+                createFrame(idx, src);
+                tab.addEventListener('click', (e) => {
+                    if ((e.target).classList?.contains('px-tab-close')) return;
+                    setActiveTab(idx);
+                });
+                tab.querySelector('.px-tab-close').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeTab(idx);
+                });
+                setActiveTab(idx);
+            }
+
+            function closeTab(index) {
+                const tab = tabsBar.querySelector(`.px-tab[data-index="${index}"]`);
+                if (tab) tab.remove();
+                const wasActive = activeIndex === index;
+                const iframe = frames.get(index);
+                if (iframe) iframe.remove();
+                frames.delete(index);
+                histories.delete(index);
+
+                const remaining = tabsBar.querySelector('.px-tab');
+                if (wasActive && remaining) {
+                    setActiveTab(Number(remaining.dataset.index));
+                } else if (!remaining) {
+                    // ensure at least one blank tab
+                    addTab('about:blank');
+                }
+            }
+
+            function navigateTo(input) {
+                const url = normalizeUrl(input);
+                if (!url) return;
+                const iframe = frames.get(activeIndex) || createFrame(activeIndex);
+                iframe.src = url;
+                // update history
+                const hist = histories.get(activeIndex) || { stack: [], pos: -1 };
+                hist.stack = hist.stack.slice(0, hist.pos + 1);
+                hist.stack.push(url);
+                hist.pos++;
+                histories.set(activeIndex, hist);
+                urlInput.value = url;
+                // update tab title icon to show loading state
+                const tab = tabsBar.querySelector(`.px-tab[data-index="${activeIndex}"] .px-tab-title`);
+                if (tab) tab.textContent = 'Loading...';
+            }
+
+            function goBack() {
+                const hist = histories.get(activeIndex);
+                if (!hist || hist.pos <= 0) return;
+                hist.pos--;
+                const url = hist.stack[hist.pos];
+                frames.get(activeIndex).src = url;
+                urlInput.value = url;
+            }
+
+            function goForward() {
+                const hist = histories.get(activeIndex);
+                if (!hist || hist.pos >= hist.stack.length - 1) return;
+                hist.pos++;
+                const url = hist.stack[hist.pos];
+                frames.get(activeIndex).src = url;
+                urlInput.value = url;
+            }
+
+            function reloadFrame() {
+                const iframe = frames.get(activeIndex);
+                if (!iframe) return;
+                iframe.contentWindow?.location?.reload();
+                // Fallback reload by reassigning src to same value
+                setTimeout(() => {
+                    if (!iframe.contentWindow) {
+                        const src = iframe.src;
+                        iframe.src = src;
+                    }
+                }, 300);
+            }
+
+            // wire events
+            btnGo.addEventListener('click', () => navigateTo(urlInput.value));
+            urlInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') navigateTo(urlInput.value);
+            });
+            btnBack.addEventListener('click', goBack);
+            btnFwd.addEventListener('click', goForward);
+            btnReload.addEventListener('click', reloadFrame);
+            btnNewTab.addEventListener('click', () => addTab('about:blank'));
+            btnFull.addEventListener('click', () => {
+                // open current proxy view into an app-window for immersive fullscreen-like mode
+                const currentUrl = urlInput.value || 'about:blank';
+                const shellRect = shell.getBoundingClientRect();
+                const app = createAppWindow(currentUrl, 'Proxy');
+                app.style.top = Math.max(56, shellRect.top + window.scrollY + 16) + 'px';
+                app.style.left = Math.max(8, shellRect.left + 16) + 'px';
+                app.classList.add('maximized');
+            });
+
+            // ensure initial tab/frame exists
+            setActiveTab(0);
+        })();
     </script>
 </body>
 </html>
