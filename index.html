@@ -19,6 +19,11 @@
             position: relative;
             color: #0f0; /* matrix green text */
         }
+        /* Scroll lock utility */
+        .scroll-lock {
+            overflow: hidden !important;
+            height: 100vh !important;
+        }
 
         /* Remove old gradient background layer */
         .wave-background {
@@ -217,34 +222,38 @@
             grid-column: 2 / -1;
             grid-row: 2 / -1;
             display: grid;
-            place-items: center;          /* perfectly center with available screen space */
-            padding: 2rem;
-            align-content: center;        /* ensure vertical centering even if content shorter */
+            grid-template-rows: 1fr;      /* single row to allow full-height content */
+            place-items: stretch;         /* stretch child across */
+            padding: 0;                   /* remove inner padding for full-bleed */
+            overflow: hidden;             /* no scroll; child handles its own */
         }
 
         .content {
-            background: rgba(0, 25, 0, 0.6);
-            backdrop-filter: blur(8px);
-            border-radius: 14px;
-            padding: 2rem;
+            background: transparent;
+            backdrop-filter: none;
+            border-radius: 0;
+            padding: 0;
             text-align: left;
             color: #cfc;
-            width: min(1000px, 92vw);      /* allow a bit wider content and responsive width */
-            max-height: calc(100vh - 6rem); /* keep within viewport height */
-            overflow: auto;                 /* scroll if content exceeds */
-            box-shadow: 0 0 30px rgba(0,255,0,0.08);
-            border: 1px solid rgba(0,255,0,0.18);
+            width: 100%;
+            height: 100%;                 /* fill content-area */
+            max-height: none;
+            overflow: hidden;             /* child handles scroll if needed */
+            box-shadow: none;
+            border: 0;
             opacity: 0;
             transform: translateY(20px);
             transition: all 0.45s ease;
-            margin: 0 auto;                 /* center the panel itself */
-            display: flex;                  /* center children like Tools grid & Proxy shell */
+            margin: 0;
+            display: none;                 /* hide by default */
             flex-direction: column;
-            align-items: center;
-            gap: 1rem;
+            align-items: stretch;          /* stretch child width */
+            justify-content: stretch;
+            gap: 0;
         }
 
         .content.active {
+            display: flex;                 /* show only the active panel */
             opacity: 1;
             transform: translateY(0);
         }
@@ -546,12 +555,13 @@
             flex-direction: column;
             background: rgba(0, 20, 0, 0.45);
             border: 1px solid rgba(0,255,0,0.18);
-            border-radius: 12px;
+            border-radius: 0;
             overflow: hidden;
-            box-shadow: 0 0 24px rgba(0,255,0,0.08);
-            width: min(1000px, 92vw);    /* constrain width to match site content */
-            margin: 0 auto;              /* center within the content panel */
-            align-self: center;          /* ensure centering within .content flex */
+            box-shadow: none;
+            width: 100%;
+            height: 100%;                /* full height of content */
+            margin: 0;
+            align-self: stretch;
         }
         .proxy-toolbar {
             display: grid;
@@ -620,6 +630,7 @@
             background: rgba(0, 30, 0, 0.65);
             border-bottom: 1px solid rgba(0,255,0,0.18);
             overflow-x: auto;
+            flex: 0 0 auto;               /* do not consume extra vertical space */
         }
         .px-tab {
             display: inline-flex;
@@ -651,22 +662,252 @@
         }
         .px-tab-close:hover { color: #dfffd9; }
         .proxy-view {
-            height: 60vh;
+            flex: 1 1 auto;              /* take remaining height */
+            min-height: 0;               /* allow child iframe to size correctly */
             background: #000;
             border-top: 1px solid rgba(0,255,0,0.1);
+            display: grid;               /* center iframe if needed */
+            place-items: stretch;        /* make iframe fill (landscape/full bleed) */
         }
         .proxy-frame {
             width: 100%;
             height: 100%;
             border: 0;
             background: #000;
+            object-fit: contain;          /* keep landscape content centered if applicable */
         }
         @media (max-width: 768px) {
-            .proxy-view { height: 50vh; }
+            .proxy-view { height: 100%; }
         }
     </style>
 </head>
 <body>
+    <!-- Intro Splash -->
+    <style>
+        #intro {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 2000;
+            overflow: hidden;
+        }
+        #intro.hidden { display: none; }
+
+        /* Securely blocked "photo" placeholder → White screen with gnome biting a cord */
+        .intro-image {
+            position: absolute;
+            inset: 0;
+            /* Keep the Securly image fullscreen the entire intro */
+            background:
+                url("https://support.securly.com/hc/article_attachments/14982802268951") center/cover no-repeat, #000;
+            display: block;
+            filter: none;
+        }
+        /* Remove old centered gnome placeholder element */
+        .intro-image::after { content: none; }
+
+        /* Scanning bar */
+        .intro-scan {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -40%;
+            height: 40%;
+            background: linear-gradient(180deg,
+                rgba(0,255,0,0) 0%,
+                rgba(0,255,0,0.12) 45%,
+                rgba(0,255,0,0.22) 50%,
+                rgba(0,255,0,0.12) 55%,
+                rgba(0,255,0,0) 100%
+            );
+            filter: blur(1px);
+            animation: introScan 2.2s ease-in-out 0.4s forwards;
+        }
+        @keyframes introScan {
+            0% { top: -40%; }
+            100% { top: 100%; }
+        }
+
+        /* Crack lines made of green code columns */
+        /* Bidirectional sweep cracks: columns animate L->R then R->L */
+        .intro-cracks {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            display: grid;
+            grid-template-columns: repeat(32, 1fr);
+            opacity: 0;
+            animation: cracksIn 0.4s ease forwards 1.0s; /* appear earlier */
+        }
+        @keyframes cracksIn { to { opacity: 1; } }
+
+        .intro-cracks .col {
+            position: relative;
+            overflow: hidden;
+            mix-blend-mode: screen;
+        }
+        .intro-cracks .col::before,
+        .intro-cracks .col::after {
+            content: attr(data-code);
+            position: absolute;
+            top: -120%;
+            left: 50%;
+            transform: translateX(-50%) rotate(90deg);
+            white-space: pre;
+            color: #0f0;
+            text-shadow: 0 0 8px rgba(0,255,0,0.35);
+            font: 12px/14px Consolas, monospace;
+            opacity: 0.95;
+        }
+        /* left-to-right pass */
+        .intro-cracks.ltr .col::before {
+            animation: codeDrop var(--spdA, 1.3s) linear var(--delayA, 0s) forwards;
+        }
+        /* right-to-left pass (staggered later) */
+        .intro-cracks.rtl .col::after {
+            animation: codeDrop var(--spdB, 1.1s) linear var(--delayB, 0s) forwards;
+        }
+        @keyframes codeDrop { to { top: 120%; } }
+
+        /* Shake and crack effect on the blocked page when code breaks through */
+        .intro-image.shake {
+            animation: introShake 0.2s ease-in-out 8 alternate;
+            filter: none;
+        }
+        @keyframes introShake {
+            0%   { transform: translate(0, 0) rotate(0deg); }
+            25%  { transform: translate(2px, -2px) rotate(-0.2deg); }
+            50%  { transform: translate(-2px, 2px) rotate(0.2deg); }
+            75%  { transform: translate(3px, 1px) rotate(-0.3deg); }
+            100% { transform: translate(-3px, -1px) rotate(0.3deg); }
+        }
+
+        /* Full image break: top-to-bottom fragmentation (no faded background left) */
+        .intro-split {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 3;
+        }
+        .intro-split .half {
+            position: absolute;
+            inset: 0;
+            background: url("https://support.securly.com/hc/article_attachments/14982802268951") center/cover no-repeat #000;
+            will-change: clip-path, transform, opacity, filter;
+        }
+        .intro-split .top { clip-path: inset(0 0 50% 0); transform-origin: bottom center; }
+        .intro-split .bottom { clip-path: inset(50% 0 0 0); transform-origin: top center; }
+
+        /* Top-to-bottom shatter with vertical pull apart and slight rotation */
+        .intro-split.split .top {
+            animation: splitTop 0.7s cubic-bezier(.2,.7,.2,1) forwards;
+        }
+        .intro-split.split .bottom {
+            animation: splitBottom 0.7s cubic-bezier(.2,.7,.2,1) forwards;
+        }
+        @keyframes splitTop {
+            0%   { transform: translateY(0) rotate(0deg); filter: none; }
+            50%  { transform: translateY(-10vh) rotate(-1.2deg); filter: brightness(1.1); }
+            100% { transform: translateY(-22vh) rotate(-2deg); filter: brightness(0.9); }
+        }
+        @keyframes splitBottom {
+            0%   { transform: translateY(0) rotate(0deg); filter: none; }
+            50%  { transform: translateY(10vh) rotate(1.2deg); filter: brightness(1.1); }
+            100% { transform: translateY(22vh) rotate(2deg); filter: brightness(0.9); }
+        }
+
+        /* Multi horizontal fracture lines that expand top->bottom */
+        .intro-split::before,
+        .intro-split::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,255,0,0.7), transparent);
+            box-shadow: 0 0 12px rgba(0,255,0,0.6);
+            opacity: 0;
+        }
+        .intro-split.split::before { top: 35%; animation: crackFlash 0.5s ease forwards; }
+        .intro-split.split::after  { top: 65%; animation: crackFlash 0.5s ease 0.1s forwards; }
+        @keyframes crackFlash { 0%{opacity:0} 25%{opacity:1} 100%{opacity:.55} }
+
+        /* Mask revealing from left as if code is breaking through the left edge */
+        .intro-image.crack-left::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background:
+                linear-gradient(90deg, rgba(0,255,0,0.25) 0%, rgba(0,255,0,0.12) 30%, rgba(255,255,255,0) 100%);
+            box-shadow: 8px 0 24px rgba(0,255,0,0.25);
+            filter: blur(0.3px);
+            animation: crackReveal 1.4s ease-out forwards;
+        }
+        @keyframes crackReveal {
+            0%   { width: 0%; }
+            40%  { width: 18%; }
+            70%  { width: 32%; }
+            100% { width: 48%; }
+        }
+
+        /* Subtle fracturing lines overlay on the white screen */
+        .intro-image.cracked::after {
+            /* fracture lines only; no gnome overlay */
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(120deg, rgba(0,255,0,0) 0 18px, rgba(0,255,0,0.08) 19px, rgba(0,255,0,0) 20px),
+                repeating-linear-gradient(75deg, rgba(0,255,0,0) 0 22px, rgba(0,255,0,0.06) 23px, rgba(0,255,0,0) 24px);
+            mix-blend-mode: screen;
+        }
+
+        /* Matrix veil for transition out */
+        .intro-matrix {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(0,255,0,0.08) 1px, transparent 1px) 0 0/20px 100%,
+                linear-gradient(0deg, rgba(0,255,0,0.06) 1px, transparent 1px) 0 0/100% 20px,
+                rgba(0,0,0,0.25);
+            opacity: 0;
+            animation: veilIn 0.5s ease 2.2s forwards, veilOut 0.6s ease 3.4s forwards;
+        }
+        @keyframes veilIn { to { opacity: 1; } }
+        @keyframes veilOut { to { opacity: 0; } }
+
+        /* Fade whole intro out */
+        .intro-out {
+            animation: introOut 0.6s ease forwards;
+        }
+        @keyframes introOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Prevent body scroll while intro active */
+        body.intro-lock {
+            overflow: hidden !important;
+            height: 100vh !important;
+        }
+    </style>
+    <div id="intro" aria-hidden="true">
+        <div class="intro-image"></div>
+        <div class="intro-scan"></div>
+        <div class="intro-cracks" id="introCracks"></div>
+
+        <!-- Full break overlay -->
+        <div class="intro-split" id="introSplit" aria-hidden="true">
+            <div class="half top"></div>
+            <div class="half bottom"></div>
+        </div>
+
+        <div class="intro-matrix"></div>
+    </div>
+
     <!-- Matrix background canvas -->
     <canvas id="matrixCanvas"></canvas>
 
@@ -737,10 +978,6 @@
 
         <div class="content-area">
             <div class="content active" id="games">
-                <div class="content-icon">🎮</div>
-                <h2>Games</h2>
-                <p>Dive into curated games. Low profile, high signal.</p>
-
                 <!-- Games Grid -->
                 <div class="games-grid">
                     <div class="game-card" data-url="https://example.com/game1" data-title="Placeholder Game 1">
@@ -774,38 +1011,82 @@
     <div id="windows-layer" aria-live="polite"></div>
 
             <div class="content" id="apps">
-                <div class="content-icon">📱</div>
-                <h2>Tools</h2>
-                <p>Utilities and web apps for the Wave-X stack.</p>
-
                 <!-- Tools Grid (OS-like buttons that open windows) -->
                 <div class="games-grid">
                     <div class="game-card tool-fps" data-title="FPS Counter">
-                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-thumb" aria-hidden="true">
+                            <div class="avatar" title="FPS" style="position:absolute;inset:0;display:grid;place-items:center;">
+                                <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="grad-fps" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stop-color="#00ff88"/>
+                                            <stop offset="100%" stop-color="#00aa55"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="32" cy="32" r="30" fill="url(#grad-fps)"/>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="22" fill="#001b00" font-weight="700">FPS</text>
+                                </svg>
+                            </div>
+                        </div>
                         <div class="game-caption">FPS Counter</div>
                     </div>
                     <div class="game-card tool-bg" data-title="Background Changer">
-                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-thumb" aria-hidden="true">
+                            <div class="avatar" title="BG" style="position:absolute;inset:0;display:grid;place-items:center;">
+                                <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="grad-bg" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stop-color="#88ff88"/>
+                                            <stop offset="100%" stop-color="#22cc66"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="32" cy="32" r="30" fill="url(#grad-bg)"/>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="22" fill="#001b00" font-weight="700">BG</text>
+                                </svg>
+                            </div>
+                        </div>
                         <div class="game-caption">Background Changer</div>
                     </div>
                     <div class="game-card tool-test" data-title="Test Features">
-                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-thumb" aria-hidden="true">
+                            <div class="avatar" title="TEST" style="position:absolute;inset:0;display:grid;place-items:center;">
+                                <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="grad-test" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stop-color="#aaffaa"/>
+                                            <stop offset="100%" stop-color="#44dd77"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="32" cy="32" r="30" fill="url(#grad-test)"/>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#001b00" font-weight="700">TEST</text>
+                                </svg>
+                            </div>
+                        </div>
                         <div class="game-caption">Test Features</div>
                     </div>
                     <div class="game-card tool-none" data-title="(None now)">
-                        <div class="game-thumb" aria-hidden="true"></div>
+                        <div class="game-thumb" aria-hidden="true">
+                            <div class="avatar" title="N/A" style="position:absolute;inset:0;display:grid;place-items:center;">
+                                <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="grad-none" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stop-color="#66ff99"/>
+                                            <stop offset="100%" stop-color="#229955"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="32" cy="32" r="30" fill="url(#grad-none)"/>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#001b00" font-weight="700">N/A</text>
+                                </svg>
+                            </div>
+                        </div>
                         <div class="game-caption">(None now)</div>
                     </div>
                 </div>
             </div>
 
             <div class="content" id="wave-proxy">
-                <div class="content-icon">🌊</div>
-                <h2>Proxy</h2>
-                <p style="margin-bottom: 1rem;">Fast, resilient routing through the noise.</p>
-
                 <!-- Chrome OS-like minimal browser UI -->
-                <div class="proxy-shell" style="margin-left:auto;margin-right:auto;">
+                <div class="proxy-shell">
                     <div class="proxy-toolbar">
                         <div class="proxy-left">
                             <button class="px-btn px-back" title="Back">←</button>
@@ -864,6 +1145,12 @@
         function toggleSettings() {
             const panel = document.getElementById('settingsPanel');
             panel.classList.toggle('open');
+            // Apply scroll lock when settings panel is open
+            if (panel.classList.contains('open')) {
+                document.body.classList.add('scroll-lock');
+            } else {
+                document.body.classList.remove('scroll-lock');
+            }
         }
 
         // Favicon change functionality
@@ -1536,6 +1823,7 @@
             
             if (!panel.contains(e.target) && !settingsIcon.contains(e.target) && panel.classList.contains('open')) {
                 panel.classList.remove('open');
+                document.body.classList.remove('scroll-lock');
             }
         });
 
@@ -1726,6 +2014,66 @@
 
             // ensure initial tab/frame exists
             setActiveTab(0);
+        })();
+        // INTRO SEQUENCE
+        (function introSequence() {
+            const intro = document.getElementById('intro');
+            if (!intro) return;
+
+            document.body.classList.add('intro-lock');
+
+            const cracks = document.getElementById('introCracks');
+            const split = document.getElementById('introSplit');
+            const blocked = document.querySelector('.intro-image');
+
+            // Build 32 columns with randomized speeds and stagger
+            const columns = 32;
+            const charset = '01[]{}/\\<>=+-_*#@&$%';
+            const makeCode = (len) => Array.from({length: len}, () => charset[Math.floor(Math.random()*charset.length)]).join('');
+            for (let i = 0; i < columns; i++) {
+                const col = document.createElement('div');
+                col.className = 'col';
+                const spdA = 1.1 + Math.random() * 0.6;
+                const spdB = 0.95 + Math.random() * 0.5;
+                // Stagger first pass left->right
+                const delayA = 0.8 + (i * 0.03);
+                // Stagger second pass right->left
+                const delayB = 1.6 + ((columns - 1 - i) * 0.03);
+                col.style.setProperty('--spdA', spdA.toFixed(2) + 's');
+                col.style.setProperty('--delayA', delayA.toFixed(2) + 's');
+                col.style.setProperty('--spdB', spdB.toFixed(2) + 's');
+                col.style.setProperty('--delayB', delayB.toFixed(2) + 's');
+                col.dataset.code = makeCode(120);
+                cracks.appendChild(col);
+            }
+
+            // Start bidirectional sweeps that cause shake and progressive cracking
+            cracks.classList.add('ltr');
+            setTimeout(() => cracks.classList.add('rtl'), 1400);
+
+            // Intensify shake while sweeps pass across
+            const startShakeAt = 1100;
+            const stopShakeAt = 1850;
+            setTimeout(() => blocked && blocked.classList.add('shake','crack-left'), startShakeAt);
+            setTimeout(() => blocked && blocked.classList.remove('shake'), stopShakeAt);
+
+            // Initiate full split top-to-bottom, removing any background remnants
+            setTimeout(() => {
+                if (blocked) blocked.classList.add('cracked');
+                if (split) split.classList.add('split');
+                // Hide the blocked layer so nothing is left faded in the background
+                setTimeout(() => {
+                    if (blocked) blocked.style.display = 'none';
+                }, 400);
+            }, 1750);
+
+            // Fade out the entire intro overlay to reveal site
+            const total = 4000;
+            setTimeout(() => intro.classList.add('intro-out'), 3200);
+            setTimeout(() => {
+                intro.remove();
+                document.body.classList.remove('intro-lock');
+            }, total);
         })();
     </script>
 </body>
