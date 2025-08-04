@@ -560,7 +560,7 @@
         }
     </style>
     <style>
-        /* Fixed Wave-X logo bottom-left with clock overlay */
+        /* Fixed Wave-X logo bottom-left (no box, no clock) */
         .wavex-wrap {
             position: fixed;
             left: 16px;
@@ -604,21 +604,21 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 10px;
-            background: rgba(0, 20, 0, 0.6);
-            border: 1px solid rgba(0,255,0,0.28);
-            border-radius: 10px;
-            box-shadow: 0 0 14px rgba(0,255,0,0.18);
+            padding: 0; /* remove padding box */
+            background: transparent; /* remove box background */
+            border: 0; /* remove border box */
+            border-radius: 0;
+            box-shadow: none; /* remove box shadow */
             color: #9f9;
             text-decoration: none;
             user-select: none;
             -webkit-user-drag: none;
-            backdrop-filter: blur(6px);
+            backdrop-filter: none;
         }
         .wavex-logo:hover {
-            background: rgba(0, 35, 0, 0.7);
-            border-color: rgba(0,255,0,0.4);
-            box-shadow: 0 0 18px rgba(0,255,0,0.25);
+            background: transparent;
+            border-color: transparent;
+            box-shadow: none;
         }
         .wavex-logo svg {
             width: 28px;
@@ -633,36 +633,10 @@
             color: #cfffcf;
             text-shadow: 0 0 8px rgba(0,255,0,0.2);
         }
-        #wavex-clock {
-            font-family: Consolas, monospace;
-            font-size: 12px;
-            line-height: 1.3;
-            color: #cfffcf;
-            background: rgba(0, 20, 0, 0.6);
-            border: 1px solid rgba(0,255,0,0.28);
-            border-radius: 8px;
-            padding: 6px 8px;
-            box-shadow: 0 0 12px rgba(0,255,0,0.18);
-            text-shadow: 0 0 8px rgba(0,255,0,0.2);
-            max-width: 240px;
-        }
-        #wavex-clock .row {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            white-space: nowrap;
-        }
-        #wavex-clock .muted { color: #9f9; opacity: 0.85; }
-        #wavex-clock .strong { color: #eaffea; font-weight: 700; }
+        /* removed clock styles */
         @media (max-width: 768px) {
             .wavex-wrap { left: 10px; bottom: 10px; gap: 4px; }
-            .wavex-logo {
-                padding: 6px 8px;
-                border-radius: 8px;
-            }
-            .wavex-logo svg { width: 24px; height: 24px; }
             .wavex-logo .label { font-size: 0.95rem; }
-            #wavex-clock { font-size: 11px; padding: 5px 7px; }
         }
     </style>
     <style>
@@ -900,6 +874,8 @@
             z-index: 1200;
             pointer-events: none; /* let clicks pass through by default */
         }
+
+/* Bottom typing strip removed */
         .tips-bar .tips-track {
             display: grid;
             align-items: center;
@@ -1081,10 +1057,6 @@
     <div class="mac-menubar" role="menubar" aria-label="Wave‑X Menu Bar" id="mac-menubar">
         <div class="mac-left">
             <div class="brand" title="Wave‑X">
-                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M6,36 C14,28 22,44 30,36 C38,28 46,44 58,34" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M42,18 L56,32 M56,18 L42,32" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
-                </svg>
                 <strong>Wave‑X</strong>
             </div>
             <nav class="mac-menu" id="mac-menu">
@@ -1390,37 +1362,15 @@
 
     <!-- Matrix background canvas -->
     <canvas id="matrixCanvas"></canvas>
+<!-- Bottom typing strip removed -->
     <!-- Brainrot overlays (added/used when brainrot on) -->
     <div class="brainrot-gif" id="brainrotGif" aria-hidden="true"></div>
     <div class="brainrot-clouds" id="brainrotClouds" aria-hidden="true"></div>
 
-    <!-- Fixed Wave-X Logo (bottom-left) + Clock -->
+    <!-- Fixed Wave-X Logo (bottom-left) -->
     <div class="wavex-wrap">
-        <div class="secrets-wrap" style="display:inline-grid;gap:6px">
-            <button class="secrets-btn" type="button" title="Secrets" onclick="openSecretsApp()">
-                <span class="eye">👁️</span>
-                <span>Secrets</span>
-            </button>
-            <label title="Brainrot mode" style="display:inline-flex;align-items:center;gap:8px;font-family:Consolas,monospace;color:#cfffcf;font-size:12px">
-                <input id="brainrot-toggle" type="checkbox" style="accent-color:#00ff88;width:14px;height:14px" onclick="toggleBrainrot(this.checked)">
-                <span>Brainrot</span>
-            </label>
-        </div>
-        <a class="wavex-logo" href="#" aria-label="Wave-X Home" onclick="event.preventDefault();">
-            <!-- Simple wave + X SVG mark -->
-            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <!-- Wave path -->
-                <path d="M6,36 C14,28 22,44 30,36 C38,28 46,44 58,34" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                <!-- X mark -->
-                <path d="M42,18 L56,32 M56,18 L42,32" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
-            </svg>
+        <div class="wavex-logo" aria-label="Wave-X watermark" title="Wave‑X" style="cursor:default">
             <span class="label">WAVE‑X</span>
-        </a>
-        <div id="wavex-clock" aria-live="polite" title="Local date, time, location, and IP">
-            <div class="row"><span class="muted">Time:</span> <span class="strong" id="clk-time">--:--:--</span></div>
-            <div class="row"><span class="muted">Date:</span> <span class="strong" id="clk-date">----</span></div>
-            <div class="row"><span class="muted">Place:</span> <span class="strong" id="clk-place">Detecting…</span></div>
-            <div class="row"><span class="muted">IP:</span> <span class="strong" id="clk-ip">Detecting…</span></div>
         </div>
     </div>
 
@@ -1473,11 +1423,14 @@
                 <button class="tab active" data-tab="games">
                     🎮 Games
                 </button>
-                <button class="tab" data-tab="apps">
-                    🛠️ Tools
-                </button>
                 <button class="tab" data-tab="wave-proxy">
                     🌊 Proxy
+                </button>
+                <button class="tab" data-tab="customization" title="Customization">
+                    ✨ Customization
+                </button>
+                <button class="tab" data-tab="ai" title="AI Assistant">
+                    🤖 AI
                 </button>
             </div>
         </div>
@@ -1671,79 +1624,33 @@
     <!-- App Windows Layer -->
     <div id="windows-layer" aria-live="polite"></div>
 
-            <div class="content" id="apps">
-                <!-- Tools Grid (OS-like buttons that open windows) -->
-                <div class="games-grid">
-                    <div class="game-card tool-fps" data-title="FPS Counter">
+
+<div class="content" id="customization">
+                <!-- Customization apps -->
+                <div class="games-grid" id="customization-grid">
+                    <!-- Toggle Brainrot -->
+                    <div class="game-card tool-brainrot" data-title="Toggle Brainrot">
                         <div class="game-thumb" aria-hidden="true">
-                            <div class="avatar" title="FPS" style="position:absolute;inset:0;display:grid;place-items:center;">
+                            <div class="avatar" style="position:absolute;inset:0;display:grid;place-items:center;">
                                 <svg viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
                                     <defs>
-                                        <linearGradient id="grad-fps" x1="0" y1="0" x2="1" y2="1">
-                                            <stop offset="0%" stop-color="#00ff88"/>
-                                            <stop offset="100%" stop-color="#00aa55"/>
+                                        <linearGradient id="grad-br" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stop-color="#bbffbb"/>
+                                            <stop offset="100%" stop-color="#33dd77"/>
                                         </linearGradient>
                                     </defs>
-                                    <circle cx="32" cy="32" r="30" fill="url(#grad-fps)"/>
-                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#001b00" font-weight="700">FPS</text>
+                                    <circle cx="32" cy="32" r="30" fill="url(#grad-br)"/>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="10" fill="#001b00" font-weight="700">ROT</text>
                                 </svg>
                             </div>
                         </div>
-                        <div class="game-caption">FPS Counter</div>
+                        <div class="game-caption">Toggle Brainrot</div>
                     </div>
-                    <div class="game-card tool-bg" data-title="Background Changer">
-                        <div class="game-thumb" aria-hidden="true">
-                            <div class="avatar" title="BG" style="position:absolute;inset:0;display:grid;place-items:center;">
-                                <svg viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
-                                    <defs>
-                                        <linearGradient id="grad-bg" x1="0" y1="0" x2="1" y2="1">
-                                            <stop offset="0%" stop-color="#88ff88"/>
-                                            <stop offset="100%" stop-color="#22cc66"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <circle cx="32" cy="32" r="30" fill="url(#grad-bg)"/>
-                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#001b00" font-weight="700">BG</text>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="game-caption">Background Changer</div>
-                    </div>
-                    <div class="game-card tool-test" data-title="Test Features">
-                        <div class="game-thumb" aria-hidden="true">
-                            <div class="avatar" title="TEST" style="position:absolute;inset:0;display:grid;place-items:center;">
-                                <svg viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
-                                    <defs>
-                                        <linearGradient id="grad-test" x1="0" y1="0" x2="1" y2="1">
-                                            <stop offset="0%" stop-color="#aaffaa"/>
-                                            <stop offset="100%" stop-color="#44dd77"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <circle cx="32" cy="32" r="30" fill="url(#grad-test)"/>
-                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="14" fill="#001b00" font-weight="700">TEST</text>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="game-caption">Test Features</div>
-                    </div>
-                    <div class="game-card tool-none" data-title="(None now)">
-                        <div class="game-thumb" aria-hidden="true">
-                            <div class="avatar" title="N/A" style="position:absolute;inset:0;display:grid;place-items:center;">
-                                <svg viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
-                                    <defs>
-                                        <linearGradient id="grad-none" x1="0" y1="0" x2="1" y2="1">
-                                            <stop offset="0%" stop-color="#66ff99"/>
-                                            <stop offset="100%" stop-color="#229955"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <circle cx="32" cy="32" r="30" fill="url(#grad-none)"/>
-                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="14" fill="#001b00" font-weight="700">N/A</text>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="game-caption">(None now)</div>
-                    </div>
+
+                    
                 </div>
             </div>
+
 
 <div class="content" id="wave-proxy" style="padding:0;margin:0;display:grid;place-items:center;position:relative;flex:1 1 auto;min-height:0;background:radial-gradient(1200px 600px at 50% 50%, rgba(0,255,0,0.06), rgba(0,0,0,0))">
                 <!-- Centered big hacker‑green launch button -->
@@ -1756,6 +1663,52 @@
                 <div id="proxy-reveal" style="position:absolute;inset:0;display:grid;place-items:stretch;pointer-events:none;opacity:0;transform:scale(0.98);filter:blur(2px);">
                     <iframe class="proxy-frame" src="https://uvv2.rhw.one/active/" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin" style="width:100%;height:100%;border:0;background:#000;display:block;"></iframe>
                     <div id="proxy-welcome" style="position:absolute;inset:0;display:grid;place-items:center;font:700 36px/1 Consolas,monospace;color:#cfffcf;text-shadow:0 0 16px rgba(0,255,0,0.35);opacity:0;pointer-events:none;">Welcome to Wave‑X</div>
+                </div>
+            </div>
+
+            <!-- AI Assistant Tab (Wave‑X branded) -->
+            <div class="content" id="ai" style="padding:0;margin:0;display:flex;flex-direction:column;gap:0;min-height:0">
+                <!-- Header -->
+                <div style="padding:10px 12px;border-bottom:1px solid rgba(0,255,0,0.18);background:linear-gradient(180deg, rgba(0,35,0,0.65), rgba(0,20,0,0.5));display:flex;align-items:center;gap:10px">
+                    <div style="display:inline-flex;align-items:center;gap:10px">
+                        <span class="content-icon" aria-hidden="true">🤖</span>
+                        <h2 style="margin:0;font-size:1.2rem;letter-spacing:.3px">Wave‑X AI</h2>
+                        
+                    </div>
+                    <span id="ai-status" style="margin-left:auto;font-size:12px;color:#9f9;opacity:0.85"></span>
+                </div>
+
+                <!-- Body -->
+                <div style="display:grid;grid-template-rows:auto 1fr auto;flex:1 1 auto;min-height:0">
+                    <!-- Wave‑X AI toolbar (minimal) -->
+                    <div style="display:flex;gap:10px;align-items:center;padding:8px 12px;background:rgba(0,25,0,0.45);border-bottom:1px solid rgba(0,255,0,0.1)">
+                        <div style="font-family:Consolas,monospace;color:#cfc;opacity:.85">Wave‑X AI</div>
+                        <div style="margin-left:auto"></div>
+                    </div>
+
+                    <!-- Chat area -->
+                    <div id="ai-chat" style="padding:14px;overflow:auto;display:grid;gap:10px;background:
+                        radial-gradient(1000px 400px at 20% 0%, rgba(0,255,0,0.05), transparent),
+                        rgba(0,0,0,0.20)"></div>
+
+                    <!-- Composer -->
+                    <form id="ai-form" style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px;border-top:1px solid rgba(0,255,0,0.18);background:rgba(0,20,0,0.65)">
+                        <div style="position:relative;display:grid;gap:6px">
+                            <textarea id="ai-input" rows="2" autocomplete="off" placeholder="Ask Wave‑X AI…"
+                                style="resize:vertical;min-height:44px;max-height:160px;background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;border-radius:10px;padding:10px 12px 30px 12px;font-family:Consolas,monospace"></textarea>
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                                <div style="display:inline-flex;align-items:center;gap:8px">
+                                    <label for="ai-image" class="px-btn" style="height:28px;display:inline-grid;place-items:center;padding:0 10px;cursor:pointer">+ Image</label>
+                                    <input id="ai-image" type="file" accept="image/*" multiple style="display:none" />
+                                    <div id="ai-image-list" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+                                </div>
+                                <div style="font-size:11px;color:#9f9;opacity:.7;font-family:Consolas,monospace">
+                                    Enter to send · Shift+Enter for newline
+                                </div>
+                            </div>
+                        </div>
+                        <button id="ai-send" class="px-btn" type="submit" style="height:44px;padding:0 16px;font-weight:700">Send</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1954,25 +1907,25 @@
             window.addEventListener('blur', () => closeDropdown());
 
             // keyboard shortcuts (Cmd-like using Ctrl on Windows)
-            document.addEventListener('keydown', (e) => {
-                const meta = e.ctrlKey || e.metaKey;
-                if (!meta) return;
-                const k = e.key.toLowerCase();
-                if (k === 'n') { e.preventDefault(); createAppWindow('about:blank', 'New Window'); }
-                if (k === 'w') { e.preventDefault(); const top = document.querySelector('.app-window.active') || document.querySelector('.app-window:last-of-type'); top && top.remove(); }
-                if (k === 'q') { e.preventDefault(); document.querySelectorAll('.app-window').forEach(w => w.remove()); }
-                if (k === '1') { e.preventDefault(); document.querySelector('[data-tab="games"]').click(); }
-                if (k === '2') { e.preventDefault(); document.querySelector('[data-tab="apps"]').click(); }
-                if (k === '3') { e.preventDefault(); document.querySelector('[data-tab="wave-proxy"]').click(); }
-            });
+                    document.addEventListener('keydown', (e) => {
+                        const meta = e.ctrlKey || e.metaKey;
+                        if (!meta) return;
+                        const k = e.key.toLowerCase();
+                        if (k === 'n') { e.preventDefault(); createAppWindow('about:blank', 'New Window'); }
+                        if (k === 'w') { e.preventDefault(); const top = document.querySelector('.app-window.active') || document.querySelector('.app-window:last-of-type'); top && top.remove(); }
+                        if (k === 'q') { e.preventDefault(); document.querySelectorAll('.app-window').forEach(w => w.remove()); }
+                        if (k === '1') { e.preventDefault(); document.querySelector('[data-tab="games"]').click(); }
+                        if (k === '2') { e.preventDefault(); document.querySelector('[data-tab="customization"]').click(); }
+                        if (k === '3') { e.preventDefault(); document.querySelector('[data-tab="wave-proxy"]').click(); }
+                    });
 
             // Sync center title on tab switches
             // If tabs are already in DOM, wire now; otherwise wait for them
             function wireTabs() {
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.addEventListener('click', () => {
-                        const map = { 'games': 'Desktop', 'apps': 'Applications', 'wave-proxy': 'Proxy' };
-                        setTitle(map[tab.dataset.tab] || 'Wave‑X');
+                        const titleMap = { 'games': 'Desktop', 'wave-proxy': 'Proxy', 'customization': 'Customization', 'ai': 'AI' };
+                        setTitle(titleMap[tab.dataset.tab] || 'Wave‑X');
                         document.querySelectorAll('.mac-item').forEach(i => i.classList.remove('active'));
                         const file = document.querySelector('.mac-item[data-menu="file"]');
                         if (file) file.classList.add('active');
@@ -1986,12 +1939,9 @@
                 waitFor('.tab').then(() => wireTabs());
             }
         })();
-        // Clock + location + IP (best-effort, privacy-friendly)
+        // Clock + location + IP removed
         (function wavexClock() {
-            const elTime = () => document.getElementById('clk-time');
-            const elDate = () => document.getElementById('clk-date');
-            const elPlace = () => document.getElementById('clk-place');
-            const elIp = () => document.getElementById('clk-ip');
+            return;
 
             // live time/date from browser locale
             function tick() {
@@ -2201,7 +2151,7 @@ let frame = 0;
 // scripted sequence state (drives custom prompts)
 let scripting = false;
 let script = null; // { lines: string[], index, char, atX, atY, after: function }
-const SCRIPT_LINE_PAUSE = 3200; // ms between lines (WAY slower boot pacing)
+const SCRIPT_LINE_PAUSE = 1200; // ms between lines (WAY slower boot pacing)
 
             // crash state
             let crashing = false;
@@ -2259,7 +2209,7 @@ if (!crashing && (frame % 60) < 30) {
 
 // advance typing
 // Slow the per-character typing to make the boot/proxy script feel "way slower"
-if (!crashing && frame % 12 === 0) { // way slower cadence (was 6, originally 2)
+if (!crashing && frame % 3 === 0) { // faster cadence
     currentChar++;
 }
 
@@ -2400,6 +2350,8 @@ MatrixFX.runScript = (lines, after) => {
 };
         })();
 
+
+
         // Add smooth scroll effect on tab click
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -2410,6 +2362,224 @@ MatrixFX.runScript = (lines, after) => {
                 }, 300);
             });
         });
+
+        // AI Assistant (Wave‑X branded; insecure demo hitting OpenRouter directly from browser)
+        (function wireAiTab(){
+            const chat = document.getElementById('ai-chat');
+            const form = document.getElementById('ai-form');
+            const input = document.getElementById('ai-input');
+            const status = document.getElementById('ai-status');
+            const modelPill = null;
+            const keyPill = null;
+            const btnClear = null;
+            const btnSample = null;
+            const fileInput = document.getElementById('ai-image');
+            const fileList = document.getElementById('ai-image-list');
+            // hold selected images as data URLs for multimodal messages
+            const pendingImages = []; // [{ name, mime, dataUrl, size }]
+
+            // Hard-coded API key for demo (WARNING: insecure in production)
+            // Use the OpenRouter key the user supplied (insecure demo).
+            // If you want to avoid editing the file for different keys, you can paste it in the prompt as: key: sk-... and the code will detect it.
+            let OPENROUTER_API_KEY = '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';
+            const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+            // Horizon family example; adjust to a model you have access to on your account
+            // Common stable options include: 'openai/gpt-4o-mini', 'anthropic/claude-3.5-sonnet', etc.
+            let MODEL = 'openai/gpt-4o-mini';
+
+            function bubble(role, text) {
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'display:grid;gap:6px;max-width:900px';
+
+                const header = document.createElement('div');
+                header.style.cssText = 'display:inline-grid;grid-auto-flow:column;gap:8px;align-items:center;font-family:Consolas,monospace;font-size:12px;color:#9f9;opacity:.9';
+                if (role === 'user') {
+                    header.innerHTML = `<span style="filter:drop-shadow(0 0 6px rgba(0,255,0,0.35))">🧑</span><b>You</b>`;
+                } else {
+                    header.innerHTML = `<span style="filter:drop-shadow(0 0 6px rgba(0,255,0,0.35))">🌊</span><b>Wave‑X</b>`;
+                }
+
+                const card = document.createElement('div');
+                card.style.cssText = `
+                    padding:10px 12px;
+                    border:1px solid rgba(0,255,0,0.25);
+                    border-radius:10px;
+                    background:${role === 'user' ? 'rgba(0,255,0,0.04)' : 'linear-gradient(180deg, rgba(0,255,0,0.06), rgba(0,255,0,0.03))'};
+                    color:#cfc;
+                    white-space:pre-wrap;
+                    box-shadow: inset 0 0 0 1px rgba(0,255,0,0.08);
+                `;
+                card.innerHTML = `<div style="margin-top:2px">${escapeHtml(text)}</div>`;
+
+                wrap.appendChild(header);
+                wrap.appendChild(card);
+                chat.appendChild(wrap);
+                chat.scrollTop = chat.scrollHeight;
+            }
+
+            function escapeHtml(s) {
+                // minimal escape, keep backticks etc for code-ish feel
+                return (s || '').replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c]));
+            }
+
+            // turn File -> dataURL
+            function fileToDataUrl(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Allow overriding model or key by typing: model: <model-id> or key: <sk-or-...> in chat
+            function maybeCaptureInlineOverrides(text) {
+                const mModel = text.match(/\bmodel:\s*([^\n]+)\b/i);
+                const mKey = text.match(/\bkey:\s*(sk-or-[a-z0-9\-]+)\b/i);
+                if (mModel) {
+                    MODEL = mModel[1].trim();
+                    if (modelPill) modelPill.textContent = MODEL;
+                }
+                if (mKey) {
+                    OPENROUTER_API_KEY = mKey[1].trim();
+                    if (keyPill) keyPill.textContent = 'overridden';
+                }
+                return text.replace(/\b(model|key):\s*[^\n]+/gi, '').trim();
+            }
+
+            async function sendPrompt(prompt) {
+                status.textContent = 'Thinking...';
+                const cleaned = maybeCaptureInlineOverrides(prompt);
+
+                // Build multimodal user content: text + images (as image_url items)
+                const userParts = [];
+                if (cleaned) {
+                    userParts.push({ type: 'text', text: cleaned });
+                }
+                if (pendingImages.length) {
+                    pendingImages.forEach(img => {
+                        userParts.push({
+                            type: 'image_url',
+                            image_url: { url: img.dataUrl }
+                        });
+                    });
+                }
+
+                // Model note: Many OpenRouter models accept this OpenAI-format array-of-parts.
+                // Use a vision-capable model for images (examples: openai/gpt-4o-mini, openrouter/horizon-beta if it supports images).
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Referer': (location && location.origin) ? String(location.origin) : 'http://localhost',
+                            'X-Title': 'Wave-X'
+                        },
+                        body: JSON.stringify({
+                            model: MODEL,
+                            messages: [
+                                { role: 'system', content: 'You are Wave‑X assistant. Be concise. If images are provided, analyze them carefully before answering.' },
+                                { role: 'user', content: userParts.length ? userParts : cleaned }
+                            ],
+                            temperature: 0.5,
+                            max_tokens: 512
+                        })
+                    });
+                    let bodyText = '';
+                    try { bodyText = await res.clone().text(); } catch {}
+                    if (!res.ok) {
+                        bubble('assistant', `Error ${res.status}: ${bodyText || 'Unknown error'}`);
+                        status.textContent = '';
+                        return;
+                    }
+                    const data = bodyText ? JSON.parse(bodyText) : await res.json();
+                    const msg = data?.choices?.[0]?.message?.content || '(no output)';
+                    bubble('assistant', msg);
+                } catch (e) {
+                    bubble('assistant', `Request failed: ${e?.message || e}`);
+                } finally {
+                    status.textContent = '';
+                }
+            }
+
+            // controls
+            // Remove Clear/Sample buttons per request; keep chat clear at top-level via reload if needed.
+
+            // file input handling
+            fileInput?.addEventListener('change', async () => {
+                if (!fileInput.files?.length) return;
+                // Limit to a few images and reasonable size
+                const maxFiles = 4;
+                const maxSize = 8 * 1024 * 1024; // 8MB per image
+                const selected = Array.from(fileInput.files).slice(0, maxFiles);
+                for (const f of selected) {
+                    if (!/^image\//.test(f.type)) continue;
+                    if (f.size > maxSize) {
+                        bubble('assistant', `Skipped ${f.name}: too large (>${Math.round(maxSize/1024/1024)}MB).`);
+                        continue;
+                    }
+                    try {
+                        const dataUrl = await fileToDataUrl(f);
+                        pendingImages.push({ name: f.name, mime: f.type, size: f.size, dataUrl });
+                    } catch (e) {
+                        bubble('assistant', `Failed to read ${f.name}`);
+                    }
+                }
+                // refresh thumbnails
+                if (fileList) {
+                    fileList.innerHTML = '';
+                    pendingImages.forEach((img, idx) => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'position:relative;border:1px solid rgba(0,255,0,0.25);border-radius:8px;overflow:hidden;background:#000';
+                        item.innerHTML = `
+                            <img alt="" src="${img.dataUrl}" style="width:56px;height:56px;object-fit:cover;display:block"/>
+                            <button data-i="${idx}" title="Remove" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);border:1px solid rgba(0,255,0,0.35);color:#9f9;border-radius:6px;cursor:pointer;font-size:12px;padding:2px 4px">✕</button>
+                        `;
+                        fileList.appendChild(item);
+                    });
+                    fileList.querySelectorAll('button[data-i]').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const i = Number(btn.getAttribute('data-i'));
+                            if (!Number.isNaN(i)) {
+                                pendingImages.splice(i, 1);
+                                // re-render
+                                const evt = new Event('change');
+                                fileInput.dispatchEvent(evt);
+                            }
+                        });
+                    });
+                }
+            });
+
+            // send UX: Enter to send, Shift+Enter for newline
+            input?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    form?.dispatchEvent(new Event('submit', { cancelable: true }));
+                }
+            });
+
+            form?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const q = (input?.value || '').trim();
+                if (!q && !pendingImages.length) return;
+                // Show a composite user bubble with count of images if any
+                if (pendingImages.length) {
+                    const count = pendingImages.length;
+                    bubble('user', (q ? q + '\n\n' : '') + `[+ ${count} image${count>1?'s':''}]`);
+                } else {
+                    bubble('user', q);
+                }
+                input.value = '';
+                sendPrompt(q).finally(() => {
+                    // Clear images after send
+                    pendingImages.splice(0, pendingImages.length);
+                    if (fileList) fileList.innerHTML = '';
+                    if (fileInput) fileInput.value = '';
+                });
+            });
+        })();
 
         // Launch Wave‑X: button in Proxy tab opens as an app window (like games)
         (function wireLaunchWaveX(){
@@ -2952,6 +3122,155 @@ function createAppWindow(url, titleText) {
         }
 
         /* =====================
+           BACKGROUND UPLOADER (image/video)
+        ====================== */
+        (function wireBackgroundUploader(){
+            // ephemeral object URLs cleanup
+            const __bgState = { url: '', type: 'none' };
+            function revokeUrl() {
+                try { __bgState.url && URL.revokeObjectURL(__bgState.url); } catch {}
+                __bgState.url = '';
+            }
+
+            // Create a single reusable elements layer for background
+            function ensureBgLayers() {
+                let img = document.getElementById('bgImage');
+                let vid = document.getElementById('bgVideoFile');
+                if (!img) {
+                    img = document.createElement('img');
+                    img.id = 'bgImage';
+                    img.alt = '';
+                    img.style.cssText = 'position:fixed;inset:0;z-index:-3;object-fit:cover;width:100vw;height:100vh;display:none;background:#000';
+                    document.body.appendChild(img);
+                }
+                if (!vid) {
+                    vid = document.createElement('video');
+                    vid.id = 'bgVideoFile';
+                    vid.muted = true;
+                    vid.loop = true;
+                    vid.playsInline = true;
+                    vid.style.cssText = 'position:fixed;inset:0;z-index:-3;object-fit:cover;width:100vw;height:100vh;display:none;background:#000';
+                    document.body.appendChild(vid);
+                }
+                return { img, vid };
+            }
+
+            function applyBackgroundFromFile(file) {
+                const { img, vid } = ensureBgLayers();
+                // Hide both first
+                img.style.display = 'none';
+                vid.style.display = 'none';
+                // Reset video
+                try { vid.pause(); vid.removeAttribute('src'); vid.load(); } catch {}
+                // Cleanup previous URL
+                revokeUrl();
+                const url = URL.createObjectURL(file);
+                __bgState.url = url;
+
+                const ext = (file.name.split('.').pop() || '').toLowerCase();
+                const isVideo = ['mp4','webm','ogg','mov','m4v'].includes(ext) || file.type.startsWith('video/');
+                const isImage = ['png','jpg','jpeg','gif','webp','bmp','avif'].includes(ext) || file.type.startsWith('image/');
+
+                if (isVideo) {
+                    vid.src = url;
+                    vid.style.display = 'block';
+                    // Slightly dim matrix canvas for visibility
+                    const canvas = document.getElementById('matrixCanvas');
+                    if (canvas) canvas.style.opacity = '0.25';
+                    vid.play().catch(()=>{});
+                    __bgState.type = 'video';
+                } else if (isImage) {
+                    img.src = url;
+                    img.style.display = 'block';
+                    const canvas = document.getElementById('matrixCanvas');
+                    if (canvas) canvas.style.opacity = '0.55';
+                    __bgState.type = 'image';
+                } else {
+                    // unsupported
+                    const win = createAppWindow('about:blank', 'Unsupported File');
+                    const body = win.querySelector('.app-body');
+                    body.innerHTML = `<div style="padding:12px;color:#cfc;font-family:Consolas,monospace">Unsupported file type.</div>`;
+                }
+            }
+
+            // Open the app window for uploading
+            // Guard against double-open caused by overlapping click/dblclick handlers or bubbling.
+            // We place a short-lived reentrancy lock and also reuse an existing window if already open.
+            let __bgUploaderOpening = false;
+            function openBackgroundUploader() {
+                if (__bgUploaderOpening) return;
+                __bgUploaderOpening = true;
+                setTimeout(() => { __bgUploaderOpening = false; }, 250);
+
+                // Reuse existing "Change Background" window if present
+                const existing = Array.from(document.querySelectorAll('.app-window .app-titlebar .title span:last-child'))
+                    .find(span => span.textContent === 'Change Background');
+                if (existing) {
+                    const winEl = existing.closest('.app-window');
+                    if (winEl) {
+                        // bring to front and activate
+                        document.querySelectorAll('.app-window').forEach(w => w.classList.remove('active'));
+                        winEl.classList.add('active');
+                        winEl.style.zIndex = String(1000 + Date.now() % 100000);
+                        return;
+                    }
+                }
+
+                const win = createAppWindow('about:blank', 'Change Background');
+                const body = win.querySelector('.app-body');
+                body.innerHTML = `
+                  <div style="padding:14px;display:grid;gap:12px;color:#cfc;font-family:Consolas,monospace">
+                    <div style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px">
+                      <span style="filter:drop-shadow(0 0 6px rgba(0,255,0,0.35))">🖼️</span>
+                      <span>Change Background</span>
+                    </div>
+                    <div style="display:grid;gap:8px">
+                      <label for="bg-file">Choose an image (gif, webp, png, jpg) or video (mp4, webm, mov):</label>
+                      <input id="bg-file" type="file" accept="image/*,video/*" style="background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;border-radius:8px;padding:8px"/>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <button id="bg-apply" class="bgc-btn" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer">Apply</button>
+                      <button id="bg-clear" class="bgc-btn" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer">Clear</button>
+                    </div>
+                    <div style="font-size:12px;opacity:.85">Note: Files are applied locally and not uploaded to a server.</div>
+                  </div>
+                `;
+                const fileInput = body.querySelector('#bg-file');
+                const btnApply  = body.querySelector('#bg-apply');
+                const btnClear  = body.querySelector('#bg-clear');
+
+                btnApply.addEventListener('click', () => {
+                    const f = fileInput.files && fileInput.files[0];
+                    if (!f) { return; }
+                    applyBackgroundFromFile(f);
+                });
+                btnClear.addEventListener('click', () => {
+                    const { img, vid } = ensureBgLayers();
+                    img.style.display = 'none';
+                    vid.style.display = 'none';
+                    try { vid.pause(); vid.removeAttribute('src'); vid.load(); } catch {}
+                    const canvas = document.getElementById('matrixCanvas');
+                    if (canvas) canvas.style.opacity = '1';
+                    revokeUrl();
+                    __bgState.type = 'none';
+                });
+            }
+
+            // Hook the desktop tile with a single handler to avoid duplicate window creation.
+            // Use pointerup to avoid firing both click and dblclick paths.
+            document.addEventListener('pointerup', (e) => {
+                const card = e.target && e.target.closest && e.target.closest('.game-card.tool-bg-uploader');
+                if (!card) return;
+                // Only act on double-click intent (detail===2) or Enter/Space will be handled by keyboard elsewhere
+                if (e.detail === 2) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openBackgroundUploader();
+                }
+            }, true);
+        })();
+
+        /* =====================
            TEST FEATURES
         ====================== */
         function openSecretsApp() {
@@ -3217,8 +3536,7 @@ function createAppWindow(url, titleText) {
                 document.body.classList.add('brainrot');
                 ensureBrainrotEffects();
             }
-            const outer = document.getElementById('brainrot-toggle');
-            if (outer) outer.checked = saved;
+            // removed outer brainrot toggle; nothing to sync here
         })();
 
         // Proxy tab logic (Chrome OS-like)
@@ -3441,6 +3759,151 @@ function createAppWindow(url, titleText) {
             setInterval(cycle, DUR);
         })();
 
+/* Bottom ECG strip removed */
+(function bottomECG() {
+    return;
+
+    let width = 0, height = 0;
+    const fadeAlpha = 0.12;
+    const lineMain = '#00ff7a';
+    const lineGlow = 'rgba(0,255,120,0.45)';
+    const gridColor = 'rgba(0,255,120,0.08)';
+
+    // Beat parameters (randomized beat-to-beat with plausible limits)
+    let bpm = 72;
+    let cyclePx = 220;
+    let ampScale = 1.0;
+    let yDrift = 0;
+    let scrollPx = 0;
+
+    function lerp(a,b,t){ return a + (b-a)*t; }
+    function rand(a,b){ return a + Math.random()*(b-a); }
+
+    function resize() {
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        width = Math.floor(window.innerWidth);
+        const cssH = parseFloat(getComputedStyle(canvas).height);
+        height = Math.max(28, Math.floor(cssH || 42));
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ECG morphology: x in [0,1] → normalized amplitude
+    function ecgSample(x) {
+        // timing windows (fraction of cycle)
+        const pStart = 0.07, pEnd = 0.18;            // P wave dome
+        const qStart = 0.24, rPeak = 0.29, sEnd = 0.35; // QRS complex
+        const tStart = 0.52, tEnd = 0.82;            // T wave dome
+        let y = 0;
+
+        if (x >= pStart && x <= pEnd) {
+            const u = (x - pStart) / (pEnd - pStart);
+            y = Math.sin(u * Math.PI) * 0.16; // gentle atrial depolarization
+        } else if (x >= qStart && x < rPeak) {
+            const u = (x - qStart) / (rPeak - qStart);
+            y = -0.28 * Math.sin(u * Math.PI); // Q dip
+        } else if (x >= rPeak && x < sEnd) {
+            const u = (x - rPeak) / (sEnd - rPeak);
+            // sharp R with quick fall to S
+            y = (1 - u) * 1.2 - u * 0.38;
+        } else if (x >= tStart && x <= tEnd) {
+            const u = (x - tStart) / (tEnd - tStart);
+            y = Math.sin(u * Math.PI) * 0.34; // T wave repolarization
+        } else {
+            // slight baseline noise
+            y = 0.012 * Math.sin((x + scrollPx * 0.002) * Math.PI * 10);
+        }
+        return y;
+    }
+
+    function retargetBeat() {
+        // heart rate variability 58–92 bpm
+        const targetBpm = rand(62, 88);
+        // faster bpm → slightly smaller width to keep density natural
+        const targetCycle = Math.max(150, Math.min(280, (70 / targetBpm) * 230));
+        const targetAmp = rand(0.92, 1.15);
+        const targetDrift = rand(-height * 0.08, height * 0.08);
+
+        bpm = lerp(bpm, targetBpm, 0.55);
+        cyclePx = lerp(cyclePx, targetCycle, 0.55);
+        ampScale = lerp(ampScale, targetAmp, 0.55);
+        yDrift = lerp(yDrift, targetDrift, 0.22);
+    }
+
+    // initialize randomized state
+    bpm = rand(64, 84);
+    cyclePx = rand(170, 250);
+    ampScale = rand(0.95, 1.08);
+    yDrift = rand(-height * 0.05, height * 0.05);
+
+    let lastWrap = 0;
+
+    function draw() {
+        // fade old trail
+        ctx.fillStyle = `rgba(0,0,0,${fadeAlpha})`;
+        ctx.fillRect(0, 0, width, height);
+
+        // subtle centerline grid
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const midY = Math.floor(height / 2) + 0.5;
+        ctx.moveTo(0, midY);
+        ctx.lineTo(width, midY);
+        ctx.stroke();
+
+        // scroll speed proportional to bpm
+        const pxPerSec = Math.max(90, Math.min(280, bpm * 1.25));
+        // assume ~60fps; trail fade covers jitter
+        const dt = 1 / 60;
+        const prev = scrollPx % cyclePx;
+        scrollPx = (scrollPx + pxPerSec * dt) % cyclePx;
+        const now = scrollPx % cyclePx;
+        // detect wrap to new beat
+        if (now < prev) {
+            // avoid retargeting too frequently due to numerical quirks
+            const t = performance.now();
+            if (t - lastWrap > 200) {
+                retargetBeat();
+                lastWrap = t;
+            }
+        }
+
+        // draw ECG line
+        const base = height * 0.5 + yDrift;
+        const amp = Math.max(6, height * 0.36) * ampScale;
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = lineMain;
+        ctx.beginPath();
+        let first = true;
+        for (let x = 0; x <= width; x++) {
+            const xn = ((x + scrollPx) % cyclePx) / cyclePx;
+            const y = base - ecgSample(xn) * amp;
+            if (first) { ctx.moveTo(x + 0.5, y + 0.5); first = false; }
+            else { ctx.lineTo(x + 0.5, y + 0.5); }
+        }
+        ctx.stroke();
+
+        // glow pass
+        ctx.shadowColor = lineGlow;
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(0,255,120,0.35)';
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+})();
+
         // INTRO SEQUENCE
         (function introSequence() {
             const intro = document.getElementById('intro');
@@ -3521,10 +3984,12 @@ function createAppWindow(url, titleText) {
             const GRID_SIZE = 44; // px snap size (matches background grid)
             const STORAGE_POS_GAMES = 'wavex.games.pos.v1';
             const STORAGE_POS_APPS  = 'wavex.apps.pos.v1';
+            const STORAGE_POS_CUSTOM = 'wavex.custom.pos.v1';
 
             const desktops = [
                 { root: document.querySelector('#games .games-grid'), key: STORAGE_POS_GAMES, type: 'games' },
-                { root: document.querySelector('#apps  .games-grid'), key: STORAGE_POS_APPS,  type: 'apps'  }
+                { root: document.querySelector('#apps  .games-grid'), key: STORAGE_POS_APPS,  type: 'apps'  },
+                { root: document.querySelector('#customization #customization-grid'), key: STORAGE_POS_CUSTOM, type: 'custom' }
             ].filter(x => x.root);
 
             function ensureId(el, idx) {
@@ -3804,10 +4269,63 @@ function createAppWindow(url, titleText) {
                 // helper to open a card (mirrors dblclick handler below)
                 function openCard(card) {
                     const title = card.getAttribute('data-title') || 'App';
-                    if (card.classList.contains('tool-fps')) { ensureFpsHud(); return; }
-                    if (card.classList.contains('tool-bg'))  { openBackgroundChanger(); return; }
-                    if (card.classList.contains('tool-test')){ openTestFeatures(); return; }
-                    if (card.classList.contains('tool-none')){ createAppWindow('about:blank', '(None now)'); return; }
+                    // Tools open inside app windows, matching game-card behavior
+                    if (card.classList.contains('tool-fps'))  { ensureFpsHud(); return; }
+                    if (card.classList.contains('tool-bg'))   { openBackgroundChanger(); return; }
+                    if (card.classList.contains('tool-test')) { openTestFeatures(); return; }
+                    if (card.classList.contains('tool-bgvideo')) {
+                        setBackgroundVideo("https://rr6---sn-bvvbaxivnuxqjvhj5nu-2qml.googlevideo.com/videoplayback?expire=1754370691&ei=Iz6RaKKnDvKVsfIPz4fNsQE&ip=185.211.32.164&id=o-AMxw-gu5MhKw46ERWCmcjHXm-1uTd2NtCtq3XiDys8wM&itag=135&aitags=133%2C134%2C135%2C160%2C242%2C243%2C244%2C278%2C394%2C395%2C396%2C397%2C598&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&gcr=us&bui=AY1jyLPyn9JuXdWGHfAd32XmKHaTcJJmEbKpwqZqhj65wRn-wOkqJVszfN4PLv0ntoCJRRW6rtYneUOa&vprv=1&svpuc=1&mime=video%2Fmp4&ns=oIWvmvPmhymFCkSAv5USy8gQ&rqh=1&gir=yes&clen=8872451&dur=232.231&lmt=1705576934958163&keepalive=yes&fexp=24350590,24350737,24350827,24351316,24351318,24351528,24352220,24352460,24352517,24352519,24352559,24352568,24352573,24352697,24352699,24352960,51331020&c=MWEB&sefc=1&txp=4532434&n=MGk-I5H6QhWpUg&sparams=expire%2Cei%2Cip%2Cid%2Caitags%2Csource%2Crequiressl%2Cxpc%2Cgcr%2Cbui%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIhALmpC7cUBd5d8XFvp1FKjcPBYPHlrE8c9VIXhgp5SmBZAiB_da0Lcgkb-78IdeXvi7yvbE8UO0nALxckLD2QUYN-9Q%3D%3D&pot=MnY9jOjQ7s9ytD2yrAIwk5kYnMJiwPYI0ZPs3JZEcazjKZc0ED6-XrklO2Fea7334ulaZQpw1Jt44urTVWyrzIZiUUUZruQCRKvSqI-3VS4PqQpLJgy5cR92QFTmkdN6SZDHdfhMiBau_nrjJcrU9K8atjwfVFpM&redirect_counter=1&rm=sn-o09se7e&rrc=104&req_id=5e81209163a3a3ee&cms_redirect=yes&cmsv=e&ipbypass=yes&met=1754349155,&mh=Tv&mip=2601:1c2:4082:d3d0:5dac:6b6:93de:3283&mm=31&mn=sn-bvvbaxivnuxqjvhj5nu-2qml&ms=au&mt=1754348741&mv=m&mvi=6&pl=38&lsparams=ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRQIgfHOoCPaBARSC_e5AUOo7STDCvkrbusTboDGxotKNDQUCIQCi2tq1TZWCaavk1Cw-5k_lAWLhFAf2i-ocE2pWmn-BZw%3D%3D");
+                        return;
+                    }
+                    if (card.classList.contains('tool-brainrot')) {
+                        // open a small window to toggle brainrot with a button
+                        const win = createAppWindow('about:blank', 'Toggle Brainrot');
+                        const body = win.querySelector('.app-body');
+                        body.innerHTML = `
+                          <div style="padding:12px;display:grid;gap:10px;color:#cfc;font-family:Consolas,monospace">
+                            <div>Brainrot is currently <b>${document.body.classList.contains('brainrot') ? 'ON' : 'OFF'}</b>.</div>
+                            <button id="br-toggle" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer">
+                              Toggle Brainrot
+                            </button>
+                          </div>`;
+                        const btn = body.querySelector('#br-toggle');
+                        btn?.addEventListener('click', () => {
+                            const on = !document.body.classList.contains('brainrot');
+                            toggleBrainrot(on);
+                            btn.previousElementSibling.innerHTML = `Brainrot is currently <b>${on ? 'ON' : 'OFF'}</b>.`;
+                            // sync outer quick toggle if present
+                            const outer = document.getElementById('brainrot-toggle');
+                            if (outer) outer.checked = on;
+                        });
+                        return;
+                    }
+                    if (card.classList.contains('tool-settings')) {
+                        // open settings panel in a window, embedding current panel DOM
+                        const win = createAppWindow('about:blank', 'Settings');
+                        const body = win.querySelector('.app-body');
+                        // Create simple controls that proxy to existing panel
+                        body.innerHTML = `
+                          <div style="padding:12px;display:grid;gap:10px;color:#cfc;font-family:Consolas,monospace">
+                            <div>Open the slide-out Settings panel or pick a favicon theme.</div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                              <button id="st-open" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer">Open Panel</button>
+                              <button id="st-close" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.08);color:#bfffbf;cursor:pointer">Close Panel</button>
+                            </div>
+                          </div>
+                        `;
+                        const stOpen = body.querySelector('#st-open');
+                        const stClose = body.querySelector('#st-close');
+                        stOpen?.addEventListener('click', () => {
+                            const panel = document.getElementById('settingsPanel');
+                            if (!panel.classList.contains('open')) toggleSettings();
+                        });
+                        stClose?.addEventListener('click', () => {
+                            const panel = document.getElementById('settingsPanel');
+                            if (panel.classList.contains('open')) toggleSettings();
+                        });
+                        return;
+                    }
+                    if (card.classList.contains('tool-none')) { createAppWindow('about:blank', '(None now)'); return; }
                     const url = card.getAttribute('data-url') || 'about:blank';
                     createAppWindow(url, title);
                 }
@@ -3910,7 +4428,7 @@ function createAppWindow(url, titleText) {
                     });
                 }
             });
-        })(); 
+        })();
     </script>
 </body>
 </html>
