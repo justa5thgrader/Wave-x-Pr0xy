@@ -279,107 +279,147 @@
             filter: drop-shadow(0 0 6px rgba(0,255,0,0.35));
         }
 
-        /* Games grid */
+        /* Desktop canvas area for icons (free-form) */
         .games-grid {
-            margin-top: 1.25rem;
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1rem;
-            text-align: left;
-            max-width: 900px;
-            justify-items: stretch;  /* ensure equal width columns */
-            margin-left: auto;
-            margin-right: auto;
-            align-items: stretch;    /* make rows align heights */
+            position: relative;           /* absolute-positioned icons live in here */
+            margin-top: 0.5rem;
+            height: calc(100vh - 120px);  /* fill visible area below header */
+            min-height: 360px;
+            max-width: none;              /* allow full width */
+            margin-left: 0;
+            margin-right: 0;
+            overflow: hidden;             /* keep icons inside */
+            outline: 1px solid rgba(0,255,0,0.08);
+            background: linear-gradient(0deg, rgba(0,255,0,0.06) 1px, transparent 1px) 0 0/100% 44px,
+                        linear-gradient(90deg, rgba(0,255,0,0.06) 1px, transparent 1px) 0 0/44px 100%;
+            /* subtle desktop snap grid */
         }
 
+        /* Tile: small desktop app icon with label under it (absolute for free-move) */
         .game-card {
-            display: flex;
-            flex-direction: column;
-            background: rgba(0, 30, 0, 0.6);
-            border: 1px solid rgba(0,255,0,0.25);
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            position: absolute;            /* free form movement */
+            top: 12px; left: 12px;         /* default; will be restored from storage */
+            display: grid;
+            grid-template-rows: 92px auto;
+            justify-items: center;
+            align-items: start;
+            width: 120px;
+            background: transparent;
+            border: 0;
+            border-radius: 10px;
+            overflow: visible;
+            transition: transform 0.06s ease, outline 0.12s ease;
+            cursor: pointer;
+            padding: 6px 4px 4px;
+            outline: 1px solid transparent;
+            user-select: none;
+            touch-action: none;            /* better pointer dragging on touch */
+        }
+
+        .game-card::before {
+            /* glassy tile body (the 'app' itself) */
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92px;
+            height: 92px;
+            border-radius: 18px;
+            background:
+              linear-gradient(145deg, rgba(0,255,0,0.12), rgba(0,255,0,0.04)) padding-box,
+              radial-gradient(120% 120% at 20% 0%, rgba(255,255,255,0.25), rgba(255,255,255,0)) border-box;
+            border: 1px solid rgba(0,255,0,0.28);
             backdrop-filter: blur(8px);
-            cursor: pointer; /* clickable */
-            min-height: 220px;         /* enforce consistent minimum height */
+            box-shadow:
+              0 2px 10px rgba(0,255,0,0.08),
+              inset 0 0 0 1px rgba(0,255,0,0.12);
+            z-index: 0;
         }
 
         .game-card:hover {
-            transform: translateY(-4px);
-            background: rgba(0, 50, 0, 0.7);
-            box-shadow: 0 0 20px rgba(0,255,0,0.15);
+            transform: translateY(-2px) scale(1.02);
+            outline-color: rgba(0,255,0,0.25);
+        }
+        .game-card.dragging {
+            opacity: 0.9;
+            transform: scale(1.03);
+            filter: drop-shadow(0 6px 16px rgba(0,255,0,0.25));
+            z-index: 5;
+        }
+        /* selection rectangle */
+        .selection-box {
+            position: absolute;
+            border: 1px dashed rgba(0,255,0,0.35);
+            background: rgba(0,255,0,0.08);
+            pointer-events: none;
+            z-index: 4;
+        }
+        .game-card.selected {
+            outline: 1px solid rgba(0,255,0,0.35);
+            outline-offset: 4px;
         }
 
+        .game-card:active {
+            transform: translateY(0) scale(0.99);
+            outline-color: rgba(0,255,0,0.35);
+        }
+
+        /* The "icon" area inside the tile */
         .game-thumb {
-            aspect-ratio: 16 / 9;
-            width: 100%;
-            background: radial-gradient( ellipse at 30% 30%, rgba(0,255,0,0.25), rgba(0,0,0,0.1) 60% );
+            width: 72px;
+            height: 72px;
+            margin-top: 18px; /* centers inside the 92px tile */
+            border-radius: 16px;
+            background:
+                radial-gradient(ellipse at 30% 30%, rgba(0,255,0,0.28), rgba(0,0,0,0.06) 60%),
+                linear-gradient(135deg, rgba(0,255,120,0.25), rgba(0,140,60,0.15));
             position: relative;
-            flex: 0 0 auto;          /* fixed height by aspect ratio */
+            z-index: 1;
+            box-shadow:
+              0 2px 8px rgba(0,255,0,0.12),
+              inset 0 0 0 1px rgba(0,255,0,0.18);
         }
 
-        /* placeholder image pattern */
+        /* subtle grid overlay inside the icon block */
         .game-thumb::after {
             content: "";
             position: absolute;
             inset: 0;
             background:
-                linear-gradient(90deg, rgba(0,255,0,0.15) 1px, transparent 1px) 0 0/20px 100%,
-                linear-gradient(0deg, rgba(0,255,0,0.08) 1px, transparent 1px) 0 0/100% 20px;
-            opacity: 0.5;
+                linear-gradient(90deg, rgba(0,255,0,0.12) 1px, transparent 1px) 0 0/12px 100%,
+                linear-gradient(0deg, rgba(0,255,0,0.08) 1px, transparent 1px) 0 0/100% 12px;
+            opacity: 0.35;
+            border-radius: inherit;
         }
 
-        .game-info {
-            padding: 0.9rem 1rem 1rem;
-            color: #cfc;
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-            flex: 1 1 auto;          /* fill remaining space uniformly */
-        }
-
-        .game-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            margin-bottom: 0.35rem;
-            color: #9f9;
-        }
-
-        .game-desc {
-            font-size: 0.95rem;
-            opacity: 0.9;
-            line-height: 1.35rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .game-btn {
-            align-self: start;
-            padding: 0.5rem 0.9rem;
-            border-radius: 9999px;
-            border: 1px solid rgba(0,255,0,0.35);
-            background: rgba(0,255,0,0.12);
-            color: #cfc;
-            cursor: not-allowed;
-            font-weight: 600;
-            letter-spacing: 0.3px;
+        /* caption under the tile */
+        .game-caption {
+            margin-top: 8px;
+            font-size: 13px;
+            line-height: 1.2;
+            color: #cfeccf;
+            text-shadow: 0 0 6px rgba(0,255,0,0.18);
+            text-align: center;
+            max-width: 112px;
+            word-break: break-word;
+            z-index: 1;
+            user-select: none;
         }
 
         @media (max-width: 1024px) {
-            .games-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                max-width: 700px;
-                align-items: stretch;
-            }
+            .games-grid { height: calc(100vh - 140px); }
+            .game-card { width: 110px; }
+            .game-card::before { width: 86px; height: 86px; }
+            .game-thumb { width: 66px; height: 66px; margin-top: 16px; }
         }
 
         @media (max-width: 640px) {
-            .games-grid {
-                grid-template-columns: 1fr;
-                max-width: 500px;
-                align-items: stretch;
-            }
+            .games-grid { height: calc(100vh - 160px); }
+            .game-card { width: 100px; }
+            .game-card::before { width: 80px; height: 80px; border-radius: 16px; }
+            .game-thumb { width: 60px; height: 60px; margin-top: 14px; border-radius: 14px; }
+            .game-caption { font-size: 12px; max-width: 96px; }
         }
 
         /* Settings Icon */
@@ -545,6 +585,62 @@
             .settings-panel {
                 width: 100%;
                 right: -100%;
+            }
+        }
+    </style>
+    <style>
+        /* Fixed Wave-X logo bottom-left */
+        .wavex-logo {
+            position: fixed;
+            left: 16px;
+            bottom: 16px;
+            z-index: 1100; /* above content and windows layer (900) and near settings (1000) */
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: rgba(0, 20, 0, 0.6);
+            border: 1px solid rgba(0,255,0,0.28);
+            border-radius: 10px;
+            box-shadow: 0 0 14px rgba(0,255,0,0.18);
+            color: #9f9;
+            text-decoration: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            backdrop-filter: blur(6px);
+        }
+        .wavex-logo:hover {
+            background: rgba(0, 35, 0, 0.7);
+            border-color: rgba(0,255,0,0.4);
+            box-shadow: 0 0 18px rgba(0,255,0,0.25);
+        }
+        .wavex-logo svg {
+            width: 28px;
+            height: 28px;
+            display: block;
+            filter: drop-shadow(0 0 6px rgba(0,255,0,0.35));
+        }
+        .wavex-logo .label {
+            font-family: Consolas, monospace;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #cfffcf;
+            text-shadow: 0 0 8px rgba(0,255,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .wavex-logo {
+                left: 10px;
+                bottom: 10px;
+                padding: 6px 8px;
+                border-radius: 8px;
+            }
+            .wavex-logo svg {
+                width: 24px;
+                height: 24px;
+            }
+            .wavex-logo .label {
+                font-size: 0.95rem;
             }
         }
     </style>
@@ -888,6 +984,36 @@
             to { opacity: 0; visibility: hidden; }
         }
 
+        /* Welcome message that appears after image breaks */
+        .welcome-banner {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            z-index: 4; /* above split halves (z:3) and matrix veil */
+            pointer-events: none;
+            opacity: 0;
+        }
+        .welcome-banner .text {
+            font: 700 48px/1 Consolas, 'Courier New', monospace;
+            color: #cfffcf;
+            text-shadow: 0 0 16px rgba(0,255,0,0.35), 0 0 32px rgba(0,255,0,0.2);
+            letter-spacing: 1px;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        /* active state triggers fade-in-out */
+        .welcome-banner.show .text {
+            animation: welcomeFade 2.2s ease forwards;
+            animation-delay: 0s;
+        }
+        .welcome-banner.show { opacity: 1; }
+        @keyframes welcomeFade {
+            0%   { opacity: 1; transform: translateY(8px); }
+            60%  { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-6px); }
+        }
+
         /* Prevent body scroll while intro active */
         body.intro-lock {
             overflow: hidden !important;
@@ -905,6 +1031,11 @@
             <div class="half bottom"></div>
         </div>
 
+        <!-- Welcome text shown after the image breaks -->
+        <div class="welcome-banner" id="welcomeBanner" aria-live="polite" aria-atomic="true">
+            <div class="text">Welcome!</div>
+        </div>
+
         <div class="intro-matrix"></div>
     </div>
 
@@ -912,6 +1043,17 @@
     <canvas id="matrixCanvas"></canvas>
 
     <!-- Settings Icon -->
+    <!-- Fixed Wave-X Logo (bottom-left) -->
+    <a class="wavex-logo" href="#" aria-label="Wave-X Home" onclick="event.preventDefault();">
+        <!-- Simple wave + X SVG mark -->
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- Wave path -->
+            <path d="M6,36 C14,28 22,44 30,36 C38,28 46,44 58,34" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- X mark -->
+            <path d="M42,18 L56,32 M56,18 L42,32" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <span class="label">WAVE‑X</span>
+    </a>
     <div class="settings-icon" onclick="toggleSettings()">
         <svg viewBox="0 0 24 24">
             <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
@@ -979,30 +1121,46 @@
         <div class="content-area">
             <div class="content active" id="games">
                 <!-- Games Grid -->
-                <div class="games-grid">
-                    <div class="game-card" data-url="https://example.com/game1" data-title="Placeholder Game 1">
-                        <div class="game-thumb" aria-hidden="true"></div>
-                        <div class="game-caption">Placeholder Game 1</div>
+<div class="games-grid">
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/slope/index.html" data-title="Slope.io" data-image="https://storage.classroomsarecool.mex.com/images/slope.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/slope.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Slope.io</div>
                     </div>
-                    <div class="game-card" data-url="https://example.com/game2" data-title="Placeholder Game 2">
-                        <div class="game-thumb" aria-hidden="true"></div>
-                        <div class="game-caption">Placeholder Game 2</div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/geometrydash/index.html" data-title="Geometry Dash Lite" data-image="https://storage.classroomsarecool.mex.com/images/geometrydashlite.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/geometrydashlite.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Geometry Dash Lite</div>
                     </div>
-                    <div class="game-card" data-url="https://example.com/game3" data-title="Placeholder Game 3">
-                        <div class="game-thumb" aria-hidden="true"></div>
-                        <div class="game-caption">Placeholder Game 3</div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/gunspin/index.html" data-title="Gunspin" data-image="https://storage.classroomsarecool.mex.com/images/gunspin.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/gunspin.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Gunspin</div>
                     </div>
-                    <div class="game-card" data-url="https://example.com/game4" data-title="Placeholder Game 4">
-                        <div class="game-thumb" aria-hidden="true"></div>
-                        <div class="game-caption">Placeholder Game 4</div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/tombofthemask.html" data-title="Tomb of the Mask" data-image="https://storage.classroomsarecool.mex.com/images/tombofthemask.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/tombofthemask.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Tomb of the Mask</div>
                     </div>
-                    <div class="game-card" data-url="https://example.com/game5" data-title="Placeholder Game 5">
-                        <div class="game-thumb" aria-hidden="true"></div>
-                        <div class="game-caption">Placeholder Game 5</div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/sm64/index.html" data-title="Super Mario 64" data-image="https://storage.classroomsarecool.mex.com/images/supermario64.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/supermario64.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Super Mario 64</div>
                     </div>
-                    <div class="game-card" data-url="https://example.com/game6" data-title="Placeholder Game 6">
-                        <div class="game-thumb" aria-hidden="true"></div>
-                        <div class="game-caption">Placeholder Game 6</div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/Moto-X3M/index.html" data-title="Moto X3M" data-image="https://storage.classroomsarecool.mex.com/images/motox3m.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/motox3m.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Moto X3M</div>
+                    </div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/eggy-car/index.html" data-title="Eggy Car" data-image="https://storage.classroomsarecool.mex.com/images/eggycar.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/eggycar.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Eggy Car</div>
+                    </div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/snowrider3d/index.html" data-title="Snow Rider 3D" data-image="https://storage.classroomsarecool.mex.com/images/snowrider3d.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/snowrider3d.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Snow Rider 3D</div>
+                    </div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/crossyroad/index.html" data-title="Crossy Road" data-image="https://storage.classroomsarecool.mex.com/images/crossyroad.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/crossyroad.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Crossy Road</div>
+                    </div>
+                    <div class="game-card" data-url="https://storage.classroomsarecool.mex.com/pacman/index.html" data-title="Pac-Man" data-image="https://storage.classroomsarecool.mex.com/images/pacman.png">
+                        <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://storage.classroomsarecool.mex.com/images/pacman.png'); border-radius:16px; overflow:hidden;"></div>
+                        <div class="game-caption">Pac-Man</div>
                     </div>
                 </div>
             </div>
@@ -1016,7 +1174,7 @@
                     <div class="game-card tool-fps" data-title="FPS Counter">
                         <div class="game-thumb" aria-hidden="true">
                             <div class="avatar" title="FPS" style="position:absolute;inset:0;display:grid;place-items:center;">
-                                <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+                                <svg viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
                                     <defs>
                                         <linearGradient id="grad-fps" x1="0" y1="0" x2="1" y2="1">
                                             <stop offset="0%" stop-color="#00ff88"/>
@@ -1024,7 +1182,7 @@
                                         </linearGradient>
                                     </defs>
                                     <circle cx="32" cy="32" r="30" fill="url(#grad-fps)"/>
-                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="22" fill="#001b00" font-weight="700">FPS</text>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#001b00" font-weight="700">FPS</text>
                                 </svg>
                             </div>
                         </div>
@@ -1033,7 +1191,7 @@
                     <div class="game-card tool-bg" data-title="Background Changer">
                         <div class="game-thumb" aria-hidden="true">
                             <div class="avatar" title="BG" style="position:absolute;inset:0;display:grid;place-items:center;">
-                                <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+                                <svg viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
                                     <defs>
                                         <linearGradient id="grad-bg" x1="0" y1="0" x2="1" y2="1">
                                             <stop offset="0%" stop-color="#88ff88"/>
@@ -1041,7 +1199,7 @@
                                         </linearGradient>
                                     </defs>
                                     <circle cx="32" cy="32" r="30" fill="url(#grad-bg)"/>
-                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="22" fill="#001b00" font-weight="700">BG</text>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#001b00" font-weight="700">BG</text>
                                 </svg>
                             </div>
                         </div>
@@ -1050,7 +1208,7 @@
                     <div class="game-card tool-test" data-title="Test Features">
                         <div class="game-thumb" aria-hidden="true">
                             <div class="avatar" title="TEST" style="position:absolute;inset:0;display:grid;place-items:center;">
-                                <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+                                <svg viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
                                     <defs>
                                         <linearGradient id="grad-test" x1="0" y1="0" x2="1" y2="1">
                                             <stop offset="0%" stop-color="#aaffaa"/>
@@ -1058,7 +1216,7 @@
                                         </linearGradient>
                                     </defs>
                                     <circle cx="32" cy="32" r="30" fill="url(#grad-test)"/>
-                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#001b00" font-weight="700">TEST</text>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="14" fill="#001b00" font-weight="700">TEST</text>
                                 </svg>
                             </div>
                         </div>
@@ -1067,7 +1225,7 @@
                     <div class="game-card tool-none" data-title="(None now)">
                         <div class="game-thumb" aria-hidden="true">
                             <div class="avatar" title="N/A" style="position:absolute;inset:0;display:grid;place-items:center;">
-                                <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+                                <svg viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
                                     <defs>
                                         <linearGradient id="grad-none" x1="0" y1="0" x2="1" y2="1">
                                             <stop offset="0%" stop-color="#66ff99"/>
@@ -1075,7 +1233,7 @@
                                         </linearGradient>
                                     </defs>
                                     <circle cx="32" cy="32" r="30" fill="url(#grad-none)"/>
-                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#001b00" font-weight="700">N/A</text>
+                                    <text x="50%" y="54%" text-anchor="middle" font-family="Consolas, monospace" font-size="14" fill="#001b00" font-weight="700">N/A</text>
                                 </svg>
                             </div>
                         </div>
@@ -1595,40 +1753,9 @@
             return win;
         }
 
-        // click handlers for game cards to open windows or run tools
-        document.querySelectorAll('.game-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const title = card.getAttribute('data-title') || 'App';
-
-                // Tool: FPS Counter (spawns a floating HUD with average/instant FPS)
-                if (card.classList.contains('tool-fps')) {
-                    ensureFpsHud();
-                    return;
-                }
-
-                // Tool: Background Changer (opens OS-like window with controls)
-                if (card.classList.contains('tool-bg')) {
-                    openBackgroundChanger();
-                    return;
-                }
-
-                // Tool: Test Features (opens a small panel with toggles/demos)
-                if (card.classList.contains('tool-test')) {
-                    openTestFeatures();
-                    return;
-                }
-
-                // Tool: None → open placeholder window
-                if (card.classList.contains('tool-none')) {
-                    const win = createAppWindow('about:blank', '(None now)');
-                    return;
-                }
-
-                // Fallback: open as iframe window using data-url
-                const url = card.getAttribute('data-url') || 'about:blank';
-                createAppWindow(url, title);
-            });
-        });
+        // Remove redundant outer dblclick handler to prevent duplicate opens.
+        // Opening is fully handled inside desktopFreeForm() via openCard and the per-card dblclick there.
+        // (No-op here on purpose.)
 
         /* =====================
            FPS COUNTER (HUD)
@@ -2061,6 +2188,19 @@
             setTimeout(() => {
                 if (blocked) blocked.classList.add('cracked');
                 if (split) split.classList.add('split');
+
+                // After the "image breaks", show welcome and fade it away (slightly later for visibility)
+                setTimeout(() => {
+                    const welcome = document.getElementById('welcomeBanner');
+                    if (welcome) {
+                        welcome.classList.add('show');
+                        // Remove after animation completes
+                        setTimeout(() => {
+                            welcome.remove();
+                        }, 2400);
+                    }
+                }, 250); // appear a moment after the split begins
+
                 // Hide the blocked layer so nothing is left faded in the background
                 setTimeout(() => {
                     if (blocked) blocked.style.display = 'none';
@@ -2074,6 +2214,355 @@
                 intro.remove();
                 document.body.classList.remove('intro-lock');
             }, total);
+        })();
+        /* ===========
+           FREE-FORM DESKTOP ICONS WITH PERSISTENCE
+           =========== */
+        (function desktopFreeForm() {
+            const GRID_SIZE = 44; // px snap size (matches background grid)
+            const STORAGE_POS_GAMES = 'wavex.games.pos.v1';
+            const STORAGE_POS_APPS  = 'wavex.apps.pos.v1';
+
+            const desktops = [
+                { root: document.querySelector('#games .games-grid'), key: STORAGE_POS_GAMES },
+                { root: document.querySelector('#apps  .games-grid'), key: STORAGE_POS_APPS  }
+            ].filter(x => x.root);
+
+            function ensureId(el, idx) {
+                if (!el.id) {
+                    el.id = el.getAttribute('data-title')?.toLowerCase().replace(/\s+/g,'-') || `card-${idx}-${Date.now()}`;
+                }
+                return el.id;
+            }
+
+            function loadPositions(key) {
+                try { return JSON.parse(localStorage.getItem(key) || '{}'); }
+                catch { return {}; }
+            }
+            function savePositions(key, positions) {
+                localStorage.setItem(key, JSON.stringify(positions));
+            }
+
+            function snap(v) {
+                return Math.max(4, Math.round(v / GRID_SIZE) * GRID_SIZE);
+            }
+
+            desktops.forEach(({ root, key }) => {
+                const bounds = () => root.getBoundingClientRect();
+                const positions = loadPositions(key);
+
+                // Reflow icons responsively on first paint and when container size changes (no saved positions)
+                const ro = new ResizeObserver(() => {
+                    const b = bounds();
+                    const hasAnySaved = Object.keys(positions).length > 0;
+                    if (hasAnySaved) return; // keep user's saved layout
+                    const cards = Array.from(root.querySelectorAll('.game-card'));
+                    const COL_W = 160;
+                    const ROW_H = 140;
+                    const LEFT_PAD = 12;
+                    const TOP_PAD  = 12;
+                    const cols = Math.max(1, Math.floor((b.width - LEFT_PAD * 2) / COL_W));
+                    cards.forEach((card, idx) => {
+                        const col = idx % cols;
+                        const row = Math.floor(idx / cols);
+                        const x = snap(LEFT_PAD + col * COL_W);
+                        const y = snap(TOP_PAD  + row * ROW_H);
+                        card.style.left = x + 'px';
+                        card.style.top  = y + 'px';
+                    });
+                });
+                ro.observe(root);
+
+                // Initialize card ids and apply saved positions or auto layout (grid-like, row-first)
+                const cards = Array.from(root.querySelectorAll('.game-card'));
+                const b0 = bounds();
+                const COL_W = 160;  // approx tile width incl. gutter
+                const ROW_H = 140;  // approx tile height incl. gutter
+                const LEFT_PAD = 12;
+                const TOP_PAD  = 12;
+
+                // compute how many columns fit
+                const cols = Math.max(1, Math.floor((b0.width - LEFT_PAD * 2) / COL_W));
+
+                cards.forEach((card, idx) => {
+                    const id = ensureId(card, idx);
+                    const pos = positions[id];
+                    if (pos && Number.isFinite(pos.x) && Number.isFinite(pos.y)) {
+                        // use saved position
+                        card.style.left = pos.x + 'px';
+                        card.style.top  = pos.y + 'px';
+                    } else {
+                        // lay out in rows (left-to-right, then wrap)
+                        const col = idx % cols;
+                        const row = Math.floor(idx / cols);
+                        const x = snap(LEFT_PAD + col * COL_W);
+                        const y = snap(TOP_PAD  + row * ROW_H);
+                        card.style.left = x + 'px';
+                        card.style.top  = y + 'px';
+                    }
+                    card.setAttribute('draggable', 'false'); // we will use pointer/mouse DnD
+                    if (!card.hasAttribute('tabindex')) card.setAttribute('tabindex','0');
+                });
+
+                // Selection box and multi-select
+                let selecting = false, selBox, startSel = {x:0,y:0};
+                function clearSelection() { cards.forEach(c => c.classList.remove('selected')); }
+                root.addEventListener('pointerdown', (e) => {
+                    if (!(e.target.closest('.game-card'))) {
+                        selecting = true;
+                        startSel = { x: e.clientX, y: e.clientY };
+                        selBox = document.createElement('div');
+                        selBox.className = 'selection-box';
+                        root.appendChild(selBox);
+                        selBox.style.left = startSel.x - bounds().left + 'px';
+                        selBox.style.top  = startSel.y - bounds().top  + 'px';
+                        clearSelection();
+                        root.setPointerCapture(e.pointerId);
+                    }
+                });
+                root.addEventListener('pointermove', (e) => {
+                    if (!selecting || !selBox) return;
+                    const b = bounds();
+                    const x1 = Math.min(startSel.x, e.clientX) - b.left;
+                    const y1 = Math.min(startSel.y, e.clientY) - b.top;
+                    const x2 = Math.max(startSel.x, e.clientX) - b.left;
+                    const y2 = Math.max(startSel.y, e.clientY) - b.top;
+                    selBox.style.left = x1 + 'px';
+                    selBox.style.top  = y1 + 'px';
+                    selBox.style.width  = (x2 - x1) + 'px';
+                    selBox.style.height = (y2 - y1) + 'px';
+                    // hit test cards
+                    const rSel = { left:x1, top:y1, right:x2, bottom:y2 };
+                    cards.forEach(c => {
+                        const r = c.getBoundingClientRect();
+                        const cx1 = r.left - b.left, cy1 = r.top - b.top;
+                        const cx2 = cx1 + r.width, cy2 = cy1 + r.height;
+                        const overlaps = !(cx2 < rSel.left || cx1 > rSel.right || cy2 < rSel.top || cy1 > rSel.bottom);
+                        c.classList.toggle('selected', overlaps);
+                    });
+                });
+                root.addEventListener('pointerup', (e) => {
+                    if (selecting) {
+                        selecting = false;
+                        selBox && selBox.remove();
+                        selBox = null;
+                        root.releasePointerCapture(e.pointerId);
+                    }
+                });
+
+                // Drag single or multiple selected icons with pointer events
+                let dragging = false;
+                let dragStart = { x:0, y:0 };
+                let originals = new Map(); // card -> {x,y}
+
+                function beginDrag(target, e) {
+                    const selected = cards.filter(c => c.classList.contains('selected'));
+                    const group = selected.length ? selected : [target];
+                    group.forEach(c => {
+                        c.classList.add('dragging');
+                        originals.set(c, {
+                            x: parseFloat(c.style.left) || 0,
+                            y: parseFloat(c.style.top) || 0
+                        });
+                    });
+                    dragStart = { x: e.clientX, y: e.clientY };
+                    dragging = true;
+                    root.setPointerCapture(e.pointerId);
+                }
+
+                function moveDrag(e) {
+                    if (!dragging) return;
+                    const dx = e.clientX - dragStart.x;
+                    const dy = e.clientY - dragStart.y;
+                    const b = bounds();
+                    originals.forEach((pos, card) => {
+                        let nx = pos.x + dx;
+                        let ny = pos.y + dy;
+                        nx = Math.min(Math.max(4, nx), b.width - card.offsetWidth - 4);
+                        ny = Math.min(Math.max(4, ny), b.height - card.offsetHeight - 4);
+                        card.style.left = nx + 'px';
+                        card.style.top  = ny + 'px';
+                    });
+                }
+
+                function endDrag(e) {
+                    if (!dragging) return;
+                    // snap and save
+                    originals.forEach((_, card) => {
+                        const nx = snap(parseFloat(card.style.left) || 0);
+                        const ny = snap(parseFloat(card.style.top)  || 0);
+                        card.style.left = nx + 'px';
+                        card.style.top  = ny + 'px';
+                        const id = ensureId(card, 0);
+                        positions[id] = { x: nx, y: ny };
+                    });
+                    savePositions(key, positions);
+                    originals.forEach((_, card) => card.classList.remove('dragging'));
+                    originals.clear();
+                    dragging = false;
+                    try { root.releasePointerCapture(e.pointerId); } catch {}
+                }
+
+                // Pointer event handlers on cards
+                const DRAG_THRESHOLD = 6; // pixels before starting drag
+                const clickTimers = new WeakMap(); // for distinguishing click vs dblclick
+                const suppressOpenAfterDrag = new WeakSet(); // prevent open after a drag completes
+                const lastOpenAt = new WeakMap(); // debounce open per-card (ms timestamp)
+                const OPEN_DEBOUNCE_MS = 300;
+
+                cards.forEach(card => {
+                    let pressStart = null;
+                    let startedDrag = false;
+
+                    card.addEventListener('pointerdown', (e) => {
+                        // left button only for drag/select
+                        if (e.button !== 0) return;
+                        pressStart = { x: e.clientX, y: e.clientY };
+                        startedDrag = false;
+
+                        // toggle selection with Ctrl/Meta, otherwise select only this
+                        if (!e.ctrlKey && !e.metaKey && !card.classList.contains('selected')) {
+                            cards.forEach(c => c.classList.remove('selected'));
+                        }
+                        card.classList.add('selected');
+                    });
+
+                    card.addEventListener('pointermove', (e) => {
+                        if (!pressStart) return;
+                        const dx = Math.abs(e.clientX - pressStart.x);
+                        const dy = Math.abs(e.clientY - pressStart.y);
+                        if (!startedDrag && (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD)) {
+                            // begin drag only after threshold exceeded
+                            startedDrag = true;
+                            beginDrag(card, e);
+                        }
+                        if (startedDrag) {
+                            moveDrag(e);
+                        }
+                    });
+
+                    card.addEventListener('pointerup', (e) => {
+                        // if we were dragging, end it and mark to suppress open
+                        if (startedDrag) {
+                            endDrag(e);
+                            suppressOpenAfterDrag.add(card);
+                            pressStart = null;
+                            startedDrag = false;
+                            return;
+                        }
+
+                        // Treat as click (no movement). Use timer to detect double-click distinctly.
+                        const prev = clickTimers.get(card);
+                        if (prev) {
+                            clearTimeout(prev);
+                            clickTimers.delete(card);
+                            if (!suppressOpenAfterDrag.has(card)) {
+                                // open on "double-click" but guard against duplicate within debounce window
+                                const now = performance.now();
+                                const last = lastOpenAt.get(card) || 0;
+                                if (now - last > OPEN_DEBOUNCE_MS) {
+                                    lastOpenAt.set(card, now);
+                                    openCard(card);
+                                }
+                            }
+                        } else {
+                            // single click just selects; set short timer so dblclick can cancel it
+                            const t = setTimeout(() => {
+                                clickTimers.delete(card);
+                            }, 220);
+                            clickTimers.set(card, t);
+                        }
+
+                        pressStart = null;
+                        startedDrag = false;
+                        // clear suppression after the click completes
+                        suppressOpenAfterDrag.delete(card);
+                    });
+
+                    card.addEventListener('pointercancel', (e) => {
+                        if (startedDrag) endDrag(e);
+                        pressStart = null;
+                        startedDrag = false;
+                    });
+                });
+
+                // helper to open a card (mirrors dblclick handler below)
+                function openCard(card) {
+                    const title = card.getAttribute('data-title') || 'App';
+                    if (card.classList.contains('tool-fps')) { ensureFpsHud(); return; }
+                    if (card.classList.contains('tool-bg'))  { openBackgroundChanger(); return; }
+                    if (card.classList.contains('tool-test')){ openTestFeatures(); return; }
+                    if (card.classList.contains('tool-none')){ createAppWindow('about:blank', '(None now)'); return; }
+                    const url = card.getAttribute('data-url') || 'about:blank';
+                    createAppWindow(url, title);
+                }
+
+                // Keep separate dblclick as well (e.g., for touchpads). Stop propagation and debounce to single open.
+                cards.forEach(card => {
+                    card.addEventListener('dblclick', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Guard: if a drag just happened, do not open
+                        if (suppressOpenAfterDrag.has(card)) {
+                            suppressOpenAfterDrag.delete(card);
+                            return;
+                        }
+                        const now = performance.now();
+                        const last = lastOpenAt.get(card) || 0;
+                        if (now - last > OPEN_DEBOUNCE_MS) {
+                            lastOpenAt.set(card, now);
+                            openCard(card);
+                        }
+                    });
+                });
+
+                root.addEventListener('pointermove', moveDrag);
+                root.addEventListener('pointerup', endDrag);
+                root.addEventListener('pointercancel', endDrag);
+
+                // Keyboard nudging (Alt+Arrows moves 1 grid step, Shift+Alt moves 1px)
+                root.addEventListener('keydown', (e) => {
+                    const selected = cards.filter(c => c.classList.contains('selected'));
+                    if (!selected.length) return;
+                    if (!e.altKey) return;
+                    let dx = 0, dy = 0;
+                    if (e.key === 'ArrowLeft')  dx = -1;
+                    if (e.key === 'ArrowRight') dx = 1;
+                    if (e.key === 'ArrowUp')    dy = -1;
+                    if (e.key === 'ArrowDown')  dy = 1;
+                    if (dx === 0 && dy === 0) return;
+                    e.preventDefault();
+                    const step = e.shiftKey ? 1 : GRID_SIZE;
+                    const b = bounds();
+                    selected.forEach(card => {
+                        let nx = (parseFloat(card.style.left) || 0) + dx * step;
+                        let ny = (parseFloat(card.style.top)  || 0) + dy * step;
+                        nx = Math.min(Math.max(4, nx), b.width - card.offsetWidth - 4);
+                        ny = Math.min(Math.max(4, ny), b.height - card.offsetHeight - 4);
+                        // snap unless shift (fine movement)
+                        if (!e.shiftKey) { nx = snap(nx); ny = snap(ny); }
+                        card.style.left = nx + 'px';
+                        card.style.top  = ny + 'px';
+                        positions[card.id] = { x: nx, y: ny };
+                    });
+                    savePositions(key, positions);
+                });
+
+                // Persist on window resize by re-clamping icons in bounds
+                window.addEventListener('resize', () => {
+                    const b = bounds();
+                    cards.forEach(card => {
+                        let nx = parseFloat(card.style.left) || 0;
+                        let ny = parseFloat(card.style.top)  || 0;
+                        nx = Math.min(Math.max(4, nx), b.width - card.offsetWidth - 4);
+                        ny = Math.min(Math.max(4, ny), b.height - card.offsetHeight - 4);
+                        card.style.left = nx + 'px';
+                        card.style.top  = ny + 'px';
+                        positions[card.id] = { x: nx, y: ny };
+                    });
+                    savePositions(key, positions);
+                });
+            });
         })();
     </script>
 </body>
