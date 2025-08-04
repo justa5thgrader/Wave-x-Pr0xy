@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wave-X</title>
+    <title>Wave-X Educational Hub</title>
     <style>
         * {
             margin: 0;
@@ -268,6 +268,132 @@
             opacity: 0.8;
         }
 
+        /* Settings Icon */
+        .settings-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .settings-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .settings-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            transition: right 0.3s ease;
+            z-index: 999;
+            padding: 2rem;
+            color: white;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .settings-header h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .close-settings:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-section {
+            margin-bottom: 2rem;
+        }
+
+        .settings-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 400;
+        }
+
+        .favicon-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .favicon-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .favicon-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .favicon-option.active {
+            border-color: #ff6b9d;
+            background: rgba(255, 107, 157, 0.2);
+        }
+
+        .favicon-option img {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 0.5rem;
+        }
+
+        .favicon-option span {
+            font-size: 0.9rem;
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2.5rem;
@@ -287,6 +413,11 @@
                 padding: 2rem;
                 margin: 1rem;
             }
+
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
         }
     </style>
 </head>
@@ -305,19 +436,64 @@
         <div class="shape"></div>
     </div>
 
+    <!-- Settings Icon -->
+    <div class="settings-icon" onclick="toggleSettings()">
+        <svg viewBox="0 0 24 24">
+            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+        </svg>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button class="close-settings" onclick="toggleSettings()">×</button>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Favicon Theme</h3>
+            <div class="favicon-options">
+                <div class="favicon-option active" onclick="changeFavicon('default')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff6b9d' d='M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z'/%3E%3C/svg%3E" alt="Default">
+                    <span>Default</span>
+                </div>
+                <div class="favicon-option" onclick="changeFavicon('math')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff6b9d' d='M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M13,7H15V9H17V11H15V13H13V11H11V9H13V7M7,7H9V9H11V11H9V13H7V11H5V9H7V7M7,15H17V17H7V15Z'/%3E%3C/svg%3E" alt="Math">
+                    <span>Math</span>
+                </div>
+                <div class="favicon-option" onclick="changeFavicon('science')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff6b9d' d='M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z'/%3E%3C/svg%3E" alt="Science">
+                    <span>Science</span>
+                </div>
+                <div class="favicon-option" onclick="changeFavicon('history')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff6b9d' d='M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z'/%3E%3C/svg%3E" alt="History">
+                    <span>History</span>
+                </div>
+                <div class="favicon-option" onclick="changeFavicon('literature')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff6b9d' d='M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V19C19.9,18.5 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V6.5C10.55,5.4 8.45,5 6.5,5Z'/%3E%3C/svg%3E" alt="Literature">
+                    <span>Literature</span>
+                </div>
+                <div class="favicon-option" onclick="changeFavicon('art')">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff6b9d' d='M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z'/%3E%3C/svg%3E" alt="Art">
+                    <span>Art</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
-            <h1>Wave-X</h1>
-            <p>Experience the power of seamless connectivity</p>
+            <h1>Wave-X Educational Hub</h1>
+            <p>Discover, Learn, and Explore Educational Resources</p>
         </div>
 
         <div class="tabs-container">
             <div class="tabs">
                 <button class="tab active" data-tab="games">
-                    🎮 Games
+                    🎮 Educational Games
                 </button>
                 <button class="tab" data-tab="apps">
-                    📱 Apps
+                    📱 Learning Apps
                 </button>
                 <button class="tab" data-tab="wave-proxy">
                     🌊 Wave Proxy
@@ -328,20 +504,20 @@
         <div class="content-area">
             <div class="content active" id="games">
                 <div class="content-icon">🎮</div>
-                <h2>Games</h2>
-                <p>Discover amazing games with stunning graphics and immersive gameplay. From action-packed adventures to relaxing puzzles, find your perfect gaming experience.</p>
+                <h2>Educational Games</h2>
+                <p>Discover interactive learning games that make education fun and engaging. From math puzzles to science simulations, enhance your knowledge through play.</p>
             </div>
 
             <div class="content" id="apps">
                 <div class="content-icon">📱</div>
-                <h2>Apps</h2>
-                <p>Explore a collection of innovative applications designed to enhance your productivity and creativity. From utilities to entertainment, we've got you covered.</p>
+                <h2>Learning Apps</h2>
+                <p>Explore educational applications designed to enhance your learning experience. From study tools to interactive lessons, we've got everything you need.</p>
             </div>
 
             <div class="content" id="wave-proxy">
                 <div class="content-icon">🌊</div>
                 <h2>Wave Proxy</h2>
-                <p>Experience seamless connectivity with our advanced proxy solution. Fast, secure, and reliable - your gateway to unrestricted internet access.</p>
+                <p>Access educational resources seamlessly with our advanced proxy solution. Fast, secure, and reliable - your gateway to unrestricted learning.</p>
             </div>
         </div>
     </div>
@@ -368,6 +544,38 @@
             });
         });
 
+        // Settings functionality
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('open');
+        }
+
+        // Favicon change functionality
+        function changeFavicon(theme) {
+            const faviconOptions = document.querySelectorAll('.favicon-option');
+            faviconOptions.forEach(option => option.classList.remove('active'));
+            event.target.closest('.favicon-option').classList.add('active');
+            
+            // Update page title based on theme
+            const titles = {
+                'default': 'Wave-X Educational Hub',
+                'math': 'Wave-X Math Learning',
+                'science': 'Wave-X Science Lab',
+                'history': 'Wave-X History Explorer',
+                'literature': 'Wave-X Literature Corner',
+                'art': 'Wave-X Creative Arts'
+            };
+            
+            document.title = titles[theme] || 'Wave-X Educational Hub';
+            
+            // You can also change the actual favicon here
+            // const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+            // link.type = 'image/x-icon';
+            // link.rel = 'shortcut icon';
+            // link.href = `favicon-${theme}.ico`;
+            // document.getElementsByTagName('head')[0].appendChild(link);
+        }
+
         // Add some interactive effects
         document.addEventListener('mousemove', (e) => {
             const shapes = document.querySelectorAll('.shape');
@@ -392,6 +600,16 @@
                     contentArea.style.opacity = '1';
                 }, 300);
             });
+        });
+
+        // Close settings panel when clicking outside
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('settingsPanel');
+            const settingsIcon = document.querySelector('.settings-icon');
+            
+            if (!panel.contains(e.target) && !settingsIcon.contains(e.target) && panel.classList.contains('open')) {
+                panel.classList.remove('open');
+            }
         });
     </script>
 </body>
