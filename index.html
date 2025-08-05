@@ -5,6 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wave-X</title>
     <style>
+        /* Old Windows-style cursors with hard reset (handles all elements, including SVGs/iframes overlay cases) */
+:root {
+            /* Site-wide custom PNG cursor embedded as data URL (hotspot near tip) with default fallback */
+            --cursor-default:
+              url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACECAYAAABu9c2rAAAACXBIWXMAAAsSAAALEgHS3X78AAABc0lEQVR4nO3QMaqDQBQF0f//h3u3mG+v0n2l1m0pQv1yC5y8cVQm0Y2k1JvQyYzv5w7g7mJ9cF3rF3z8HnH2b8zv3r4AABgqzv2mA1rA9b9gqYqg1b8QyQfQx4m9m5v6Q9JvI5wqg8bSJh6hVw4nqR3hQvGJrXy3VbJqf9lqYb0Vtqv1q9gQp8hGfYtqk2qX2tqkZ7V0qvY3qgqX9a0qfYPqkA6l8nYvGkUe5YV3eYpQf0s8b8qgGfYfQmYf0qg8b8kYb9o4bYj1b3X6pBz8g8f0f+0nJ3t0+3lEAAAAAABg9k7xZ7h4kU3g4mYJj3kqJj8kqJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJj+qvZl+q7f3bqf+fX9tQwAAAAAAAAAAACAh3cYJr+9y9o9g0b7yJgAAAAAAADg1l8Bf8cCq1wqv2gAAAAASUVORK5CYII=") 2 2, default;
+            /* Keep system fallbacks for others until separate .cur files are available */
+            --cursor-pointer: pointer;
+            --cursor-text: text;
+
+            /* Other tokens (fallback to system) */
+            --cursor-move: move;
+            --cursor-ew: ew-resize;
+            --cursor-ns: ns-resize;
+            --cursor-nesw: nesw-resize;
+            --cursor-nwse: nwse-resize;
+        }
+
+        /* Baseline everywhere, including pseudo-elements and SVG */
+        html, body {
+            cursor: var(--cursor-default) !important;
+        }
+        /* inherit on everything to wipe previous component-level cursor rules */
+        *, *::before, *::after, svg, svg * {
+            cursor: inherit !important;
+        }
+        /* Ensure the canvas layer also picks up the custom cursor */
+        #matrixCanvas {
+            cursor: inherit !important;
+        }
+
+        /* Interactive: force hand */
+        a, button, [role="button"],
+        input[type="button"], input[type="submit"], input[type="reset"],
+        .px-btn, .tab, .app-btn, .px-tab, .px-tab-close,
+        .game-card, .wavex-logo, .secrets-btn, .favicon-option, .bgc-btn,
+        #proxy-launch, #px-restart, #px-newtab, #px-fullscreen, #px-throttle, #px-privacy, #px-clear,
+        .mac-item, .mac-dd-item,
+        .mac-menubar .brand,
+        .tips-bar .tip.active {
+            cursor: var(--cursor-pointer) !important;
+        }
+        /* Also hand on clickable titlebar controls */
+        .app-controls .app-btn {
+            cursor: var(--cursor-pointer) !important;
+        }
+
+        /* Text inputs/areas and contenteditable: I‑beam */
+        input[type="text"], input[type="search"], input[type="password"],
+        input[type="email"], input[type="url"], input[type="tel"], input[type="number"],
+        textarea, [contenteditable="true"] {
+            cursor: var(--cursor-text) !important;
+        }
+        /* generic input/select fallback: if user hovers right on the chrome */
+        input, select {
+            cursor: var(--cursor-text) !important;
+        }
+        /* Text cursor inside app windows as well */
+        .app-window input, .app-window textarea, .app-window [contenteditable="true"] {
+            cursor: var(--cursor-text) !important;
+        }
+
+        /* Move/resize */
+        .app-titlebar, .dragging, [aria-grabbed="true"] { cursor: var(--cursor-move) !important; }
+        .app-resizer, .resize-nwse, [data-cursor="nwse"] { cursor: var(--cursor-nwse) !important; }
+        .resize-nesw, [data-cursor="nesw"] { cursor: var(--cursor-nesw) !important; }
+        .resize-ew,   [data-cursor="ew"]   { cursor: var(--cursor-ew) !important; }
+        .resize-ns,   [data-cursor="ns"]   { cursor: var(--cursor-ns) !important; }
+
+        /* Ensure canvases and overlays don’t force ‘auto’ */
+        canvas, iframe, video, img {
+            cursor: inherit !important;
+        }
+
+        /* Optional: explicit default on large areas to guarantee arrow feel */
+        .content-area, .games-grid, #windows-layer, .proxy-view, body {
+            cursor: var(--cursor-default) !important;
+        }
+    </style>
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -361,6 +440,64 @@
         .game-card.selected {
             outline: 1px solid rgba(0,255,0,0.35);
             outline-offset: 4px;
+        }
+
+        /* Context menu */
+        .desktop-context {
+            position: absolute;
+            min-width: 180px;
+            background: rgba(0, 20, 0, 0.95);
+            border: 1px solid rgba(0,255,0,0.25);
+            box-shadow: 0 8px 28px rgba(0,255,0,0.15);
+            border-radius: 8px;
+            padding: 6px 6px;
+            z-index: 3000;
+            display: none;
+            color: #cfeccf;
+            backdrop-filter: blur(8px);
+        }
+        .desktop-context.open { display: block; }
+        .desktop-context .menu-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            color: #cfeccf;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .desktop-context .menu-item:hover {
+            background: rgba(0,255,0,0.12);
+            color: #eaffea;
+        }
+        .desktop-context .sep {
+            height: 1px;
+            margin: 6px 4px;
+            background: rgba(0,255,0,0.15);
+            border: 0;
+        }
+
+        /* Folder appearance */
+        .folder-card::before {
+            background:
+              linear-gradient(145deg, rgba(0,255,0,0.18), rgba(0,255,0,0.06)) padding-box,
+              radial-gradient(120% 120% at 20% 0%, rgba(255,255,255,0.25), rgba(255,255,255,0)) border-box;
+        }
+        .folder-thumb {
+            width: 72px;
+            height: 72px;
+            margin-top: 18px;
+            border-radius: 16px;
+            background:
+                linear-gradient(135deg, rgba(0,255,120,0.18), rgba(0,140,60,0.12));
+            display: grid;
+            place-items: center;
+            color: #bfffbf;
+            font-family: Consolas, monospace;
+            font-size: 11px;
         }
 
         .game-card:active {
@@ -936,6 +1073,38 @@
             z-index: 1500;
             user-select: none;
         }
+        /* topbar extensions pill area */
+        .mac-left .ext-pills {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 6px;
+            overflow: hidden;
+            max-width: 50vw;
+        }
+        .ext-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(0,255,0,0.10);
+            border: 1px solid rgba(0,255,0,0.25);
+            color: #eaffea;
+            font-size: 12px;
+            cursor: default;
+            white-space: nowrap;
+        }
+        .ext-pill .spin {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(0,255,0,0.25);
+            border-top-color: rgba(0,255,0,0.9);
+            border-radius: 50%;
+            animation: extSpin 0.9s linear infinite;
+            display: inline-block;
+        }
+        @keyframes extSpin { to { transform: rotate(360deg); } }
         .mac-left, .mac-center, .mac-right {
             display: inline-flex;
             align-items: center;
@@ -1063,13 +1232,10 @@
                 <strong>Wave‑X</strong>
             </div>
             <nav class="mac-menu" id="mac-menu">
-                <span class="mac-item active" data-menu="file">File</span>
-                <span class="mac-item" data-menu="edit">Edit</span>
-                <span class="mac-item" data-menu="view">View</span>
-                <span class="mac-item" data-menu="go">Go</span>
-                <span class="mac-item" data-menu="window">Window</span>
-                <span class="mac-item" data-menu="help">Help</span>
+                <span class="mac-item active" data-menu="extensions">Extensions</span>
             </nav>
+            <!-- Installed extensions appear here as pills -->
+            <div class="ext-pills" id="ext-pills" aria-label="Installed Extensions"></div>
         </div>
         <div class="mac-center" id="mac-window-title">Desktop</div>
         <div class="mac-right">
@@ -1422,23 +1588,43 @@
         </div>
 
 <div class="tabs-container">
-            <div class="tabs">
-                <button class="tab active" data-tab="games">
+<div class="tabs" id="main-tabs">
+                <button class="tab active" data-tab="games" aria-controls="games" aria-selected="true" role="tab">
                     🎮 Games
                 </button>
-                <button class="tab" data-tab="wave-proxy">
+                <button class="tab" data-tab="wave-proxy" aria-controls="wave-proxy" aria-selected="false" role="tab">
                     🌊 Proxy
                 </button>
-                <button class="tab" data-tab="customization" title="Customization">
+                <button class="tab" data-tab="customization" title="Customization" aria-controls="customization" aria-selected="false" role="tab">
                     ✨ Customization
                 </button>
-                <button class="tab" data-tab="ai" title="AI Assistant">
+                <button class="tab" data-tab="ai" title="AI Assistant" aria-controls="ai" aria-selected="false" role="tab">
                     🤖 AI
+                </button>
+                <button class="tab" data-tab="changes" title="Recent Changes" aria-controls="changes" aria-selected="false" role="tab">
+                    📝 Changes
                 </button>
             </div>
         </div>
 
-        <div class="content-area">
+<div class="content-area" role="region" aria-live="polite">
+<div class="content" id="changes" role="tabpanel" aria-labelledby="tab-changes" style="display:none;flex-direction:column;gap:0;min-height:0">
+                <!-- Changes header with Report Bug -->
+                <div style="padding:10px 12px;border-bottom:1px solid rgba(0,255,0,0.18);background:linear-gradient(180deg, rgba(0,35,0,0.65), rgba(0,20,0,0.5));display:flex;align-items:center;gap:10px">
+                    <div style="display:inline-flex;align-items:center;gap:10px">
+                        <span class="content-icon" aria-hidden="true">📝</span>
+                        <h2 style="margin:0;font-size:1.2rem;letter-spacing:.3px">Recent Changes</h2>
+                    </div>
+                    <button id="changes-report-bug" class="px-btn" style="margin-left:auto;height:30px;padding:0 12px;font-weight:700" title="Report a bug">Report a bug</button>
+                </div>
+
+                <!-- AI-human-like changelog feed -->
+                <div id="changes-feed" style="padding:14px;overflow:auto;display:grid;gap:14px;background:
+                        radial-gradient(1000px 400px at 20% 0%, rgba(0,255,0,0.05), transparent),
+                        rgba(0,0,0,0.20)">
+                    <!-- Entries are rendered by JS below -->
+                </div>
+            </div>
 <div class="content active" id="games">
                 <!-- Games controls (visible only in Games tab) -->
                 <div id="games-controls" style="margin:6px 0 6px 0; padding-left:2px; display:flex; gap:8px; flex-wrap:wrap">
@@ -1446,7 +1632,7 @@
                     <button id="games-reset-layout" class="px-btn" title="Reset layout to neat rows" style="height:28px;padding:0 10px">Reset Layout</button>
                 </div>
                 <!-- Games Grid -->
-<div class="games-grid">
+<div class="games-grid" id="games-grid">
                     <!-- New requested game cards -->
                     <div class="game-card" data-url="https://read.ebookswest.com.au/assets/mainstorage/racesurvival.html" data-title="Race Survival" data-image="https://read.ebookswest.com.au/images/games/racesurvival.jpg">
                         <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://read.ebookswest.com.au/images/games/racesurvival.jpg'); border-radius:16px; overflow:hidden;"></div>
@@ -1655,17 +1841,25 @@
             </div>
 
 
-<div class="content" id="wave-proxy" style="padding:0;margin:0;display:grid;place-items:center;position:relative;flex:1 1 auto;min-height:0;background:radial-gradient(1200px 600px at 50% 50%, rgba(0,255,0,0.06), rgba(0,0,0,0))">
-                <!-- Centered big hacker‑green launch button -->
-                <button id="proxy-launch" class="proxy-launch-btn" type="button" title="Open Wave‑X Proxy Window" style="display:inline-grid;grid-auto-flow:column;align-items:center;gap:12px;padding:18px 28px;border-radius:14px;border:1px solid rgba(0,255,0,0.35);background:rgba(0,255,0,0.10);color:#dfffd9;cursor:pointer;font-family:Consolas,monospace;font-size:22px;font-weight:800;letter-spacing:.3px;box-shadow:0 0 20px rgba(0,255,0,0.12), inset 0 0 0 1px rgba(0,255,0,0.10);text-shadow:0 0 8px rgba(0,255,0,0.25);transition:background .22s ease, transform .08s ease, box-shadow .22s ease, border-color .22s ease;">
-                    <span style="filter:drop-shadow(0 0 8px rgba(0,255,0,0.45))">🌊</span>
-                    <span>Launch Wave‑X</span>
-                </button>
+<div class="content" id="wave-proxy" style="padding:0;margin:0;display:grid;grid-template-rows:auto 1fr;gap:10px;place-items:stretch;position:relative;flex:1 1 auto;min-height:0;background:radial-gradient(1200px 600px at 50% 50%, rgba(0,255,0,0.06), rgba(0,0,0,0))">
+                <!-- Launch + Controls toolbar -->
+                <div id="proxy-controls" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:10px;border-bottom:1px solid rgba(0,255,0,0.18);background:linear-gradient(180deg, rgba(0,35,0,0.55), rgba(0,20,0,0.35));position:sticky;top:0;z-index:2">
+                    <button id="proxy-launch" class="proxy-launch-btn px-btn" type="button" title="Open Wave‑X Proxy Window" style="height:auto;display:inline-grid;grid-auto-flow:column;align-items:center;gap:10px;padding:12px 18px;font-size:16px;font-weight:800;border-radius:10px;">
+                        <span style="filter:drop-shadow(0 0 8px rgba(0,255,0,0.45))">🌊</span>
+                        <span>Launch Wave‑X</span>
+                    </button>
+                    <button id="px-restart" class="px-btn" title="Restart current proxy window">Restart</button>
+                    <button id="px-newtab" class="px-btn" title="Open a new tab inside proxy">New Tab</button>
+                    <button id="px-fullscreen" class="px-btn" title="Pop into windowed fullscreen">Fullscreen</button>
+                    <span style="width:1px;height:20px;background:rgba(0,255,0,0.2)"></span>
+                    <button id="px-throttle" class="px-btn" title="Toggle slow network emulation">Throttle: Off</button>
+                    <button id="px-privacy" class="px-btn" title="Quick privacy mode (clear + blank)">Privacy Mode</button>
+                    <button id="px-clear" class="px-btn" title="Clear proxy cache/history (local)">Clear Cache</button>
+                </div>
 
-                <!-- Fade-in proxy iframe container (initially hidden) -->
-                <div id="proxy-reveal" style="position:absolute;inset:0;display:grid;place-items:stretch;pointer-events:none;opacity:0;transform:scale(0.98);filter:blur(2px);">
-                    <iframe class="proxy-frame" src="https://uvv2.rhw.one/active/" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin" style="width:100%;height:100%;border:0;background:#000;display:block;"></iframe>
-                    <div id="proxy-welcome" style="position:absolute;inset:0;display:grid;place-items:center;font:700 36px/1 Consolas,monospace;color:#cfffcf;text-shadow:0 0 16px rgba(0,255,0,0.35);opacity:0;pointer-events:none;">Welcome to Wave‑X</div>
+                <!-- Hidden reveal container kept for future effects -->
+                <div id="proxy-reveal" style="position:relative;inset:auto;display:grid;place-items:stretch;pointer-events:auto;opacity:1;transform:none;filter:none;min-height:0;">
+                    <div id="proxy-welcome" style="position:absolute;inset:auto 0 0 0;display:none;place-items:center;font:700 36px/1 Consolas,monospace;color:#cfffcf;text-shadow:0 0 16px rgba(0,255,0,0.35);opacity:0;pointer-events:none;">Welcome to Wave‑X</div>
                 </div>
             </div>
 
@@ -1718,6 +1912,552 @@
     </div>
 
     <script>
+        // Context menu + Folders for Desktop (Games tab)
+        (function desktopContextAndFolders(){
+            const grid = document.getElementById('games-grid');
+            if (!grid) return;
+
+            // Build context menu
+            const menu = document.createElement('div');
+            menu.className = 'desktop-context';
+            menu.innerHTML = `
+                <div class="menu-item" data-action="new-folder">📁 New Folder</div>
+                <div class="sep"></div>
+                <div class="menu-item" data-action="reset-layout">↺ Reset Layout</div>
+                <div class="menu-item" data-action="sort-az">A→Z Sort</div>
+            `;
+            document.body.appendChild(menu);
+
+            // Per-card context menu for game items
+            const cardMenu = document.createElement('div');
+            cardMenu.className = 'desktop-context';
+            cardMenu.innerHTML = `
+                <div class="menu-item" data-action="open">Open</div>
+                <div class="menu-item" data-action="add-to-folder">Add to Folder…</div>
+            `;
+            // Lightweight folder picker modal
+            const folderPicker = document.createElement('div');
+            folderPicker.style.cssText = 'position:fixed;inset:0;display:none;place-items:center;z-index:4000;background:rgba(0,0,0,0.35)';
+            folderPicker.innerHTML = `
+              <div style="min-width:280px;max-width:420px;background:rgba(0,20,0,0.95);border:1px solid rgba(0,255,0,0.25);border-radius:10px;box-shadow:0 8px 28px rgba(0,255,0,0.18);padding:12px;color:#cfeccf;font-family:Consolas,monospace">
+                <div style="font-weight:800;margin-bottom:8px">Add to Folder</div>
+                <div style="display:grid;gap:8px">
+                  <label for="fp-select" style="font-size:12px;opacity:.85">Choose folder:</label>
+                  <select id="fp-select" style="background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;border-radius:8px;padding:6px"></select>
+                  <div style="display:flex;gap:8px;justify-content:flex-end">
+                    <button id="fp-cancel" class="px-btn" style="height:28px;padding:0 10px">Cancel</button>
+                    <button id="fp-add" class="px-btn" style="height:28px;padding:0 10px">Add</button>
+                  </div>
+                </div>
+              </div>
+            `;
+            document.body.appendChild(folderPicker);
+            const fpSelect = () => folderPicker.querySelector('#fp-select');
+            const fpShow = () => folderPicker.style.display = 'grid';
+            const fpHide = () => folderPicker.style.display = 'none';
+            folderPicker.querySelector('#fp-cancel').addEventListener('click', fpHide);
+            folderPicker.addEventListener('click', (e) => {
+                if (e.target === folderPicker) fpHide();
+            });
+            document.body.appendChild(cardMenu);
+
+            let cardMenuTarget = null;
+
+            function hideCardMenu() {
+                cardMenu.classList.remove('open');
+                cardMenuTarget = null;
+            }
+            function showCardMenu(x, y, target) {
+                cardMenuTarget = target;
+                cardMenu.style.left = x + 'px';
+                cardMenu.style.top = y + 'px';
+                const r = cardMenu.getBoundingClientRect();
+                const vw = window.innerWidth, vh = window.innerHeight;
+                if (r.right > vw - 4) cardMenu.style.left = (vw - r.width - 4) + 'px';
+                if (r.bottom > vh - 4) cardMenu.style.top = (vh - r.height - 4) + 'px';
+                cardMenu.classList.add('open');
+            }
+
+            // Populate folder picker with current folders
+            function populateFolderPicker() {
+                const select = fpSelect();
+                if (!select) return;
+                select.innerHTML = '';
+                const folders = Array.from(grid.querySelectorAll('.game-card.folder-card'));
+                if (!folders.length) {
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = '(No folders found)';
+                    select.appendChild(opt);
+                    select.disabled = true;
+                } else {
+                    select.disabled = false;
+                    folders.forEach(f => {
+                        const title = f.getAttribute('data-title') || 'Folder';
+                        const opt = document.createElement('option');
+                        opt.value = f.id || '';
+                        opt.textContent = title;
+                        // ensure has id
+                        if (!f.id) f.id = (title.toLowerCase().replace(/\s+/g,'-')) + '-' + Date.now();
+                        opt.value = f.id;
+                        select.appendChild(opt);
+                    });
+                }
+            }
+
+            function hideMenu() {
+                menu.classList.remove('open');
+            }
+            function showMenu(x, y) {
+                menu.style.left = x + 'px';
+                menu.style.top = y + 'px';
+                // keep inside viewport
+                const r = menu.getBoundingClientRect();
+                const vw = window.innerWidth, vh = window.innerHeight;
+                if (r.right > vw - 4) menu.style.left = (vw - r.width - 4) + 'px';
+                if (r.bottom > vh - 4) menu.style.top = (vh - r.height - 4) + 'px';
+                menu.classList.add('open');
+            }
+
+            // Right-click handling
+            grid.addEventListener('contextmenu', (e) => {
+                const onCard = e.target.closest('.game-card');
+                if (onCard) {
+                    e.preventDefault();
+                    // Only allow per-card menu for game cards (not folders)
+                    if (!onCard.classList.contains('folder-card')) {
+                        showCardMenu(e.clientX, e.clientY, onCard);
+                    }
+                    return;
+                }
+                e.preventDefault();
+                showMenu(e.clientX, e.clientY);
+            });
+            document.addEventListener('click', (e) => {
+                if (!menu.contains(e.target)) hideMenu();
+                if (!cardMenu.contains(e.target)) hideCardMenu();
+            });
+
+            // Handle card context menu actions
+            cardMenu.addEventListener('click', (e) => {
+                const item = e.target.closest('.menu-item');
+                if (!item) return;
+                const action = item.getAttribute('data-action');
+                const card = cardMenuTarget;
+                hideCardMenu();
+                if (!card) return;
+
+                if (action === 'open') {
+                    // simulate a double-click open
+                    card.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+                    return;
+                }
+                if (action === 'add-to-folder') {
+                    populateFolderPicker();
+                    fpShow();
+                    const addBtn = folderPicker.querySelector('#fp-add');
+                    // Remove previous handler if any
+                    const newAddBtn = addBtn.cloneNode(true);
+                    addBtn.parentNode.replaceChild(newAddBtn, addBtn);
+                    newAddBtn.addEventListener('click', () => {
+                        const select = fpSelect();
+                        const folderId = select && select.value;
+                        if (!folderId) { fpHide(); return; }
+                        const folderEl = document.getElementById(folderId);
+                        if (!folderEl) { fpHide(); return; }
+                        try {
+                            addChildToFolder(folderEl, card);
+                        } catch {}
+                        fpHide();
+                    });
+                }
+            });
+            window.addEventListener('blur', () => { hideMenu(); hideCardMenu(); });
+            window.addEventListener('resize', () => { hideMenu(); hideCardMenu(); });
+            document.addEventListener('scroll', () => { hideMenu(); hideCardMenu(); }, true);
+
+            // Utilities from desktopFreeForm scope
+            const GRID_SIZE = 44;
+            const STORAGE_POS_GAMES = 'wavex.games.pos.v1';
+            function snap(v) { return Math.max(4, Math.round(v / GRID_SIZE) * GRID_SIZE); }
+            function savePositions(positions) {
+                try { localStorage.setItem(STORAGE_POS_GAMES, JSON.stringify(positions)); } catch {}
+            }
+            function loadPositions() {
+                try { return JSON.parse(localStorage.getItem(STORAGE_POS_GAMES) || '{}'); } catch { return {}; }
+            }
+            function ensureId(el) {
+                if (!el.id) {
+                    el.id = (el.getAttribute('data-title') || 'folder') .toLowerCase().replace(/\s+/g,'-') + '-' + Date.now();
+                }
+                return el.id;
+            }
+
+            // Create a folder at approximate viewport position mapped into grid coordinates
+            function createFolderAt(clientX, clientY) {
+                const rect = grid.getBoundingClientRect();
+                const x = snap(clientX - rect.left);
+                const y = snap(clientY - rect.top);
+
+                const folder = document.createElement('div');
+                folder.className = 'game-card folder-card';
+                folder.setAttribute('data-title', 'New Folder');
+
+                folder.innerHTML = `
+                    <div class="folder-thumb" aria-hidden="true">FOLDER</div>
+                    <div class="game-caption" contenteditable="false" spellcheck="false" title="Double-click to open, F2 to rename">New Folder</div>
+                `;
+
+                folder.style.left = x + 'px';
+                folder.style.top = y + 'px';
+
+                // open/close on double-click: toggles a contained area for children
+                folder.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    openFolderWindow(folder);
+                });
+
+                // keyboard rename (F2)
+                folder.addEventListener('keydown', (e) => {
+                    if (e.key === 'F2') {
+                        e.preventDefault();
+                        startRename(folder);
+                    }
+                });
+
+                // pointer rename via slow double click on caption
+                const caption = folder.querySelector('.game-caption');
+                caption.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    startRename(folder);
+                });
+
+                grid.appendChild(folder);
+
+                // persist position
+                const positions = loadPositions();
+                positions[ensureId(folder)] = { x, y };
+                savePositions(positions);
+
+                // make folder droppable for game-cards
+                makeDroppable(folder);
+
+                return folder;
+            }
+
+            // Simple windowed view of folder contents using existing window manager
+            function openFolderWindow(folder) {
+                const title = (folder.getAttribute('data-title') || 'Folder');
+                const win = createAppWindow('about:blank', title);
+                const body = win.querySelector('.app-body');
+                body.style.padding = '10px';
+                body.style.display = 'grid';
+                body.style.gap = '8px';
+                body.style.color = '#cfc';
+                body.style.fontFamily = 'Consolas, monospace';
+
+                const list = document.createElement('div');
+                list.style.display = 'flex';
+                list.style.flexWrap = 'wrap';
+                list.style.gap = '8px';
+                body.appendChild(list);
+
+                // Build from data-folder-children ids
+                const childIds = (folder.getAttribute('data-children') || '').split(',').filter(Boolean);
+                if (!childIds.length) {
+                    const empty = document.createElement('div');
+                    empty.textContent = '(Empty folder)';
+                    empty.style.opacity = '0.8';
+                    body.appendChild(empty);
+                } else {
+                    childIds.forEach(id => {
+                        const card = document.getElementById(id);
+                        if (!card) return;
+                        const chip = document.createElement('button');
+                        chip.className = 'px-btn';
+                        chip.textContent = card.getAttribute('data-title') || 'App';
+                        chip.addEventListener('click', () => {
+                            // simulate double-click open
+                            card.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+                        });
+                        list.appendChild(chip);
+                    });
+                }
+            }
+
+            function startRename(folder) {
+                const caption = folder.querySelector('.game-caption');
+                if (!caption) return;
+                caption.setAttribute('contenteditable', 'true');
+                caption.focus();
+                const range = document.createRange();
+                range.selectNodeContents(caption);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+
+                function finish(ok) {
+                    caption.removeEventListener('blur', onBlur);
+                    caption.removeEventListener('keydown', onKey);
+                    caption.setAttribute('contenteditable', 'false');
+                    if (ok) {
+                        const name = caption.textContent.trim() || 'Folder';
+                        caption.textContent = name;
+                        folder.setAttribute('data-title', name);
+                    } else {
+                        // revert display text to attribute
+                        caption.textContent = folder.getAttribute('data-title') || 'Folder';
+                    }
+                }
+                function onBlur() { finish(true); }
+                function onKey(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+                    if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+                }
+                caption.addEventListener('blur', onBlur);
+                caption.addEventListener('keydown', onKey);
+            }
+
+            // Track children inside folder via data-children (comma separated ids)
+            function addChildToFolder(folder, card) {
+                const id = ensureId(card);
+                const raw = folder.getAttribute('data-children') || '';
+                const set = new Set(raw ? raw.split(',').filter(Boolean) : []);
+                set.add(id);
+                folder.setAttribute('data-children', Array.from(set).join(','));
+                // optional: visually indicate count
+                updateFolderBadge(folder);
+                // Persist members to localStorage under folder key
+                persistFolders();
+            }
+            function removeChildFromFolder(folder, card) {
+                const id = card.id;
+                const raw = folder.getAttribute('data-children') || '';
+                const list = raw ? raw.split(',').filter(Boolean) : [];
+                const next = list.filter(x => x !== id);
+                folder.setAttribute('data-children', next.join(','));
+                updateFolderBadge(folder);
+                persistFolders();
+            }
+            function updateFolderBadge(folder) {
+                // could render count overlay; keep minimal for now
+            }
+
+            // Persist all folders' children list so membership survives reload
+            const STORAGE_FOLDERS = 'wavex.games.folders.v1';
+            function persistFolders() {
+                const data = {};
+                Array.from(grid.querySelectorAll('.game-card.folder-card')).forEach(f => {
+                    const id = f.id || '';
+                    const title = f.getAttribute('data-title') || 'Folder';
+                    const children = (f.getAttribute('data-children') || '');
+                    if (id) data[id] = { title, children };
+                });
+                try { localStorage.setItem(STORAGE_FOLDERS, JSON.stringify(data)); } catch {}
+            }
+            function restoreFolders() {
+                let saved = {};
+                try { saved = JSON.parse(localStorage.getItem(STORAGE_FOLDERS) || '{}'); } catch { saved = {}; }
+                Object.entries(saved).forEach(([id, obj]) => {
+                    const el = document.getElementById(id);
+                    if (el && el.classList.contains('folder-card')) {
+                        el.setAttribute('data-title', obj.title || 'Folder');
+                        el.setAttribute('data-children', obj.children || '');
+                        const cap = el.querySelector('.game-caption');
+                        if (cap) cap.textContent = obj.title || 'Folder';
+                    }
+                });
+            }
+            // run once on load
+            restoreFolders();
+
+            // Make folder droppable and grid root droppable to "remove from folder"
+            function makeDroppable(folder) {
+                folder.addEventListener('dragover', (e) => { e.preventDefault(); });
+                folder.addEventListener('drop', (e) => {
+                    const id = e.dataTransfer.getData('text/plain');
+                    const card = document.getElementById(id);
+                    if (!card || card === folder) return;
+                    // only accept game-card (not folder into folder)
+                    if (card.classList.contains('folder-card')) return;
+                    addChildToFolder(folder, card);
+                    // hide original from desktop when moved into folder
+                    card.style.display = 'none';
+                });
+            }
+
+            // Enable dragging of game-cards through native DnD without breaking existing pointer-drag layout
+            function enableDragForCards() {
+                document.querySelectorAll('#games-grid .game-card').forEach(card => {
+                    if (card.classList.contains('folder-card')) return;
+                    // Add draggable ghost for HTML5 DnD
+                    card.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', ensureId(card));
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    // Allow starting a native drag when holding Ctrl (so we don't conflict with pointer layout drag)
+                    card.addEventListener('pointerdown', (e) => {
+                        if (e.ctrlKey) {
+                            // temporarily set draggable to true to allow native DnD
+                            card.setAttribute('draggable', 'true');
+                        } else {
+                            card.setAttribute('draggable', 'false');
+                        }
+                    });
+                    card.addEventListener('pointerup', () => {
+                        card.setAttribute('draggable', 'false');
+                    });
+                });
+
+                // Root grid: dropping back removes from folder and shows on desktop again at drop position
+                grid.addEventListener('dragover', (e) => { e.preventDefault(); });
+                grid.addEventListener('drop', (e) => {
+                    const id = e.dataTransfer.getData('text/plain');
+                    const card = document.getElementById(id);
+                    if (!card) return;
+                    // find any folder that currently contains it and remove
+                    document.querySelectorAll('#games-grid .folder-card').forEach(f => removeChildFromFolder(f, card));
+                    // place it at drop location on grid
+                    const rect = grid.getBoundingClientRect();
+                    const nx = snap(e.clientX - rect.left);
+                    const ny = snap(e.clientY - rect.top);
+                    card.style.left = nx + 'px';
+                    card.style.top  = ny + 'px';
+                    card.style.display = '';
+                    // persist new position
+                    const positions = loadPositions();
+                    positions[ensureId(card)] = { x: nx, y: ny };
+                    savePositions(positions);
+                });
+            }
+
+            enableDragForCards();
+
+            // Wire menu actions
+            menu.addEventListener('click', (e) => {
+                const item = e.target.closest('.menu-item');
+                if (!item) return;
+                const action = item.getAttribute('data-action');
+                hideMenu();
+
+                if (action === 'new-folder') {
+                    // place folder roughly at menu position; menu's current left/top
+                    const x = parseInt(menu.style.left || '100', 10) + 8;
+                    const y = parseInt(menu.style.top || '100', 10) + 8;
+                    const folder = createFolderAt(x, y);
+                    // immediately rename
+                    startRename(folder);
+                }
+                if (action === 'reset-layout') {
+                    const btn = document.getElementById('games-reset-layout');
+                    btn && btn.click();
+                }
+                if (action === 'sort-az') {
+                    const btn = document.getElementById('games-sort-alpha');
+                    btn && btn.click();
+                }
+            });
+
+            // Handle per-card context menu actions
+            cardMenu.addEventListener('click', (e) => {
+                const item = e.target.closest('.menu-item');
+                if (!item) return;
+                const action = item.getAttribute('data-action');
+                const target = cardMenuTarget;
+                hideCardMenu();
+                if (!target) return;
+
+                if (action === 'open') {
+                    // Simulate double-click to open the game
+                    target.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+                    return;
+                }
+                if (action === 'add-to-folder') {
+                    // Collect existing folders
+                    const folders = Array.from(document.querySelectorAll('#games-grid .folder-card'));
+                    if (!folders.length) {
+                        // If no folders, create one near the menu and prompt rename, then add
+                        const x = parseInt(cardMenu.style.left || '100', 10) + 8;
+                        const y = parseInt(cardMenu.style.top || '100', 10) + 8;
+                        const folder = createFolderAt(x, y);
+                        startRename(folder);
+                        addChildToFolder(folder, target);
+                        // Hide icon since it's inside folder now
+                        target.style.display = 'none';
+                        return;
+                    }
+
+                    // Build a small chooser popover next to the menu
+                    const chooser = document.createElement('div');
+                    chooser.className = 'desktop-context';
+                    chooser.style.minWidth = '220px';
+                    chooser.innerHTML = `
+                        <div style="padding:6px 8px 4px 8px;color:#aef">Add to folder</div>
+                        <div class="sep"></div>
+                        <div id="folder-list"></div>
+                        <div class="sep"></div>
+                        <div class="menu-item" data-action="new-folder-inline">+ New Folder…</div>
+                    `;
+                    document.body.appendChild(chooser);
+
+                    // Populate folder list
+                    const list = chooser.querySelector('#folder-list');
+                    folders.forEach(f => {
+                        const name = f.getAttribute('data-title') || f.querySelector('.game-caption')?.textContent?.trim() || 'Folder';
+                        const row = document.createElement('div');
+                        row.className = 'menu-item';
+                        row.textContent = name;
+                        row.addEventListener('click', () => {
+                            addChildToFolder(f, target);
+                            target.style.display = 'none';
+                            chooser.remove();
+                        });
+                        list.appendChild(row);
+                    });
+
+                    // Position chooser near the card menu
+                    const mx = parseInt(cardMenu.style.left || '100', 10);
+                    const my = parseInt(cardMenu.style.top || '100', 10);
+                    chooser.style.left = (mx + 8) + 'px';
+                    chooser.style.top = (my + 8) + 'px';
+                    // ensure viewport
+                    const cr = chooser.getBoundingClientRect();
+                    const vw = window.innerWidth, vh = window.innerHeight;
+                    if (cr.right > vw - 4) chooser.style.left = (vw - cr.width - 4) + 'px';
+                    if (cr.bottom > vh - 4) chooser.style.top = (vh - cr.height - 4) + 'px';
+                    chooser.classList.add('open');
+
+                    const cleanup = (ev) => {
+                        if (!chooser.contains(ev.target)) {
+                            chooser.remove();
+                            document.removeEventListener('click', cleanup, true);
+                            window.removeEventListener('blur', cleanup, true);
+                            window.removeEventListener('resize', cleanup, true);
+                            document.removeEventListener('scroll', cleanup, true);
+                        }
+                    };
+                    document.addEventListener('click', cleanup, true);
+                    window.addEventListener('blur', cleanup, true);
+                    window.addEventListener('resize', cleanup, true);
+                    document.addEventListener('scroll', cleanup, true);
+
+                    chooser.addEventListener('click', (ev) => {
+                        const it = ev.target.closest('.menu-item');
+                        if (!it) return;
+                        if (it.getAttribute('data-action') === 'new-folder-inline') {
+                            // Create folder near chooser, rename, then add
+                            const x = parseInt(chooser.style.left || '100', 10) + 8;
+                            const y = parseInt(chooser.style.top || '100', 10) + 8;
+                            const folder = createFolderAt(x, y);
+                            startRename(folder);
+                            addChildToFolder(folder, target);
+                            target.style.display = 'none';
+                            chooser.remove();
+                        }
+                    });
+                }
+            });
+        })();
         // macOS-style menu bar: clock + title sync + functional menus
         (function macMenuBar() {
             // Ensure DOM elements exist before wiring events
@@ -1749,81 +2489,15 @@
             }
             setTitle('Desktop');
 
-            // Build dropdowns for each top-level menu
+            // Single “Extensions” menu that opens the Extensions window
             const menuDefs = {
-                file: [
-                    { label: 'New Window', kbd: '⌘N', action: () => createAppWindow('about:blank', 'New Window') },
-                    { label: 'Open…', kbd: '⌘O', action: () => createAppWindow('about:blank', 'Open…') },
+                // Remove File/Edit by simply not defining them.
+                extensions: [
+                    { label: 'Open Extensions', kbd: '⌘E', action: () => openExtensionsWindow() },
                     'sep',
-                    { label: 'Close Window', kbd: '⌘W', action: () => {
-                        const top = document.querySelector('.app-window.active') || document.querySelector('.app-window:last-of-type');
-                        if (top) top.remove();
-                    }},
-                    { label: 'Quit Wave‑X', kbd: '⌘Q', action: () => {
-                        // Simulate "quit": close all app windows
-                        document.querySelectorAll('.app-window').forEach(w => w.remove());
-                    }},
-                ],
-                edit: [
-                    { label: 'Undo', kbd: '⌘Z', action: () => document.execCommand && document.execCommand('undo') },
-                    { label: 'Redo', kbd: '⇧⌘Z', action: () => document.execCommand && document.execCommand('redo') },
-                    'sep',
-                    { label: 'Cut', kbd: '⌘X', action: () => document.execCommand && document.execCommand('cut') },
-                    { label: 'Copy', kbd: '⌘C', action: () => document.execCommand && document.execCommand('copy') },
-                    { label: 'Paste', kbd: '⌘V', action: () => document.execCommand && document.execCommand('paste') },
-                ],
-                view: [
-                    { label: 'Show FPS HUD', kbd: '', action: () => ensureFpsHud() },
-                    { label: 'Toggle Brainrot', kbd: '', action: () => {
-                        const on = !document.body.classList.contains('brainrot');
-                        toggleBrainrot(on);
-                        const outer = document.getElementById('brainrot-toggle');
-                        if (outer) outer.checked = on;
-                    }},
-                    'sep',
-                    { label: 'Reset Desktop Layout', kbd: '', action: () => {
-                        const resetBtn = document.getElementById('games-reset-layout');
-                        resetBtn && resetBtn.click();
-                    }},
-                ],
-                go: [
-                    { label: 'Desktop', kbd: '⌘1', action: () => document.querySelector('[data-tab="games"]').click() },
-                    { label: 'Applications', kbd: '⌘2', action: () => document.querySelector('[data-tab="apps"]').click() },
-                    { label: 'Proxy', kbd: '⌘3', action: () => document.querySelector('[data-tab="wave-proxy"]').click() },
-                ],
-                window: [
-                    { label: 'Minimize Active', kbd: '⌘M', action: () => {
-                        const win = document.querySelector('.app-window.active');
-                        if (win) win.style.display = 'none';
-                    }},
-                    { label: 'Zoom (Maximize) Active', kbd: '', action: () => {
-                        const win = document.querySelector('.app-window.active');
-                        if (win) win.classList.toggle('maximized');
-                    }},
-                    { label: 'Bring All to Front', kbd: '', action: () => {
-                        document.querySelectorAll('.app-window').forEach(w => {
-                            w.style.zIndex = String(1000 + Date.now() % 100000);
-                        });
-                    }},
-                ],
-                help: [
-                    { label: 'About Wave‑X', kbd: '', action: () => {
-                        const html = `
-                          <div style="padding:14px;display:grid;gap:10px;color:#cfc;font-family:Consolas,monospace">
-                            <div style="display:flex;align-items:center;gap:8px">
-                              <svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true" style="filter:drop-shadow(0 0 6px rgba(0,255,0,0.35))">
-                                <path d="M6,36 C14,28 22,44 30,36 C38,28 46,44 58,34" fill="none" stroke="#00ff88" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M42,18 L56,32 M56,18 L42,32" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
-                              </svg>
-                              <strong>About Wave‑X</strong>
-                            </div>
-                            <div>macOS‑style menu bar demo with in‑page windows.</div>
-                          </div>
-                        `;
-                        const win = createAppWindow('about:blank', 'About Wave‑X');
-                        const body = win.querySelector('.app-body');
-                        body.innerHTML = html;
-                      } },
+                    { label: 'Popular: uBlock Origin', kbd: '', action: () => openExtensionsWindow('uBlock Origin') },
+                    { label: 'Popular: Dark Reader', kbd: '', action: () => openExtensionsWindow('Dark Reader') },
+                    { label: 'Popular: BetterTTV', kbd: '', action: () => openExtensionsWindow('BetterTTV') },
                 ],
             };
 
@@ -1843,6 +2517,14 @@
                     item.addEventListener('click', (e) => {
                         e.stopPropagation();
                         const key = item.dataset.menu;
+
+                        // Special-case Extensions to open immediately like game cards do (no dropdown)
+                        if (key === 'extensions') {
+                            closeDropdown();
+                            try { openExtensionsWindow(); } catch {}
+                            return;
+                        }
+
                         if (openState.trigger === item) {
                             closeDropdown();
                         } else {
@@ -1853,6 +2535,8 @@
                     item.addEventListener('mouseenter', () => {
                         if (openState.dd) {
                             const key = item.dataset.menu;
+                            // Do not open a dropdown for Extensions (it opens a window directly)
+                            if (key === 'extensions') return;
                             openDropdown(item, key);
                         }
                     });
@@ -1917,6 +2601,7 @@
                         if (k === 'n') { e.preventDefault(); createAppWindow('about:blank', 'New Window'); }
                         if (k === 'w') { e.preventDefault(); const top = document.querySelector('.app-window.active') || document.querySelector('.app-window:last-of-type'); top && top.remove(); }
                         if (k === 'q') { e.preventDefault(); document.querySelectorAll('.app-window').forEach(w => w.remove()); }
+                        if (k === 'e') { e.preventDefault(); openExtensionsWindow(); }
                         if (k === '1') { e.preventDefault(); document.querySelector('[data-tab="games"]').click(); }
                         if (k === '2') { e.preventDefault(); document.querySelector('[data-tab="customization"]').click(); }
                         if (k === '3') { e.preventDefault(); document.querySelector('[data-tab="wave-proxy"]').click(); }
@@ -1930,8 +2615,8 @@
                         const titleMap = { 'games': 'Desktop', 'wave-proxy': 'Proxy', 'customization': 'Customization', 'ai': 'AI' };
                         setTitle(titleMap[tab.dataset.tab] || 'Wave‑X');
                         document.querySelectorAll('.mac-item').forEach(i => i.classList.remove('active'));
-                        const file = document.querySelector('.mac-item[data-menu="file"]');
-                        if (file) file.classList.add('active');
+                        const ext = document.querySelector('.mac-item[data-menu="extensions"]');
+                        if (ext) ext.classList.add('active');
                         closeDropdown();
                     });
                 });
@@ -2579,7 +3264,7 @@ MatrixFX.runScript = (lines, after) => {
         })();
 
         // Launch Wave‑X: button in Proxy tab opens as an app window (like games)
-        (function wireLaunchWaveX(){
+(function wireLaunchWaveX(){
             // hover effects for big green button (delegated once)
             document.addEventListener('mouseover', (e) => {
                 const b = e.target.closest('#proxy-launch');
@@ -2627,6 +3312,8 @@ launch.addEventListener('click', () => {
             window.__MatrixFX && window.__MatrixFX.runScript(lines, () => {
                 const url = 'https://uvv2.rhw.one/active/';
                 const win = createAppWindow(url, 'Wave‑X Proxy');
+                // expose handle globally for control buttons
+                window.__proxyAppWin = win;
                 try {
                     // Larger initial size by default
                     const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -2661,6 +3348,121 @@ launch.addEventListener('click', () => {
                 });
                 obs.observe(document.body, { childList: true, subtree: true });
             }
+
+            // Wire extra toolbar buttons in Proxy tab
+            (function wireProxyControls(){
+                const byId = (id) => document.getElementById(id);
+                const btnRestart = byId('px-restart');
+                const btnNewTab  = byId('px-newtab');
+                const btnFull    = byId('px-fullscreen');
+                const btnThrottle= byId('px-throttle');
+                const btnPrivacy = byId('px-privacy');
+                const btnClear   = byId('px-clear');
+
+                function withProxyIframe(fn) {
+                    const win = window.__proxyAppWin;
+                    if (!win) return;
+                    const iframe = win.querySelector('iframe.app-iframe');
+                    if (!iframe) return;
+                    fn(iframe, win);
+                }
+
+                // Restart: reload current proxy window iframe
+                btnRestart?.addEventListener('click', () => {
+                    withProxyIframe((iframe) => {
+                        try { iframe.contentWindow?.location?.reload(); } catch {}
+                        // fallback hard reload
+                        const src = iframe.src;
+                        iframe.src = src;
+                    });
+                });
+
+                // New Tab: open another in-site window to same start page
+                btnNewTab?.addEventListener('click', () => {
+                    createAppWindow('https://uvv2.rhw.one/active/', 'Wave‑X Proxy');
+                });
+
+                // Fullscreen: toggle maximize on the proxy window if open, else launch then maximize
+                btnFull?.addEventListener('click', () => {
+                    if (window.__proxyAppWin) {
+                        window.__proxyAppWin.classList.toggle('maximized');
+                    } else {
+                        // launch then maximize
+                        const fakeClick = new Event('click');
+                        document.getElementById('proxy-launch')?.dispatchEvent(fakeClick);
+                        setTimeout(() => {
+                            window.__proxyAppWin && window.__proxyAppWin.classList.add('maximized');
+                        }, 300);
+                    }
+                });
+
+                // Throttle: rudimentary delay injector for setTimeout/fetch inside the proxy iframe
+                let throttled = false;
+                btnThrottle?.addEventListener('click', () => {
+                    throttled = !throttled;
+                    btnThrottle.textContent = `Throttle: ${throttled ? 'On' : 'Off'}`;
+                    withProxyIframe((iframe) => {
+                        try {
+                            const w = iframe.contentWindow;
+                            if (!w) return;
+                            // inject minimal shim; safe-guard multiple times
+                            const script = w.document.createElement('script');
+                            script.textContent = `
+                                (function(){
+                                    if (window.__throttleShimInstalled) { window.__netThrottle=${throttled?'true':'false'}; return; }
+                                    window.__throttleShimInstalled = true;
+                                    window.__netThrottle = ${throttled?'true':'false'};
+                                    const origFetch = window.fetch.bind(window);
+                                    window.fetch = function(...args){
+                                        const go = () => origFetch(...args);
+                                        return window.__netThrottle ? new Promise(res=>setTimeout(()=>res(go()), 600)) : go();
+                                    };
+                                    const origSetTimeout = window.setTimeout.bind(window);
+                                    window.setTimeout = function(fn, t, ...rest){
+                                        const d = window.__netThrottle ? Math.min(1200, (t||0)+180) : (t||0);
+                                        return origSetTimeout(fn, d, ...rest);
+                                    };
+                                })();
+                            `;
+                            w.document.documentElement.appendChild(script);
+                        } catch {}
+                    });
+                });
+
+                // Privacy mode: close all app windows and open a fresh blank proxy
+                btnPrivacy?.addEventListener('click', () => {
+                    document.querySelectorAll('.app-window').forEach(w => w.remove());
+                    window.__proxyAppWin = null;
+                    const win = createAppWindow('about:blank', 'Wave‑X Proxy (Private)');
+                    window.__proxyAppWin = win;
+                    setTimeout(() => {
+                        const iframe = win.querySelector('iframe.app-iframe');
+                        if (iframe) iframe.src = 'https://uvv2.rhw.one/active/';
+                    }, 50);
+                });
+
+                // Clear "cache": script then clear localStorage keys used by this site and reload proxy iframe
+                btnClear?.addEventListener('click', () => {
+                    const lines = [
+                        "> cache: clearing wavex.* keys …",
+                        "> local storage: ok",
+                        "> refreshing proxy …"
+                    ];
+                    proxyFx(lines, () => {
+                        try {
+                            Object.keys(localStorage).forEach(k => {
+                                if (k.startsWith('wavex.')) localStorage.removeItem(k);
+                            });
+                        } catch {}
+                        withProxyIframe((iframe) => {
+                            const src = iframe.src;
+                            iframe.src = 'about:blank';
+                            setTimeout(()=> iframe.src = src, 60);
+                        });
+                    });
+                });
+
+            })();
         })();
 
         // Minimal "OS-like" window manager for game cards
@@ -3536,6 +4338,297 @@ function createAppWindow(url, titleText) {
             // removed outer brainrot toggle; nothing to sync here
         })();
 
+        // Changes tab: "AI-human-like" blog-style entries + Report Bug button
+(function tabSwitcher(){
+            // Generic tab switching for .tab/.content with data-tab/id match
+            const tabsRoot = document.getElementById('main-tabs') || document.querySelector('.tabs');
+            const tabs = Array.from(tabsRoot?.querySelectorAll('.tab') || []);
+            const panels = Array.from(document.querySelectorAll('.content'));
+
+            function activate(name){
+                // deactivate all
+                tabs.forEach(t => {
+                    const is = t.getAttribute('data-tab') === name;
+                    t.classList.toggle('active', is);
+                    t.setAttribute('aria-selected', String(is));
+                });
+                panels.forEach(p => {
+                    const is = p.id === name;
+                    p.classList.toggle('active', is);
+                    // display is controlled by .content.active CSS, but also force display for safety
+                    p.style.display = is ? 'flex' : 'none';
+                });
+                // update menubar title if present
+                const titleNode = document.getElementById('mac-window-title');
+                if (titleNode) {
+                    const t = tabs.find(tb => tb.getAttribute('data-tab') === name);
+                    const label = t ? t.textContent.trim() : name;
+                    titleNode.textContent = label.replace(/\s+/g,' ').trim();
+                }
+            }
+
+            // wire clicks
+            tabs.forEach(t => {
+                t.addEventListener('click', () => activate(t.getAttribute('data-tab')));
+                // give each tab an id for a11y
+                if (!t.id) t.id = 'tab-' + (t.getAttribute('data-tab') || ('t-' + Math.random().toString(36).slice(2)));
+            });
+
+            // Ensure initial state consistent with any .active present
+            const activeTab = tabs.find(t => t.classList.contains('active'))?.getAttribute('data-tab') || 'games';
+            activate(activeTab);
+        })();
+
+        (function changesTab() {
+            const FEED_ID = 'changes-feed';
+            const REPORT_BTN_ID = 'changes-report-bug';
+            const BUG_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSe5MFkJcZlOWjbr3fXGeBegkyPvRZYTsydxHrDjSs5YOTIOeA/viewform?usp=header';
+
+            // A few seed entries; first load is cached to localStorage to persist user session
+            const seedEntries = [
+                // August 2025
+                {
+                    date: '2025-08-05',
+                    title: 'New “Changes” tab lands',
+                    body: [
+                        'Shipped a dedicated Changes tab to keep updates tidy and readable.',
+                        'The tab mirrors the Wave‑X look‑and‑feel and scales well on smaller screens.',
+                        'This is the new home for release notes and site tweaks.'
+                    ],
+                    tone: 'Confident'
+                },
+                {
+                    date: '2025-08-05',
+                    title: 'Report a bug, the fast way',
+                    body: [
+                        'Added a Report a bug button right in the header. One click opens our form in a sandboxed window.',
+                        'Bug reports go straight into our triage queue. Screenshots and steps‑to‑repro are gold.'
+                    ],
+                    tone: 'Helpful'
+                },
+                {
+                    date: '2025-08-04',
+                    title: 'Desktop feels smoother',
+                    body: [
+                        'Fine‑tuned drag thresholds and layout snapping for desktop tiles.',
+                        'Small polish, big feel: selections behave more predictably and reset is snappier.'
+                    ],
+                    tone: 'Calm'
+                },
+
+                // July 2025 – blog posts backfilled from July 10 (Early Beta) forward
+                {
+                    date: '2025-07-31',
+                    title: 'Proxy window polish',
+                    body: [
+                        'Refined the Chrome‑OS‑like proxy shell toolbar with clearer icons and spacing.',
+                        'Improved tab title syncing from iframe load events and added loading state.',
+                        'Hardened sandbox settings and normalized URL handling (search fallback, protocol inference).'
+                    ],
+                    tone: 'Polish'
+                },
+                {
+                    date: '2025-07-28',
+                    title: 'Desktop selection + multi‑drag',
+                    body: [
+                        'Introduced marquee selection with a dashed selection rectangle.',
+                        'Multi‑select now supports group dragging with grid snapping and bounds clamping.',
+                        'Persisted positions per tile with localStorage for stable layouts across reloads.'
+                    ],
+                    tone: 'Productivity'
+                },
+                {
+                    date: '2025-07-26',
+                    title: 'Team assembles: roles and roadmap',
+                    body: [
+                        'Formalized the core team: product, frontend, design, and DX. Defined on‑call rotations.',
+                        'Drafted a 6‑week roadmap covering desktop UX, proxy polish, and accessibility upgrades.',
+                        'Adopted lightweight RFCs for bigger changes; weekly demo cadence established.'
+                    ],
+                    tone: 'Org'
+                },
+                {
+                    date: '2025-07-24',
+                    title: 'Window manager stability',
+                    body: [
+                        'Tightened z‑index and activation logic for in‑page app windows.',
+                        'ESC quick‑close shipped as an optional extension for privacy‑minded users.',
+                        'Smoothed focus and prevention of accidental double opens.'
+                    ],
+                    tone: 'Stable'
+                },
+                {
+                    date: '2025-07-22',
+                    title: 'Feature additions: extensions and pills',
+                    body: [
+                        'Introduced in‑site “Extensions” with install/uninstall and persistent state.',
+                        'Added top‑bar pills to reflect installed extensions with live status.',
+                        'Laid the APIs for extension‑owned UI (e.g., toggle buttons in the tips bar).'
+                    ],
+                    tone: 'Feature'
+                },
+                {
+                    date: '2025-07-21',
+                    title: 'Brainrot visual effects (optional)',
+                    body: [
+                        'Added clouds and “rain” overlays gated behind Brainrot mode.',
+                        'Implemented periodic fun tabs inside our in‑site window system (no external popups).',
+                        'All effects are reversible and persisted with a simple toggle.'
+                    ],
+                    tone: 'Playful'
+                },
+                {
+                    date: '2025-07-20',
+                    title: 'Team growth: design + QA join',
+                    body: [
+                        'Welcomed a dedicated designer to standardize the Matrix aesthetic and component library.',
+                        'Expanded QA coverage with regression checklists for drag/select, proxy tabs, and settings.',
+                        'Started accessibility passes: color contrast and ARIA roles prioritized.'
+                    ],
+                    tone: 'Team'
+                },
+                {
+                    date: '2025-07-18',
+                    title: 'Performance HUD and autosort',
+                    body: [
+                        'Performance HUD extension shows FPS overlay and rolling average.',
+                        'Desktop Autosort listens to container resizes and reflows tiles into neat rows.',
+                        'Both features are modular extensions with install/uninstall and persistent state.'
+                    ],
+                    tone: 'Insightful'
+                },
+                {
+                    date: '2025-07-16',
+                    title: 'Feature additions: desktop controls',
+                    body: [
+                        'Added A→Z sorting and one‑click layout reset controls directly above the desktop grid.',
+                        'Persisted layouts per tile and improved bounds clamping on window resize.',
+                        'Prepped folder groundwork and per‑tile context menu hooks.'
+                    ],
+                    tone: 'Feature'
+                },
+                {
+                    date: '2025-07-15',
+                    title: 'Matrix aesthetic baseline',
+                    body: [
+                        'Standardized typography, grid backgrounds, and glow accents across components.',
+                        'Consolidated button styles (.px‑btn) and tab visuals for consistency.',
+                        'Improved accessibility: ARIA roles for tabs and panels, better focus targets.'
+                    ],
+                    tone: 'Design'
+                },
+                {
+                    date: '2025-07-13',
+                    title: 'Early beta desktop interactions',
+                    body: [
+                        'Stabilized drag thresholds for tiles to reduce accidental drags on clicks.',
+                        'Introduced visual selected state and subtle hover transforms.',
+                        'Captured initial user feedback on spacing and snap grid size.'
+                    ],
+                    tone: 'Beta'
+                },
+                {
+                    date: '2025-07-12',
+                    title: 'Desktop icons go free‑form',
+                    body: [
+                        'Game/app tiles now behave like a desktop: drag, snap, and persist.',
+                        'Added A→Z sorting and one‑click layout reset controls.',
+                        'Laid groundwork for folders and per‑tile context menus.'
+                    ],
+                    tone: 'Foundational'
+                },
+                {
+                    date: '2025-07-11',
+                    title: 'Early beta: tabs and panels',
+                    body: [
+                        'Implemented the sidebar tabs (Games, Proxy, Customization, AI) and content panels.',
+                        'Hooked up an initial tab switcher and a consistent header treatment per panel.',
+                        'Established a content grid to support full‑height apps like the proxy shell.'
+                    ],
+                    tone: 'Beta'
+                },
+                {
+                    date: '2025-07-10',
+                    title: 'Early beta & development kickoff',
+                    body: [
+                        'Bootstrapped Wave‑X with the Matrix canvas background and core layout (menubar, sidebar tabs, content panels).',
+                        'Established styling tokens and custom cursor system with broad element coverage.',
+                        'Set up local storage namespaces and utility scaffolding; formed the initial working group.'
+                    ],
+                    tone: 'Kickoff'
+                }
+            ];
+
+            function loadEntries() {
+                try {
+                    const raw = localStorage.getItem('wavex.changes.entries.v1');
+                    if (raw) return JSON.parse(raw);
+                } catch {}
+                // Seed on first run
+                try { localStorage.setItem('wavex.changes.entries.v1', JSON.stringify(seedEntries)); } catch {}
+                return seedEntries;
+            }
+
+            function humanize(dateStr) {
+                try {
+                    const d = new Date(dateStr + 'T00:00:00');
+                    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                } catch { return dateStr; }
+            }
+
+            function renderFeed(entries) {
+                const feed = document.getElementById(FEED_ID);
+                if (!feed) return;
+                feed.innerHTML = '';
+                entries.forEach(e => {
+                    const toneBadge = e.tone ? `<span style="font-size:11px;opacity:.8;border:1px solid rgba(0,255,0,0.25);padding:2px 6px;border-radius:999px;background:rgba(0,255,0,0.06)">${e.tone}</span>` : '';
+                    const bodyHtml = (e.body || []).map(p => `<p style="margin:0 0 8px 0;opacity:.92">${escapeHtml(p)}</p>`).join('');
+                    const card = document.createElement('article');
+                    card.style.cssText = 'border:1px solid rgba(0,255,0,0.18);border-radius:10px;background:rgba(0,255,0,0.04);padding:12px;display:grid;gap:8px';
+                    card.innerHTML = `
+                        <header style="display:flex;align-items:center;gap:10px">
+                            <div style="display:grid">
+                                <div style="font-weight:800;color:#eaffea">${escapeHtml(e.title || 'Update')}</div>
+                                <div style="font-size:12px;opacity:.8">${humanize(e.date || '')}</div>
+                            </div>
+                            <div style="margin-left:auto;display:inline-flex;gap:6px;align-items:center">${toneBadge}</div>
+                        </header>
+                        <div>${bodyHtml}</div>
+                    `;
+                    feed.appendChild(card);
+                });
+            }
+
+function escapeHtml(s) {
+                // Proper escaping
+                return String(s || '')
+                    .replace(/&/g, '&')
+                    .replace(/</g, '<')
+                    .replace(/>/g, '>')
+                    .replace(/"/g, '"')
+                    .replace(/'/g, '&#039;');
+            }
+
+            // Wire report bug button to open in an in-page window (uses createAppWindow)
+            function wireReportBug() {
+                const btn = document.getElementById(REPORT_BTN_ID);
+                if (!btn) return;
+                btn.addEventListener('click', () => {
+                    try { createAppWindow(BUG_FORM_URL, 'Report a bug'); } catch {
+                        // Fallback to a new tab override (our window.open has been patched to use createAppWindow)
+                        try { window.open(BUG_FORM_URL, '_blank'); } catch {}
+                    }
+                });
+            }
+
+/**
+             * Initialize feed now so the “Changes” tab shows content immediately after page loads.
+             * Feed persists in localStorage and can be extended later by pushing into wavex.changes.entries.v1.
+             */
+            renderFeed(loadEntries());
+            wireReportBug();
+        })();
+
         // Proxy tab logic (Chrome OS-like)
         (function proxyApp() {
             const shell = document.querySelector('#wave-proxy .proxy-shell');
@@ -3900,6 +4993,486 @@ function createAppWindow(url, titleText) {
 
     requestAnimationFrame(draw);
 })();
+
+        // Extensions Window - now includes extensions that modify the site at runtime
+        function openExtensionsWindow(focusName) {
+            const win = createAppWindow('about:blank', 'Extensions');
+            const body = win.querySelector('.app-body');
+
+            // Helpers to sync pills in the top bar
+            // Persistent install state
+            const EXT_STORAGE_KEY = 'wavex.extensions.installed.v1';
+            function loadInstalledSet() {
+                try {
+                    const raw = localStorage.getItem(EXT_STORAGE_KEY);
+                    if (!raw) return new Set();
+                    const arr = JSON.parse(raw);
+                    return new Set(Array.isArray(arr) ? arr : []);
+                } catch { return new Set(); }
+            }
+            function saveInstalledSet(set) {
+                try {
+                    localStorage.setItem(EXT_STORAGE_KEY, JSON.stringify(Array.from(set)));
+                } catch {}
+            }
+
+            function pillIdFor(name){ return `pill-${name.replace(/\s+/g,'-').toLowerCase()}`; }
+
+            function addExtPill(name, tag, installing=false, active=false) {
+                const bar = document.getElementById('ext-pills');
+                if (!bar) return;
+                const id = pillIdFor(name);
+                if (document.getElementById(id)) return;
+                const pill = document.createElement('button');
+                pill.type = 'button';
+                pill.className = 'ext-pill';
+                pill.id = id;
+                pill.setAttribute('data-name', name);
+                pill.setAttribute('data-tag', tag);
+                pill.setAttribute('aria-pressed', active ? 'true' : 'false');
+                pill.title = active ? 'Click to disable' : 'Click to enable';
+                pill.innerHTML = `${installing ? '<span class="spin" aria-hidden="true"></span>' : ''}<span class="nm">${name}</span><span class="tg" style="opacity:.75;font-size:11px">· ${tag}</span>`;
+                bar.appendChild(pill);
+            }
+            function setExtPillInstalling(name, installing) {
+                const pill = document.getElementById(pillIdFor(name));
+                if (!pill) return;
+                const has = pill.querySelector('.spin');
+                if (installing && !has) {
+                    const s = document.createElement('span');
+                    s.className = 'spin';
+                    pill.insertBefore(s, pill.firstChild);
+                } else if (!installing && has) {
+                    has.remove();
+                }
+            }
+            function setExtPillActive(name, active) {
+                const pill = document.getElementById(pillIdFor(name));
+                if (!pill) return;
+                pill.setAttribute('aria-pressed', active ? 'true' : 'false');
+                pill.title = active ? 'Click to disable' : 'Click to enable';
+            }
+            function removeExtPill(name) {
+                document.getElementById(pillIdFor(name))?.remove();
+            }
+
+            // Registry of site-actual extensions: each has install() and uninstall()
+            const installedSet = loadInstalledSet();
+
+            const EXTENSIONS = [
+                {
+                    name: 'Dark Matrix++',
+                    desc: 'Deepens contrast, tweaks glow, and adds a global dark theme toggle.',
+                    tag: 'Theme',
+                    icon: '🌑',
+                    installed: installedSet.has('Dark Matrix++'),
+                    async install() {
+                        if (document.getElementById('ext-dark-matrix-style')) return;
+                        addExtPill(this.name, this.tag, true, false);
+                        await new Promise(res => setTimeout(res, 22000 + Math.floor(Math.random()*8000)));
+                        const s = document.createElement('style');
+                        s.id = 'ext-dark-matrix-style';
+                        s.textContent = `
+                          :root { --mx-accent: #00ff88; }
+                          body { color: #cfe; }
+                          .content, .proxy-shell, .game-card::before {
+                            box-shadow: 0 0 16px rgba(0,255,0,0.12), inset 0 0 0 1px rgba(0,255,0,0.08) !important;
+                          }
+                          .games-grid {
+                            background:
+                              linear-gradient(0deg, rgba(0,255,0,0.08) 1px, transparent 1px) 0 0/100% 44px,
+                              linear-gradient(90deg, rgba(0,255,0,0.08) 1px, transparent 1px) 0 0/44px 100% !important;
+                          }
+                        `;
+                        document.head.appendChild(s);
+                        setExtPillInstalling(this.name, false);
+                        addExtPill(this.name, this.tag, false, true);
+                        this.installed = true;
+                        installedSet.add(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, true);
+                    },
+                    uninstall() {
+                        document.getElementById('ext-dark-matrix-style')?.remove();
+                        this.installed = false;
+                        installedSet.delete(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, false);
+                    }
+                },
+                {
+                    name: 'Desktop Autosort',
+                    desc: 'Automatically lays out the desktop icons into neat rows on resize.',
+                    tag: 'Productivity',
+                    icon: '🗂️',
+                    installed: installedSet.has('Desktop Autosort'),
+                    _ro: null,
+                    async install() {
+                        if (this._ro) return;
+                        addExtPill(this.name, this.tag, true, false);
+                        await new Promise(res => setTimeout(res, 20000 + Math.floor(Math.random()*8000)));
+                        const grid = document.querySelector('#games .games-grid');
+                        if (!grid) return;
+                        const auto = grid.__autoLayout;
+                        if (!auto) return;
+                        const ro = new ResizeObserver(() => {
+                            try { localStorage.removeItem('wavex.games.pos.v1'); } catch {}
+                            auto();
+                        });
+                        ro.observe(grid);
+                        this._ro = ro;
+                        setExtPillInstalling(this.name, false);
+                        addExtPill(this.name, this.tag, false, true);
+                        this.installed = true;
+                        installedSet.add(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, true);
+                    },
+                    uninstall() {
+                        if (this._ro) { try { this._ro.disconnect(); } catch {} this._ro = null; }
+                        this.installed = false;
+                        installedSet.delete(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, false);
+                    }
+                },
+                {
+                    name: 'Performance HUD',
+                    desc: 'Shows FPS overlay and average frame rate.',
+                    tag: 'Tools',
+                    icon: '📈',
+                    installed: installedSet.has('Performance HUD'),
+                    async install() {
+                        addExtPill(this.name, this.tag, true, false);
+                        await new Promise(res => setTimeout(res, 20000 + Math.floor(Math.random()*8000)));
+                        try { ensureFpsHud(); } catch {}
+                        setExtPillInstalling(this.name, false);
+                        addExtPill(this.name, this.tag, false, true);
+                        this.installed = true;
+                        installedSet.add(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, true);
+                    },
+                    uninstall() {
+                        const close = document.getElementById('fps-close');
+                        if (close) close.click();
+                        this.installed = false;
+                        installedSet.delete(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, false);
+                    }
+                },
+                {
+                    name: 'Privacy Quick‑Close',
+                    desc: 'Adds ESC to close the topmost app window instantly.',
+                    tag: 'Privacy',
+                    icon: '🛡️',
+                    installed: installedSet.has('Privacy Quick‑Close'),
+                    _handler: null,
+                    async install() {
+                        if (this._handler) return;
+                        addExtPill(this.name, this.tag, true, false);
+                        await new Promise(res => setTimeout(res, 20000 + Math.floor(Math.random()*8000)));
+                        const handler = (e) => {
+                            if (e.key === 'Escape') {
+                                const top = document.querySelector('.app-window.active') || document.querySelector('#windows-layer .app-window:last-of-type');
+                                top?.remove();
+                            }
+                        };
+                        window.addEventListener('keydown', handler);
+                        this._handler = handler;
+                        setExtPillInstalling(this.name, false);
+                        addExtPill(this.name, this.tag, false, true);
+                        this.installed = true;
+                        installedSet.add(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, true);
+                    },
+                    uninstall() {
+                        if (this._handler) {
+                            window.removeEventListener('keydown', this._handler);
+                            this._handler = null;
+                        }
+                        this.installed = false;
+                        installedSet.delete(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, false);
+                    }
+                },
+                {
+                    name: 'Rain Toggle',
+                    desc: 'Adds a button to toggle brainrot rain without enabling full brainrot mode.',
+                    tag: 'Fun',
+                    icon: '🌧️',
+                    installed: installedSet.has('Rain Toggle'),
+                    _btn: null,
+                    async install() {
+                        if (this._btn) return;
+                        addExtPill(this.name, this.tag, true, false);
+                        await new Promise(res => setTimeout(res, 20000 + Math.floor(Math.random()*8000)));
+                        const bar = document.querySelector('.tips-bar');
+                        if (!bar) return;
+                        const btn = document.createElement('button');
+                        btn.textContent = 'Toggle Rain';
+                        btn.className = 'px-btn';
+                        btn.style.cssText = 'position:absolute;right:8px;top:5px;height:24px;padding:0 8px';
+                        let on = false;
+                        btn.addEventListener('click', () => {
+                            on = !on;
+                            if (on) { try { ensureBrainrotEffects(); startBrainrotRain(); } catch {} }
+                            else { try { stopBrainrotRain(); } catch {} }
+                            btn.textContent = on ? 'Stop Rain' : 'Toggle Rain';
+                        });
+                        bar.appendChild(btn);
+                        this._btn = btn;
+                        setExtPillInstalling(this.name, false);
+                        addExtPill(this.name, this.tag, false, true);
+                        this.installed = true;
+                        installedSet.add(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, true);
+                    },
+                    uninstall() {
+                        this._btn?.remove();
+                        this._btn = null;
+                        try { stopBrainrotRain(); } catch {}
+                        this.installed = false;
+                        installedSet.delete(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, false);
+                    }
+                },
+                {
+                    name: 'High‑Contrast Mode',
+                    desc: 'Boosts text and border contrast across the UI for readability.',
+                    tag: 'Accessibility',
+                    icon: '🌓',
+                    installed: installedSet.has('High‑Contrast Mode'),
+                    async install() {
+                        if (document.getElementById('ext-high-contrast-style')) return;
+                        addExtPill(this.name, this.tag, true, false);
+                        await new Promise(res => setTimeout(res, 20000 + Math.floor(Math.random()*8000)));
+                        const s = document.createElement('style');
+                        s.id = 'ext-high-contrast-style';
+                        s.textContent = `
+                          body { color: #e6ffe6 !important; }
+                          .px-btn, .tab, .app-window, .games-grid, .proxy-shell, .content {
+                            border-color: rgba(0,255,0,0.45) !important;
+                          }
+                          .tab.active { box-shadow: inset 0 0 0 1px rgba(0,255,0,0.35), 0 0 24px rgba(0,255,0,0.22) !important; }
+                        `;
+                        document.head.appendChild(s);
+                        setExtPillInstalling(this.name, false);
+                        addExtPill(this.name, this.tag, false, true);
+                        this.installed = true;
+                        installedSet.add(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, true);
+                    },
+                    uninstall() {
+                        document.getElementById('ext-high-contrast-style')?.remove();
+                        this.installed = false;
+                        installedSet.delete(this.name);
+                        saveInstalledSet(installedSet);
+                        setExtPillActive(this.name, false);
+                    }
+                }
+            ];
+
+            // Build UI
+            const cardHtml = EXTENSIONS.map(c => `
+                <div class="ext-card" data-name="${c.name}">
+                    <div class="ext-row">
+                        <div class="ext-icon">${c.icon}</div>
+                        <div class="ext-meta">
+                            <div class="ext-title">${c.name}</div>
+                            <div class="ext-desc">${c.desc}</div>
+                            <div class="ext-tag">${c.tag}</div>
+                        </div>
+                        <div class="ext-actions">
+                            <button class="px-btn ext-install" data-name="${c.name}">${c.installed ? 'Installed' : 'Install'}</button>
+                            <button class="px-btn ext-uninstall" data-name="${c.name}" style="margin-left:6px">Uninstall</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            body.innerHTML = `
+                <div style="display:grid;grid-template-rows:auto 1fr;gap:10px;height:100%">
+                    <div style="display:flex;gap:8px;align-items:center;padding:10px;border-bottom:1px solid rgba(0,255,0,0.18);background:rgba(0,30,0,0.45)">
+                        <input id="ext-search" placeholder="Search extensions…" style="flex:1;min-width:120px;background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;border-radius:8px;padding:8px 10px;font-family:Consolas,monospace"/>
+                        <button id="ext-refresh" class="px-btn">Refresh</button>
+                        <button id="ext-install-all" class="px-btn">Install All</button>
+                        <button id="ext-uninstall-all" class="px-btn">Uninstall All</button>
+                    </div>
+                    <div id="ext-list" style="overflow:auto;padding:10px;display:grid;gap:10px">
+                        ${cardHtml}
+                    </div>
+                </div>
+            `;
+
+            // Styles scoped to window
+            const style = document.createElement('style');
+            style.textContent = `
+                .ext-card {
+                    border:1px solid rgba(0,255,0,0.25);
+                    border-radius:10px;
+                    background:rgba(0,255,0,0.04);
+                    padding:8px;
+                }
+                .ext-card:hover { background: rgba(0,255,0,0.08); }
+                .ext-row { display:flex; gap:12px; align-items:flex-start; }
+                .ext-icon { font-size:22px; filter: drop-shadow(0 0 6px rgba(0,255,0,0.35)); }
+                .ext-meta { display:grid; gap:4px; flex:1; min-width:0; }
+                .ext-title { font-weight:800; color:#eaffea; }
+                .ext-desc { font-size:13px; color:#cfeccf; opacity:.9 }
+                .ext-tag { font-size:11px; color:#9f9; opacity:.85 }
+                .ext-actions { display:flex; align-items:center; }
+                .ext-installed { opacity:.8; pointer-events:none; }
+            `;
+            win.appendChild(style);
+
+            const list = body.querySelector('#ext-list');
+            const search = body.querySelector('#ext-search');
+            const btnInstallAll = body.querySelector('#ext-install-all');
+            const btnUninstallAll = body.querySelector('#ext-uninstall-all');
+
+            function toast(msg) {
+                const t = document.createElement('div');
+                t.textContent = msg;
+                t.style.cssText = 'position:absolute;right:12px;bottom:12px;background:rgba(0,40,0,0.9);color:#cfc;border:1px solid rgba(0,255,0,0.35);padding:6px 10px;border-radius:8px;font-family:Consolas,monospace;box-shadow:0 0 12px rgba(0,255,0,0.2)';
+                win.appendChild(t);
+                setTimeout(()=>t.remove(), 1800);
+            }
+
+            function getExt(name) {
+                return EXTENSIONS.find(e => e.name === name);
+            }
+            function refreshButtons() {
+                list.querySelectorAll('.ext-card').forEach(card => {
+                    const name = card.dataset.name;
+                    const ext = getExt(name);
+                    const installBtn = card.querySelector('.ext-install');
+                    if (ext?.installed) {
+                        installBtn.textContent = 'Installed';
+                        installBtn.classList.add('ext-installed');
+                        addExtPill(ext.name, ext.tag, false, true);
+                        setExtPillActive(ext.name, true);
+                    } else {
+                        installBtn.textContent = 'Install';
+                        installBtn.classList.remove('ext-installed');
+                        removeExtPill(ext.name);
+                    }
+                });
+            }
+
+            // Clicks inside Extensions window
+            list.addEventListener('click', async (e) => {
+                const installBtn = e.target.closest('.ext-install');
+                const uninstallBtn = e.target.closest('.ext-uninstall');
+                if (installBtn) {
+                    const name = installBtn.dataset.name;
+                    const ext = getExt(name);
+                    try {
+                        // start loading spinner pill immediately
+                        addExtPill(ext.name, ext.tag, true);
+                        await ext?.install();
+                        toast(`${name} installed`);
+                    } catch {}
+                    refreshButtons();
+                } else if (uninstallBtn) {
+                    const name = uninstallBtn.dataset.name;
+                    const ext = getExt(name);
+                    try { ext?.uninstall(); toast(`${name} uninstalled`); } catch {}
+                    refreshButtons();
+                }
+            });
+
+            btnInstallAll?.addEventListener('click', async () => {
+                for (const ext of EXTENSIONS) {
+                    try {
+                        if (ext.installed) continue;
+                        addExtPill(ext.name, ext.tag, true, false);
+                        await ext.install();
+                        refreshButtons();
+                    } catch {}
+                }
+                toast('All installed');
+            });
+            btnUninstallAll?.addEventListener('click', () => {
+                EXTENSIONS.forEach(ext => { try { if (ext.installed) ext.uninstall(); } catch {} });
+                refreshButtons();
+                toast('All uninstalled');
+            });
+
+            // Top bar pills: toggle on click and persist
+            document.addEventListener('click', async (e) => {
+                const pill = e.target.closest && e.target.closest('.ext-pill');
+                if (!pill) return;
+                const name = pill.getAttribute('data-name');
+                const ext = getExt(name);
+                if (!ext) return;
+
+                // If currently installing, ignore clicks
+                if (pill.querySelector('.spin')) return;
+
+                if (ext.installed) {
+                    // Uninstall immediately
+                    try { ext.uninstall(); } catch {}
+                    refreshButtons();
+                } else {
+                    // Install with 20–30s simulated delay
+                    try {
+                        addExtPill(ext.name, ext.tag, true, false);
+                        await ext.install();
+                    } catch {}
+                    refreshButtons();
+                }
+            });
+
+            // On open, rehydrate any previously installed extensions
+            (async function reapplyInstalled() {
+                for (const ext of EXTENSIONS) {
+                    if (ext.installed) {
+                        // create pill in active state
+                        addExtPill(ext.name, ext.tag, false, true);
+                        setExtPillActive(ext.name, true);
+                        // ensure effect is actually applied (idempotent)
+                        try {
+                            // Call install but skip spinner and wait by short-circuiting if artifact exists
+                            // Quick apply without delay: detect by artifact presence
+                            if (ext.name === 'Dark Matrix++' && !document.getElementById('ext-dark-matrix-style')) {
+                                await ext.install();
+                            } else if (ext.name === 'High‑Contrast Mode' && !document.getElementById('ext-high-contrast-style')) {
+                                await ext.install();
+                            } else if (ext.name === 'Desktop Autosort' && !ext._ro) {
+                                await ext.install();
+                            } else if (ext.name === 'Performance HUD' && !document.getElementById('fps-hud')) {
+                                await ext.install();
+                            } else if (ext.name === 'Privacy Quick‑Close' && !ext._handler) {
+                                await ext.install();
+                            } else if (ext.name === 'Rain Toggle' && !ext._btn) {
+                                await ext.install();
+                            }
+                        } catch {}
+                    }
+                }
+                refreshButtons();
+            })();
+
+            search.addEventListener('input', ()=>{
+                const q = search.value.trim().toLowerCase();
+                list.querySelectorAll('.ext-card').forEach(card=>{
+                    const name = card.dataset.name.toLowerCase();
+                    card.style.display = name.includes(q) ? '' : 'none';
+                });
+            });
+
+            if (focusName) {
+                search.value = focusName;
+                search.dispatchEvent(new Event('input'));
+            }
+        }
 
         // INTRO SEQUENCE
         (function introSequence() {
