@@ -13,8 +13,9 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
-            height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 100vh;
             background: #000; /* base black */
             position: relative;
             color: #0f0; /* matrix green text */
@@ -123,7 +124,8 @@
         .container {
             position: relative;
             z-index: 1;
-            height: 100vh;
+            min-height: 100vh;
+            height: auto;
             display: grid;
             grid-template-columns: 260px 1fr; /* sidebar + main */
         }
@@ -225,7 +227,7 @@
             grid-template-rows: 1fr;      /* single row to allow full-height content */
             place-items: stretch;         /* stretch child across */
             padding: 0;                   /* remove inner padding for full-bleed */
-            overflow: hidden;             /* no scroll; child handles its own */
+            overflow: visible;            /* let children manage their own scroll */
         }
 
         .content {
@@ -288,7 +290,8 @@
             max-width: none;              /* allow full width */
             margin-left: 0;
             margin-right: 0;
-            overflow: hidden;             /* keep icons inside */
+            overflow: auto;               /* scroll internally if content exceeds */
+            padding-bottom: 40px;         /* clear the fixed tips bar */
             outline: 1px solid rgba(0,255,0,0.08);
             background: linear-gradient(0deg, rgba(0,255,0,0.06) 1px, transparent 1px) 0 0/100% 44px,
                         linear-gradient(90deg, rgba(0,255,0,0.06) 1px, transparent 1px) 0 0/44px 100%;
@@ -1084,7 +1087,6 @@
             <div class="tip active">the low taper fade meme is still massive</div>
             <div class="tip">double click to open an app</div>
             <div class="tip">click on the secrets button</div>
-            <div class="tip">Blob-HTML is goated</div>
             <div class="tip">hi</div>
             <div class="tip">Ummyah is tuff</div>
             <div class="tip">wave-x is tuff</div>
