@@ -2363,7 +2363,7 @@ MatrixFX.runScript = (lines, after) => {
             });
         });
 
-        // AI Assistant (Wave‑X branded; insecure demo hitting OpenRouter directly from browser)
+        // AI Assistant (Wave‑X branded; using local proxy server)
         (function wireAiTab(){
             const chat = document.getElementById('ai-chat');
             const form = document.getElementById('ai-form');
@@ -2378,14 +2378,11 @@ MatrixFX.runScript = (lines, after) => {
             // hold selected images as data URLs for multimodal messages
             const pendingImages = []; // [{ name, mime, dataUrl, size }]
 
-            // Hard-coded API key for demo (WARNING: insecure in production)
-            // Use the OpenRouter key the user supplied (insecure demo).
-            // If you want to avoid editing the file for different keys, you can paste it in the prompt as: key: sk-... and the code will detect it.
-            let OPENROUTER_API_KEY = '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';
-            const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+            // Production API endpoint (HTTPS via Nginx+Certbot on api.saxbuddy.xyz)
+            const API_URL = 'https://api.saxbuddy.xyz/api/chat';
             // Horizon family example; adjust to a model you have access to on your account
             // Common stable options include: 'openai/gpt-4o-mini', 'anthropic/claude-3.5-sonnet', etc.
-            let MODEL = 'openai/gpt-4o-mini';
+            let MODEL = 'openrouter/horizon-beta';
 
             function bubble(role, text) {
                 const wrap = document.createElement('div');
@@ -2432,19 +2429,14 @@ MatrixFX.runScript = (lines, after) => {
                 });
             }
 
-            // Allow overriding model or key by typing: model: <model-id> or key: <sk-or-...> in chat
+            // Allow overriding model by typing: model: <model-id> in chat
             function maybeCaptureInlineOverrides(text) {
                 const mModel = text.match(/\bmodel:\s*([^\n]+)\b/i);
-                const mKey = text.match(/\bkey:\s*(sk-or-[a-z0-9\-]+)\b/i);
                 if (mModel) {
                     MODEL = mModel[1].trim();
                     if (modelPill) modelPill.textContent = MODEL;
                 }
-                if (mKey) {
-                    OPENROUTER_API_KEY = mKey[1].trim();
-                    if (keyPill) keyPill.textContent = 'overridden';
-                }
-                return text.replace(/\b(model|key):\s*[^\n]+/gi, '').trim();
+                return text.replace(/\bmodel:\s*[^\n]+/gi, '').trim();
             }
 
             async function sendPrompt(prompt) {
@@ -2471,10 +2463,7 @@ MatrixFX.runScript = (lines, after) => {
                     const res = await fetch(API_URL, {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                            'Content-Type': 'application/json',
-                            'Referer': (location && location.origin) ? String(location.origin) : 'http://localhost',
-                            'X-Title': 'Wave-X'
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
                             model: MODEL,
@@ -2483,7 +2472,12 @@ MatrixFX.runScript = (lines, after) => {
                                 { role: 'user', content: userParts.length ? userParts : cleaned }
                             ],
                             temperature: 0.5,
-                            max_tokens: 512
+                            max_tokens: 512,
+                            // Optional metadata for the server
+                            // extra_headers: {
+                            //     referer: (location && location.origin) ? String(location.origin) : 'http://74.208.79.126/',
+                            //     title: 'Wave-X'
+                            // }
                         })
                     });
                     let bodyText = '';
