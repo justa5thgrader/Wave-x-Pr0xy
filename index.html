@@ -281,6 +281,7 @@
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(0,255,0,0.25), transparent);
             transition: left 0.5s;
+            pointer-events: none;
         }
 
         .tab:hover::before {
@@ -291,6 +292,47 @@
             box-shadow: 0 0 12px rgba(0,255,0,0.25);
             transform: translateX(2px);
         }
+        /* Glitch text effect on hover */
+        .tab {
+            position: relative;
+            overflow: hidden;
+        }
+        .tab .glitch,
+        .tab .glitch::before,
+        .tab .glitch::after {
+            position: relative;
+            display: inline-block;
+            transition: transform .25s ease, text-shadow .25s ease, filter .25s ease;
+        }
+        .tab .glitch::before,
+        .tab .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            clip-path: inset(0 0 0 0);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .tab:hover .glitch {
+            text-shadow: 0 0 8px rgba(0,255,0,0.35);
+            filter: saturate(1.2);
+        }
+        .tab:hover .glitch::before {
+            opacity: 1;
+            transform: translate(-1px, -0.5px);
+            color: #aaffaa;
+            mix-blend-mode: screen;
+        }
+        .tab:hover .glitch::after {
+            opacity: 1;
+            transform: translate(1px, 0.5px);
+            color: #66ff66;
+            mix-blend-mode: screen;
+        }
+        /* Subtle scanline slices on hover */
+        .tab:hover .glitch::before { clip-path: inset(0 0 60% 0); }
+        .tab:hover .glitch::after  { clip-path: inset(40% 0 0 0); }
 
         .tab.active {
             background: rgba(0,255,0,0.12);
@@ -324,7 +366,7 @@
             border: 0;
             opacity: 0;
             transform: translateY(20px);
-            transition: all 0.45s ease;
+            transition: opacity 0.35s ease, transform 0.35s ease;
             margin: 0;
             display: none;                 /* hide by default */
             flex-direction: column;
@@ -337,6 +379,14 @@
             display: flex;                 /* show only the active panel */
             opacity: 1;
             transform: translateY(0);
+        }
+        /* Smooth cross-fade between tabs using a layer container */
+        .content-area {
+            position: relative;
+        }
+        .content {
+            position: relative;
+            will-change: opacity, transform;
         }
 
         .content h2 {
@@ -1223,6 +1273,20 @@
         .header { margin-top: 0; }
         /* Ensure bottom tips bar still visible with menubar present (no change needed) */
     </style>
+    <style>
+        /* Terminal screen styling tweaks */
+        #term-screen .line { white-space: pre-wrap; }
+        #term-screen .ok { color:#9f9; }
+        #term-screen .err { color:#ff6b6b; }
+        #term-screen .muted { color:#8f8; opacity:.8 }
+        #term-screen .dir { color:#7fffb4; }
+        #term-screen .exe { color:#bfffbf; }
+        #term-screen .file { color:#cfe; }
+        #term-screen .pkg { color:#aef; }
+        #term-screen .sudo { color:#fffa9e; }
+        #term-screen .nano { color:#cff; }
+        #term-screen .cmeme { color:#ff9ef0; }
+    </style>
   </head>
   <body>
     <!-- macOS-style menu bar -->
@@ -1596,10 +1660,13 @@
                     🌊 Proxy
                 </button>
                 <button class="tab" data-tab="customization" title="Customization" aria-controls="customization" aria-selected="false" role="tab">
-                    ✨ Customization
+                    🔨 Tools
                 </button>
                 <button class="tab" data-tab="ai" title="AI Assistant" aria-controls="ai" aria-selected="false" role="tab">
-                    🤖 AI
+                    🤖 Wave-X AI
+                </button>
+                <button class="tab" data-tab="terminal" title="Terminal" aria-controls="terminal" aria-selected="false" role="tab">
+                    💻 Terminal
                 </button>
                 <button class="tab" data-tab="changes" title="Recent Changes" aria-controls="changes" aria-selected="false" role="tab">
                     📝 Changes
@@ -1863,6 +1930,24 @@
                 </div>
             </div>
 
+            <!-- Terminal Tab -->
+            <div class="content" id="terminal" style="padding:0;margin:0;display:flex;flex-direction:column;gap:0;min-height:0">
+                <div style="padding:10px 12px;border-bottom:1px solid rgba(0,255,0,0.18);background:linear-gradient(180deg, rgba(0,35,0,0.65), rgba(0,20,0,0.5));display:flex;align-items:center;gap:10px">
+                    <div style="display:inline-flex;align-items:center;gap:10px">
+                        <span class="content-icon" aria-hidden="true">💻</span>
+                        <h2 style="margin:0;font-size:1.2rem;letter-spacing:.3px">Wave‑X Terminal</h2>
+                    </div>
+                    <span id="term-status" style="margin-left:auto;font-size:12px;color:#9f9;opacity:0.85"></span>
+                </div>
+                <div style="display:grid;grid-template-rows:1fr auto;min-height:0;flex:1 1 auto">
+                    <div id="term-screen" style="font-family:Consolas,monospace;background:#000;color:#cfe;border-top:0; padding:12px; overflow:auto; min-height:0; white-space:pre-wrap; outline:1px solid rgba(0,255,0,0.18)"></div>
+                    <div style="display:grid;grid-template-columns:auto 1fr;gap:8px;padding:8px 12px;border-top:1px solid rgba(0,255,0,0.18);background:rgba(0,20,0,0.65)">
+                        <div id="term-prompt" style="font-family:Consolas,monospace;color:#9f9;align-self:center">$</div>
+                        <input id="term-input" spellcheck="false" autocomplete="off" placeholder="type a command and press Enter" style="height:34px;background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;border-radius:8px;padding:0 10px;font-family:Consolas,monospace"/>
+                    </div>
+                </div>
+            </div>
+
             <!-- AI Assistant Tab (Wave‑X branded) -->
             <div class="content" id="ai" style="padding:0;margin:0;display:flex;flex-direction:column;gap:0;min-height:0">
                 <!-- Header -->
@@ -1912,6 +1997,646 @@
     </div>
 
     <script>
+        // Wave‑X Terminal Emulator (Linux-like, sandboxed)
+        (function wavexTerminal(){
+            const screen = document.getElementById('term-screen');
+            const input = document.getElementById('term-input');
+            const status = document.getElementById('term-status');
+            const promptEl = document.getElementById('term-prompt');
+            if (!screen || !input) return;
+
+            // persistent storage keys
+            const K_USER='wavex.term.user.v1';
+            const K_PASS='wavex.term.passhash.v1';
+            const K_FS='wavex.term.fs.v1';
+            const K_HOME='wavex.term.home.v1';
+            const K_ENV='wavex.term.env.v1';
+
+            // helpers
+            const now = () => new Date().toLocaleString();
+            const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+            const sha1 = async (s) => {
+                const enc = new TextEncoder().encode(s);
+                const buf = await crypto.subtle.digest('SHA-1', enc);
+                return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+            };
+            const S = {
+                get user(){ return localStorage.getItem(K_USER)||''; },
+                set user(v){ try{ localStorage.setItem(K_USER,v);}catch{} },
+                get pass(){ return localStorage.getItem(K_PASS)||''; },
+                set pass(v){ try{ localStorage.setItem(K_PASS,v);}catch{} },
+                get env(){
+                    try{ return JSON.parse(localStorage.getItem(K_ENV)||'{}'); }catch{return{}}
+                },
+                set env(v){ try{ localStorage.setItem(K_ENV, JSON.stringify(v)); }catch{} },
+                get fs(){
+                    try{ return JSON.parse(localStorage.getItem(K_FS)||''); }catch{return null}
+                },
+                set fs(v){ try{ localStorage.setItem(K_FS, JSON.stringify(v)); }catch{} },
+                get home(){ return localStorage.getItem(K_HOME)||''; },
+                set home(v){ try{ localStorage.setItem(K_HOME,v);}catch{} },
+            };
+
+            // initialize pseudo filesystem if not present
+            function makeFs() {
+                return {
+                    type:'dir', name:'/', children:{
+                        'home':{ type:'dir', name:'home', children:{
+                            'wave':{ type:'dir', name:'wave', children:{
+                                'readme.txt':{ type:'file', name:'readme.txt', mode:644, data:
+`Welcome to Wave‑X Terminal!
+
+This is a sandboxed Linux‑like shell. Nothing touches your machine.
+
+Try commands:
+  help
+  ls, cd, cat, echo, touch, mkdir, rm, mv, cp
+  nano <file> (simple inline editor)
+  sudo <cmd> (will prompt for a password once)
+  pacman -Ss|-S|-R <pkg> (mock package manager)
+  whoami, pwd, env, export KEY=VAL
+  clear, date, uname -a, neofetch
+  meme, rick, cowsay, fortune
+  useradd <name>, passwd <name>, su <name>
+  userdel <name>
+  creds (view users), mkcreds (interactive)
+
+Files persist via localStorage.` }
+                            }},
+                        }},
+                        'etc':{ type:'dir', name:'etc', children:{
+                            'motd':{ type:'file', name:'motd', mode:644, data:'Welcome to Wave‑X.\n' },
+                            'passwd':{ type:'file', name:'passwd', mode:644, data:'wave:x:1000:1000::/home/wave:/bin/bash\n' },
+                            'shadow':{ type:'file', name:'shadow', mode:600, data:'' },
+                            'os-release':{ type:'file', name:'os-release', mode:644, data:'NAME="Wave‑X Linux"\\nID=wavex\\nVERSION_ID="0.1"\\n' }
+                        }},
+                        'bin':{ type:'dir', name:'bin', children:{}},
+                        'usr':{ type:'dir', name:'usr', children:{
+                            'share':{ type:'dir', name:'share', children:{
+                                'cows':{ type:'dir', name:'cows', children:{
+                                    'default.cow':{ type:'file', name:'default.cow', mode:644, data:'(oo)\\n (..)\\n' }
+                                }}
+                            }}
+                        }},
+                        'var':{ type:'dir', name:'var', children:{
+                            'log':{ type:'dir', name:'log', children:{
+                                'pacman.log':{ type:'file', name:'pacman.log', mode:644, data:'' }
+                            }}
+                        }}
+                    }
+                };
+            }
+
+            // user database persisted in /etc/{passwd,shadow} and simple list
+            function parseUsers() {
+                const fs = FS.find('/etc/passwd');
+                const shadow = FS.find('/etc/shadow');
+                const lines = (fs?.data||'').trim().split(/\n/).filter(Boolean);
+                const secrets = Object.fromEntries((shadow?.data||'').trim().split(/\n/).filter(Boolean).map(l=>{
+                    const [u,hash] = l.split(':'); return [u,hash||''];
+                }));
+                const map = new Map();
+                for (const l of lines) {
+                    const [name,_x,uid,gid,desc,home,shell] = l.split(':');
+                    map.set(name,{uid:+uid||1000,gid:+gid||1000,home:home||(`/home/${name}`),shell:shell||'/bin/bash',pass:secrets[name]||''});
+                }
+                return map;
+            }
+
+            const FS = {
+                root: S.fs || makeFs(),
+                save(){ S.fs = this.root; },
+                // resolve path
+                res(path, cwd){
+                    if (!path) path='.';
+                    if (path.startsWith('~')) path = path.replace(/^~(?=\/|$)/, S.home || `/home/${S.user||'wave'}`);
+                    let parts = path.startsWith('/') ? [''] : (cwd||'/').split('/'); // '' marks root
+                    for (const seg of path.split('/')) {
+                        if (!seg || seg==='.') continue;
+                        if (seg==='..') { if (parts.length>1) parts.pop(); continue; }
+                        parts.push(seg);
+                    }
+                    const norm = (parts[0]===''?'/':parts.join('/')).replace(/\/{2,}/g,'/');
+                    return norm;
+                },
+                node(path){
+                    const parts = path.split('/').filter(Boolean);
+                    let cur = this.root;
+                    if (path==='/') return cur;
+                    for (const p of parts) {
+                        if (cur.type!=='dir') return null;
+                        cur = cur.children[p];
+                        if (!cur) return null;
+                    }
+                    return cur;
+                },
+                find(path){ return this.node(path); },
+                ensureDir(path){
+                    const parts = path.split('/').filter(Boolean);
+                    let cur = this.root;
+                    for (const p of parts) {
+                        if (!cur.children[p]) cur.children[p] = {type:'dir', name:p, children:{}};
+                        cur = cur.children[p];
+                        if (cur.type!=='dir') throw new Error('Not a directory');
+                    }
+                    this.save();
+                    return cur;
+                },
+                writeFile(path, data, mode=644){
+                    const dir = path.split('/').slice(0,-1).join('/')||'/';
+                    const base = path.split('/').pop();
+                    const d = dir==='/'? this.root : this.ensureDir(dir);
+                    d.children[base] = { type:'file', name:base, mode, data:String(data||'') };
+                    this.save();
+                    return d.children[base];
+                },
+                remove(path){
+                    if (path==='/') return false;
+                    const dir = path.split('/').slice(0,-1).join('/')||'/';
+                    const base = path.split('/').pop();
+                    const d = (dir==='/'? this.root : this.node(dir));
+                    if (!d || d.type!=='dir' || !d.children[base]) return false;
+                    delete d.children[base];
+                    this.save();
+                    return true;
+                },
+                list(path){
+                    const n = this.node(path);
+                    if (!n || n.type!=='dir') return null;
+                    return Object.values(n.children);
+                },
+                move(a,b){
+                    const src = this.node(a);
+                    if (!src) return false;
+                    const dstDir = b.endsWith('/')? b.slice(0,-1): b;
+                    const parentA = a.split('/').slice(0,-1).join('/')||'/';
+                    const nameB = b.split('/').pop();
+                    const parentNodeA = parentA==='/'? this.root : this.node(parentA);
+                    const parentNodeB = (b.includes('/')? this.ensureDir(b.split('/').slice(0,-1).join('/')||'/') : this.root);
+                    if (!parentNodeA || !parentNodeB) return false;
+                    parentNodeB.children[nameB]= JSON.parse(JSON.stringify(src));
+                    delete parentNodeA.children[a.split('/').pop()];
+                    this.save();
+                    return true;
+                },
+                copy(a,b){
+                    const src = this.node(a);
+                    if (!src) return false;
+                    const parentNodeB = (b.includes('/')? this.ensureDir(b.split('/').slice(0,-1).join('/')||'/') : this.root);
+                    parentNodeB.children[b.split('/').pop()]= JSON.parse(JSON.stringify(src));
+                    this.save();
+                    return true;
+                }
+            };
+
+            // state
+            let cwd = S.home || `/home/${S.user||'wave'}`;
+            let hist = [];
+            let histPos = -1;
+            let waitingSudo = null; // {cmd, ts}
+            let waitingNano = null; // {path, buf}
+            let waitingMkCreds = null; // interactive creds creation
+            let currentUser = S.user || 'wave';
+            let users = parseUsers();
+
+            // bootstrap user/pass once
+            async function bootstrap() {
+                status.textContent = '';
+                if (!S.user) {
+                    S.user = 'wave';
+                    currentUser = 'wave';
+                }
+                if (!S.home) {
+                    S.home = `/home/${S.user}`;
+                    cwd = S.home;
+                }
+                // seed users if missing
+                if (!users.has(currentUser)) {
+                    const etcPasswd = FS.find('/etc/passwd');
+                    etcPasswd.data += `${currentUser}:x:1000:1000::${S.home}:/bin/bash\n`;
+                    FS.save();
+                    users = parseUsers();
+                }
+                if (!S.pass) {
+                    printLine(`First-time setup for user '${currentUser}'.`, 'muted');
+                    printLine(`Set a sudo password (won't echo):`, 'sudo');
+                    // enter passwd mode
+                    waitingMkCreds = { step:'passwd1', user: currentUser, p1:'' };
+                    promptUpdate();
+                    return;
+                }
+                motd();
+            }
+
+            function prompt() {
+                const host = 'wavex';
+                const path = cwd.replace(/^\/home\/[^/]+/, '~');
+                return `${currentUser}@${host}:${path}$`;
+            }
+            function promptUpdate(){
+                promptEl.textContent = prompt() + (waitingNano? ' [nano]' : (waitingSudo? ' [sudo]' : (waitingMkCreds? ' [creds]' : '')));
+            }
+
+            function printLine(text='', cls='') {
+                const line = document.createElement('div');
+                line.className = `line ${cls}`;
+                line.textContent = text;
+                screen.appendChild(line);
+                screen.scrollTop = screen.scrollHeight;
+            }
+            function print(text='', cls='') {
+                const pre = document.createElement('div');
+                pre.className = `line ${cls}`;
+                pre.innerText = text; // preserve newlines
+                screen.appendChild(pre);
+                screen.scrollTop = screen.scrollHeight;
+            }
+            function motd() {
+                const rel = FS.find('/etc/os-release')?.data || '';
+                printLine(`Last login: ${now()} on tty1`, 'muted');
+                print(FS.find('/etc/motd')?.data || '');
+                print(rel);
+                promptUpdate();
+            }
+
+            // utils
+            function splitArgs(s) {
+                const out=[]; let cur=''; let q=null;
+                for (let i=0;i<s.length;i++){
+                    const ch=s[i];
+                    if (q) {
+                        if (ch===q){ q=null; continue; }
+                        if (ch==='\\' && i+1<s.length){ cur+=s[++i]; continue; }
+                        cur+=ch;
+                    } else {
+                        if (ch==='"' || ch==="'"){ q=ch; continue; }
+                        if (/\s/.test(ch)){ if (cur) { out.push(cur); cur=''; } continue; }
+                        cur+=ch;
+                    }
+                }
+                if (cur) out.push(cur);
+                return out;
+            }
+            function resolvePath(p){ return FS.res(p, cwd); }
+
+            // command handlers
+            const CMDS = {};
+            CMDS.help = () => {
+                print(`Available commands:
+  help, clear, date, uname, neofetch, whoami, pwd, env, export, echo
+  ls, cd, cat, touch, mkdir, rm, mv, cp
+  nano <file>  - inline text editor, Ctrl+S to save, Ctrl+X to exit (simulated)
+  sudo <cmd>   - run a command as root (needs password set once)
+  pacman       - mock package manager: -Ss search, -S install, -R remove
+  cowsay, fortune, meme, rick
+  creds        - show users
+  mkcreds      - interactive user+password creation (saved)
+  useradd <u>, passwd <u>, su <u>, userdel <u>
+  man <cmd>    - brief description`, 'muted');
+            };
+            CMDS.man = (args)=>{
+                const m = {
+                    nano:'Edit or create a text file inline in terminal.',
+                    sudo:'Run command with elevated privileges.',
+                    pacman:'Package manager mock. Use -Ss, -S, -R.',
+                    mkcreds:'Interactive create user and set password.',
+                    creds:'List users known to the system.',
+                    su:'Switch user for the session.',
+                };
+                const k=args[0]; if (!k) { printLine('man: specify a command', 'err'); return; }
+                printLine(`${k} — ${m[k]||'No manual entry.'}`);
+            };
+            CMDS.clear = ()=>{ screen.innerHTML=''; };
+            CMDS.date = ()=> printLine(new Date().toString());
+            CMDS.uname = (a)=> printLine(a.includes('-a')? 'Linux wavex 5.19.0 #1 SMP PREEMPT Wave‑X' : 'Linux');
+            CMDS.neofetch = ()=> {
+                const art = `
+             .------.
+            /  .-.  \\    Wave‑X Linux 0.1
+           /  /   \\  \\   User: ${currentUser}
+           |  |   |  |   Shell: bash (mock)
+           \\  \\   /  /   Uptime: forever
+            \\  '-'  /    Packages: ${pkgs.size}
+             '-----'     Theme: Matrix Green
+`;
+                print(art);
+            };
+            CMDS.whoami = ()=> printLine(currentUser);
+            CMDS.pwd = ()=> printLine(cwd);
+            CMDS.env = ()=> print(JSON.stringify(S.env,null,2));
+            CMDS.export = (a)=>{
+                for (const kv of a) {
+                    const m = kv.match(/^([\w_]+)=(.*)$/);
+                    if (m){ const env=S.env; env[m[1]]=m[2]; S.env=env; }
+                }
+            };
+            CMDS.echo = (a)=> printLine(a.join(' '));
+            CMDS.ls = (a)=>{
+                const path = resolvePath(a[0]||'.');
+                const list = FS.list(path);
+                if (!list) { printLine('ls: not a directory', 'err'); return; }
+                const names = list.map(n=>{
+                    const cls = n.type==='dir'?'dir': (n.mode===755?'exe':'file');
+                    return `%${cls}%${n.name}`;
+                });
+                // colorize
+                const line = document.createElement('div');
+                line.className='line';
+                line.innerHTML = names.map(s=>s.replace('%dir%','<span class="dir">').replace('%exe%','<span class="exe">').replace('%file%','<span class="file">')) .map(s=> s + '</span>').join('  ');
+                screen.appendChild(line); screen.scrollTop=screen.scrollHeight;
+            };
+            CMDS.cd = (a)=>{
+                const to = resolvePath(a[0]||S.home);
+                const node = FS.find(to);
+                if (!node || node.type!=='dir'){ printLine(`cd: ${a[0]||''}: Not a directory`, 'err'); return; }
+                cwd = to;
+            };
+            CMDS.cat = (a)=>{
+                const f = FS.find(resolvePath(a[0]||''));
+                if (!f || f.type!=='file'){ printLine('cat: no such file', 'err'); return; }
+                print(f.data);
+            };
+            CMDS.touch = (a)=>{ if (!a[0]){printLine('touch: file required','err');return;} FS.writeFile(resolvePath(a[0]), ''); };
+            CMDS.mkdir = (a)=>{ if (!a[0]){printLine('mkdir: dir required','err');return;} FS.ensureDir(resolvePath(a[0])); };
+            CMDS.rm = (a)=>{
+                if (!a[0]){ printLine('rm: path required','err'); return; }
+                const ok = FS.remove(resolvePath(a[0]));
+                if (!ok) printLine('rm: failed','err');
+            };
+            CMDS.mv = (a)=>{ if (a.length<2){printLine('mv: src dest','err');return;} if(!FS.move(resolvePath(a[0]), resolvePath(a[1]))) printLine('mv: failed','err'); };
+            CMDS.cp = (a)=>{ if (a.length<2){printLine('cp: src dest','err');return;} if(!FS.copy(resolvePath(a[0]), resolvePath(a[1]))) printLine('cp: failed','err'); };
+            CMDS.nano = (a)=>{
+                const p = resolvePath(a[0]||'');
+                if (!p){ printLine('nano: file required','err'); return; }
+                const f = FS.find(p) || FS.writeFile(p,'');
+                waitingNano = { path:p, buf: f.data||'' };
+                printLine(`--- nano: editing ${p} ---`, 'nano');
+                print(waitingNano.buf);
+                printLine(`(Type your content; press Ctrl+S to save, Ctrl+X to exit)`, 'nano');
+            };
+
+            // sudo and auth
+            async function setPassword(user, plain) {
+                const hash = await sha1(plain);
+                // store global sudo hash and /etc/shadow entry
+                S.pass = hash;
+                const shadow = FS.find('/etc/shadow');
+                const lines = (shadow?.data||'').split(/\n/).filter(Boolean).filter(l=>!l.startsWith(user+':'));
+                lines.push(`${user}:${hash}`);
+                shadow.data = lines.join('\n') + '\n';
+                FS.save();
+                users = parseUsers();
+            }
+            async function checkPassword(user, plain) {
+                const hash = await sha1(plain);
+                const saved = S.pass;
+                return saved && hash===saved;
+            }
+
+            CMDS.sudo = async (a)=>{
+                if (!a.length){ printLine('usage: sudo <command> [args]', 'err'); return; }
+                waitingSudo = { cmd: a.join(' '), ts: Date.now() };
+                printLine(`[sudo] password for ${currentUser}:`, 'sudo');
+            };
+
+            // pacman mock
+            const pkgs = new Map(); // name -> {installed:boolean, desc}
+            const repo = new Map(Object.entries({
+                'nano': {desc:'Simple text editor', hook:()=>{}},
+                'fortunes': {desc:'Print random fortunes', hook:()=>{}},
+                'cowsay': {desc:'Cow ASCII says things', hook:()=>{}},
+                'neofetch': {desc:'System info fetcher', hook:()=>{}},
+                'rick': {desc:'Never gonna give you up', hook:()=>{}},
+            }));
+            function logPacman(s){ const log=FS.find('/var/log/pacman.log'); log.data += `[${now()}] ${s}\n`; FS.save(); }
+            CMDS.pacman = (a)=>{
+                if (!a.length){ printLine('usage: pacman -Ss <term> | -S <pkg> | -R <pkg>'); return; }
+                const flag = a[0];
+                if (flag==='-Ss'){
+                    const q = (a[1]||'').toLowerCase();
+                    for (const [n,meta] of repo){
+                        if (!q || n.includes(q) || (meta.desc||'').toLowerCase().includes(q)){
+                            printLine(`${n} - ${meta.desc||''}`, 'pkg');
+                        }
+                    }
+                } else if (flag==='-S'){
+                    const n = a[1]; if (!n){ printLine('pacman -S <pkg>','err'); return; }
+                    if (!repo.has(n)){ printLine(`error: target not found: ${n}`, 'err'); return; }
+                    pkgs.set(n, {installed:true});
+                    logPacman(`installed ${n}`);
+                    printLine(`resolving dependencies... done`);
+                    printLine(`looking for conflicting packages... none`);
+                    printLine(`installing ${n}... done`, 'ok');
+                } else if (flag==='-R'){
+                    const n = a[1]; if (!n){ printLine('pacman -R <pkg>','err'); return; }
+                    if (!pkgs.get(n)?.installed){ printLine(`error: ${n} not installed`, 'err'); return; }
+                    pkgs.set(n, {installed:false});
+                    logPacman(`removed ${n}`);
+                    printLine(`removing ${n}... done`, 'ok');
+                } else {
+                    printLine('pacman: unsupported flags', 'err');
+                }
+            };
+
+            // fun
+            CMDS.cowsay = (a)=>{
+                const msg = a.join(' ') || 'moo';
+                const bubble = ` ${'-'.repeat(msg.length+2)}
+< ${msg} >
+ ${'-'.repeat(msg.length+2)}
+        \\   ^__^
+         \\  (oo)\\_______
+            (__)\\       )\\/\\
+                ||----w |
+                ||     ||`;
+                print(bubble);
+            };
+            CMDS.fortune = ()=>{
+                const lines = [
+                    'Never trust a computer you can’t throw out a window.',
+                    'There are only two kinds of languages: the ones people complain about and the ones nobody uses.',
+                    'To iterate is human, to recurse divine.',
+                ];
+                printLine(lines[Math.floor(Math.random()*lines.length)]);
+            };
+            CMDS.meme = ()=>{ printLine('low taper fade still massive.', 'cmeme'); };
+            CMDS.rick = ()=>{ printLine('Never gonna give you up 🎵', 'cmeme'); };
+
+            // creds and users
+            CMDS.creds = ()=>{
+                const arr = Array.from(parseUsers().keys());
+                printLine(`Users: ${arr.join(', ')||'(none)'}`);
+            };
+            CMDS.mkcreds = ()=>{
+                if (waitingMkCreds){ printLine('Already creating credentials.','err'); return; }
+                printLine('Create a new user:', 'muted');
+                waitingMkCreds = { step:'ask-user' };
+            };
+            CMDS.useradd = (a)=>{
+                const u=a[0]; if (!u){ printLine('useradd: username required','err'); return; }
+                if (parseUsers().has(u)){ printLine('useradd: user exists','err'); return; }
+                const home = `/home/${u}`;
+                // update passwd
+                const pw = FS.find('/etc/passwd');
+                pw.data += `${u}:x:${Math.floor(Math.random()*5000)+1000}:1000::${home}:/bin/bash\n`;
+                FS.ensureDir(home);
+                FS.writeFile(`${home}/readme.txt`, `Hi ${u}! This is your home.`);
+                FS.save();
+                users = parseUsers();
+                printLine(`useradd: added ${u}`, 'ok');
+            };
+            CMDS.userdel = (a)=>{
+                const u=a[0]; if (!u){ printLine('userdel: username required','err'); return; }
+                if (!parseUsers().has(u)){ printLine('userdel: no such user','err'); return; }
+                // remove from passwd and shadow
+                const pw = FS.find('/etc/passwd');
+                pw.data = pw.data.split(/\n/).filter(Boolean).filter(l=>!l.startsWith(u+':')).join('\n')+'\n';
+                const sh = FS.find('/etc/shadow');
+                sh.data = (sh.data||'').split(/\n/).filter(Boolean).filter(l=>!l.startsWith(u+':')).join('\n')+'\n';
+                FS.save(); users=parseUsers();
+                printLine(`userdel: removed ${u}`, 'ok');
+            };
+            CMDS.passwd = async (a)=>{
+                const u=a[0]||currentUser;
+                if (!parseUsers().has(u)){ printLine('passwd: user does not exist','err'); return; }
+                printLine(`Changing password for ${u}. Enter new password:`, 'sudo');
+                waitingMkCreds = { step:'passwd1', user:u, p1:'' };
+            };
+            CMDS.su = (a)=>{
+                const u=a[0]; if (!u){ printLine('su: user required','err'); return; }
+                if (!parseUsers().has(u)){ printLine('su: user does not exist','err'); return; }
+                currentUser = u;
+                S.user = u;
+                S.home = `/home/${u}`;
+                cwd = S.home;
+                promptUpdate();
+                printLine(`Switched to ${u}`);
+            };
+
+            // input handling
+            async function handleEnter(cmdline) {
+                // interactive states
+                if (waitingNano){
+                    // in "nano", accept line input append. Control keys via shortcuts
+                    waitingNano.buf += (waitingNano.buf.endsWith('\n')?'':'\n') + cmdline;
+                    printLine(cmdline);
+                    return;
+                }
+                if (waitingSudo){
+                    const ok = await checkPassword(currentUser, cmdline);
+                    if (!ok){ printLine('Sorry, try again.', 'err'); printLine(`[sudo] password for ${currentUser}:`, 'sudo'); return; }
+                    const cmd = waitingSudo.cmd;
+                    waitingSudo = null;
+                    printLine(`sudo: ${cmd}`, 'sudo');
+                    await run(cmd);
+                    promptUpdate();
+                    return;
+                }
+                if (waitingMkCreds){
+                    if (waitingMkCreds.step==='ask-user'){
+                        const u = (cmdline||'').trim();
+                        if (!u){ printLine('username cannot be empty','err'); return; }
+                        if (parseUsers().has(u)){ printLine('user exists, choose another','err'); return; }
+                        waitingMkCreds = { step:'passwd1', user:u, p1:'' };
+                        printLine(`Set password for ${u}:`, 'sudo');
+                        return;
+                    } else if (waitingMkCreds.step==='passwd1'){
+                        waitingMkCreds.p1 = cmdline;
+                        waitingMkCreds.step = 'passwd2';
+                        printLine(`Confirm password:`, 'sudo');
+                        return;
+                    } else if (waitingMkCreds.step==='passwd2'){
+                        if (cmdline !== waitingMkCreds.p1){ printLine('Passwords do not match.','err'); waitingMkCreds=null; return; }
+                        const u = waitingMkCreds.user;
+                        if (!parseUsers().has(u)){
+                            // create user (like useradd)
+                            const home = `/home/${u}`;
+                            const pw = FS.find('/etc/passwd');
+                            pw.data += `${u}:x:${Math.floor(Math.random()*5000)+1000}:1000::${home}:/bin/bash\n`;
+                            FS.ensureDir(home);
+                        }
+                        await setPassword(u, cmdline);
+                        printLine(`Password set for ${u}`, 'ok');
+                        waitingMkCreds = null;
+                        FS.save(); users=parseUsers();
+                        // if this was initial bootstrap for current user: show motd
+                        if (u===currentUser) motd();
+                        return;
+                    }
+                }
+
+                // normal command
+                await run(cmdline);
+            }
+
+            async function run(line) {
+                const raw = (line||'').trim();
+                printLine(`${prompt()} ${raw}`);
+                if (!raw){ promptUpdate(); return; }
+                hist.push(raw); histPos = hist.length;
+
+                // simple shortcuts
+                if (raw === 'Ctrl+S' && waitingNano){
+                    FS.writeFile(waitingNano.path, waitingNano.buf);
+                    printLine(`Saved ${waitingNano.path}`, 'ok'); return;
+                }
+                if (raw === 'Ctrl+X' && waitingNano){
+                    printLine(`Exited nano.`, 'nano'); waitingNano=null; promptUpdate(); return;
+                }
+
+                const args = splitArgs(raw);
+                const cmd = args.shift();
+
+                if (CMDS[cmd]) {
+                    const res = CMDS[cmd](args) ;
+                    if (res instanceof Promise) await res;
+                } else {
+                    printLine(`${cmd}: command not found`, 'err');
+                }
+                promptUpdate();
+            }
+
+            // keyboard handling
+            input.addEventListener('keydown', (e)=>{
+                if (e.key==='Enter'){
+                    const v = input.value;
+                    input.value = '';
+                    handleEnter(v);
+                } else if (e.key==='ArrowUp'){
+                    e.preventDefault();
+                    histPos = clamp(histPos-1, 0, hist.length);
+                    input.value = hist[histPos]||'';
+                    input.setSelectionRange(input.value.length, input.value.length);
+                } else if (e.key==='ArrowDown'){
+                    e.preventDefault();
+                    histPos = clamp(histPos+1, 0, hist.length);
+                    input.value = hist[histPos]||'';
+                    input.setSelectionRange(input.value.length, input.value.length);
+                } else if (e.ctrlKey && e.key.toLowerCase()==='s'){
+                    e.preventDefault();
+                    if (waitingNano){
+                        FS.writeFile(waitingNano.path, waitingNano.buf);
+                        printLine(`Saved ${waitingNano.path}`, 'ok');
+                    }
+                } else if (e.ctrlKey && e.key.toLowerCase()==='x'){
+                    e.preventDefault();
+                    if (waitingNano){ printLine(`Exited nano.`, 'nano'); waitingNano=null; promptUpdate(); }
+                }
+            });
+
+            // focus when terminal tab shown
+            const tabs = document.getElementById('main-tabs');
+            tabs?.addEventListener('click', (ev)=>{
+                const btn = ev.target.closest('.tab');
+                if (btn?.getAttribute('data-tab')==='terminal'){
+                    setTimeout(()=> input.focus(), 50);
+                }
+            });
+
+            promptUpdate();
+            bootstrap();
+        })();
+
         // Context menu + Folders for Desktop (Games tab)
         (function desktopContextAndFolders(){
             const grid = document.getElementById('games-grid');
@@ -1920,11 +2645,24 @@
             // Build context menu
             const menu = document.createElement('div');
             menu.className = 'desktop-context';
+            // Detect OS flavor for labeling
+            const ua = navigator.userAgent || '';
+            const isMac = /Macintosh|Mac OS X|Mac_PowerPC|MacIntel/i.test(ua);
+            const isWin = /Windows NT|Win64|Win32/i.test(ua);
+            const osLabel = isMac ? 'macOS' : (isWin ? 'Windows' : 'System');
+
             menu.innerHTML = `
                 <div class="menu-item" data-action="new-folder">📁 New Folder</div>
                 <div class="sep"></div>
                 <div class="menu-item" data-action="reset-layout">↺ Reset Layout</div>
                 <div class="menu-item" data-action="sort-az">A→Z Sort</div>
+                <div class="sep"></div>
+                <div class="menu-item" data-action="os-settings">⚙️ Open ${osLabel} Settings</div>
+                <div class="menu-item" data-action="os-files">${isMac ? '🗂️ Open Finder' : '🗁 Open File Explorer'}</div>
+                <div class="menu-item" data-action="os-terminal">⌨️ Open ${isMac ? 'Terminal' : 'Command Prompt'}</div>
+                <div class="sep"></div>
+                <div class="menu-item" data-action=" personalize">🎨 Personalize…</div>
+                <div class="menu-item" data-action=" refresh">🔄 Refresh</div>
             `;
             document.body.appendChild(menu);
 
@@ -2337,7 +3075,7 @@
             menu.addEventListener('click', (e) => {
                 const item = e.target.closest('.menu-item');
                 if (!item) return;
-                const action = item.getAttribute('data-action');
+                const action = (item.getAttribute('data-action') || '').trim();
                 hideMenu();
 
                 if (action === 'new-folder') {
@@ -2347,14 +3085,131 @@
                     const folder = createFolderAt(x, y);
                     // immediately rename
                     startRename(folder);
+                    return;
                 }
                 if (action === 'reset-layout') {
                     const btn = document.getElementById('games-reset-layout');
                     btn && btn.click();
+                    return;
                 }
                 if (action === 'sort-az') {
                     const btn = document.getElementById('games-sort-alpha');
                     btn && btn.click();
+                    return;
+                }
+                // OS-like helpers (open in in-site window manager)
+                if (action === 'os-settings') {
+                    // Open a settings/help window with OS tips
+                    const win = createAppWindow('about:blank', `${osLabel} Settings`);
+                    const body = win.querySelector('.app-body');
+                    body.innerHTML = `
+                      <div style="padding:12px;color:#cfc;font-family:Consolas,monospace;display:grid;gap:10px">
+                        <div style="font-weight:800">Quick ${osLabel} Settings</div>
+                        <div style="opacity:.9;font-size:13px">
+                          This is a simulated shortcut. Use the buttons below to adjust Wave‑X appearance and behavior.
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                          <button id="os-open-ext" class="px-btn">Open Extensions</button>
+                          <button id="os-open-bg" class="px-btn">Background</button>
+                          <button id="os-open-contrast" class="px-btn">High Contrast</button>
+                        </div>
+                      </div>
+                    `;
+                    body.querySelector('#os-open-ext')?.addEventListener('click', () => openExtensionsWindow());
+                    body.querySelector('#os-open-bg')?.addEventListener('click', () => openBackgroundChanger());
+                    body.querySelector('#os-open-contrast')?.addEventListener('click', async () => {
+                        try {
+                            openExtensionsWindow('High‑Contrast Mode');
+                        } catch {}
+                    });
+                    return;
+                }
+                if (action === 'os-files') {
+                    // Simulated file manager: open games grid in a list inside window
+                    const win = createAppWindow('about:blank', isMac ? 'Finder' : 'File Explorer');
+                    const body = win.querySelector('.app-body');
+                    const items = Array.from(document.querySelectorAll('#games-grid .game-card:not(.folder-card)')).slice(0, 50);
+                    body.innerHTML = `
+                      <div style="padding:10px;color:#cfc;font-family:Consolas,monospace;display:grid;gap:8px">
+                        <div style="font-weight:800">${isMac ? 'Finder' : 'Explorer'}</div>
+                        <div style="display:grid;gap:6px" id="fm-list"></div>
+                      </div>
+                    `;
+                    const list = body.querySelector('#fm-list');
+                    items.forEach(card => {
+                        const title = card.getAttribute('data-title') || 'App';
+                        const row = document.createElement('button');
+                        row.className = 'px-btn';
+                        row.style.cssText = 'justify-content:flex-start';
+                        row.textContent = title;
+                        row.addEventListener('click', () => {
+                            // simulate open
+                            card.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+                        });
+                        list.appendChild(row);
+                    });
+                    return;
+                }
+                if (action === 'os-terminal') {
+                    // Simple in-site terminal-like window (no real shell)
+                    const win = createAppWindow('about:blank', isMac ? 'Terminal' : 'Command Prompt');
+                    const body = win.querySelector('.app-body');
+                    body.innerHTML = `
+                      <div style="padding:10px;font-family:Consolas,monospace;color:#cfc;display:grid;grid-template-rows:1fr auto;gap:8px;height:100%">
+                        <pre id="term-out" style="margin:0;white-space:pre-wrap;overflow:auto;border:1px solid rgba(0,255,0,0.2);border-radius:8px;padding:8px;background:#000;min-height:160px">Wave‑X ${isMac ? 'sh' : 'cmd'} (simulated)
+Type 'help' for commands.
+</pre>
+                        <form id="term-form" style="display:grid;grid-template-columns:1fr auto;gap:8px">
+                          <input id="term-input" autocomplete="off" placeholder="${isMac ? 'whoami' : 'dir'}" style="background:#000;border:1px solid rgba(0,255,0,0.35);color:#cfc;border-radius:8px;padding:8px"/>
+                          <button class="px-btn" type="submit">Run</button>
+                        </form>
+                      </div>
+                    `;
+                    const out = body.querySelector('#term-out');
+                    const form = body.querySelector('#term-form');
+                    const input = body.querySelector('#term-input');
+                    const commands = {
+                        help() { return "Available: help, echo <text>, date, clear, open-extensions, open-proxy"; },
+                        date() { return new Date().toString(); },
+                        clear() { out.textContent = ''; return ''; },
+                        'open-extensions'() { try { openExtensionsWindow(); } catch {} return 'Opening Extensions…'; },
+                        'open-proxy'() { try { document.querySelector('.tab[data-tab="wave-proxy"]')?.click(); } catch {} return 'Switching to Proxy tab…'; }
+                    };
+                    form.addEventListener('submit', (ev) => {
+                        ev.preventDefault();
+                        const cmd = (input.value || '').trim();
+                        if (!cmd) return;
+                        out.textContent += `\n$ ${cmd}\n`;
+                        const [name, ...rest] = cmd.split(/\s+/);
+                        if (name === 'echo') {
+                            out.textContent += rest.join(' ') + '\n';
+                        } else if (commands[name]) {
+                            const r = commands[name]();
+                            if (typeof r === 'string' && r) out.textContent += r + '\n';
+                        } else {
+                            out.textContent += `Unknown command: ${name}\n`;
+                        }
+                        input.value = '';
+                        out.scrollTop = out.scrollHeight;
+                    });
+                    return;
+                }
+                if (action === 'personalize') {
+                    openBackgroundChanger();
+                    return;
+                }
+                if (action === 'refresh') {
+                    // Soft refresh: re-run autosort if available and re-render tips progress
+                    try {
+                        const grid = document.getElementById('games-grid');
+                        grid && grid.__autoLayout && grid.__autoLayout();
+                    } catch {}
+                    // Visual feedback via tips bar progress reset
+                    try {
+                        const bar = document.getElementById('tipsProgressBar');
+                        if (bar) { bar.style.transitionDuration = '0s'; bar.style.width = '0%'; setTimeout(()=>{ bar.style.transitionDuration='5s'; bar.style.width='100%'; }, 30); }
+                    } catch {}
+                    return;
                 }
             });
 
@@ -4367,8 +5222,19 @@ function createAppWindow(url, titleText) {
                 }
             }
 
-            // wire clicks
+            // Enhance tab labels with .glitch wrapper for hover effect
             tabs.forEach(t => {
+                // wrap inner text once
+                if (!t.querySelector('.glitch')) {
+                    const text = (t.textContent || '').trim();
+                    const span = document.createElement('span');
+                    span.className = 'glitch';
+                    span.setAttribute('aria-hidden', 'false');
+                    span.setAttribute('data-text', text);
+                    span.textContent = text;
+                    t.innerHTML = '';
+                    t.appendChild(span);
+                }
                 t.addEventListener('click', () => activate(t.getAttribute('data-tab')));
                 // give each tab an id for a11y
                 if (!t.id) t.id = 'tab-' + (t.getAttribute('data-tab') || ('t-' + Math.random().toString(36).slice(2)));
@@ -5551,6 +6417,79 @@ function escapeHtml(s) {
            FREE-FORM DESKTOP ICONS WITH PERSISTENCE
            =========== */
         (function desktopFreeForm() {
+            // Folder persistence (name, position, and contained card IDs)
+            const STORAGE_FOLDERS = 'wavex.folders.v1';
+            const STORAGE_CARD_FOLDER = 'wavex.card2folder.v1'; // cardId -> folderId mapping
+
+            function loadFolders() {
+                try { return JSON.parse(localStorage.getItem(STORAGE_FOLDERS) || '[]'); } catch { return []; }
+            }
+            function saveFolders(folders) {
+                try { localStorage.setItem(STORAGE_FOLDERS, JSON.stringify(folders)); } catch {}
+            }
+            function loadCardFolderMap() {
+                try { return JSON.parse(localStorage.getItem(STORAGE_CARD_FOLDER) || '{}'); } catch { return {}; }
+            }
+            function saveCardFolderMap(map) {
+                try { localStorage.setItem(STORAGE_CARD_FOLDER, JSON.stringify(map)); } catch {}
+            }
+
+            // Create a folder card DOM element from a folder model
+            function createFolderCard(folder) {
+                const card = document.createElement('div');
+                card.className = 'game-card folder-card';
+                card.id = folder.id;
+                card.setAttribute('data-title', folder.name || 'Folder');
+                card.style.left = (folder.x ?? 12) + 'px';
+                card.style.top  = (folder.y ?? 12) + 'px';
+                card.innerHTML = `
+                    <div class="folder-thumb" aria-hidden="true">📁</div>
+                    <div class="game-caption"></div>
+                `;
+                // editable caption
+                const cap = card.querySelector('.game-caption');
+                cap.contentEditable = 'true';
+                cap.spellcheck = false;
+                cap.textContent = folder.name || 'Folder';
+                cap.addEventListener('blur', () => {
+                    const name = (cap.textContent || 'Folder').trim() || 'Folder';
+                    card.setAttribute('data-title', name);
+                    // persist rename
+                    const folders = loadFolders();
+                    const f = folders.find(f => f.id === folder.id);
+                    if (f) { f.name = name; saveFolders(folders); }
+                });
+                cap.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); cap.blur(); }
+                });
+                return card;
+            }
+
+            // Ensure any existing plain folder visuals get editable captions and persisted names
+            function upgradeExistingFolderCards(gridRoot) {
+                const folders = Array.from(gridRoot.querySelectorAll('.game-card.folder-card'));
+                folders.forEach(card => {
+                    const caption = card.querySelector('.game-caption');
+                    if (caption && caption.getAttribute('contenteditable') !== 'true') {
+                        caption.contentEditable = 'true';
+                        caption.spellcheck = false;
+                        caption.addEventListener('blur', () => {
+                            const name = (caption.textContent || 'Folder').trim() || 'Folder';
+                            card.setAttribute('data-title', name);
+                            // sync to model
+                            const list = loadFolders();
+                            const id = card.id || (card.id = 'folder-' + Date.now());
+                            let f = list.find(x => x.id === id);
+                            if (!f) { f = { id, name, x: parseFloat(card.style.left)||12, y: parseFloat(card.style.top)||12, items: [] }; list.push(f); }
+                            f.name = name;
+                            saveFolders(list);
+                        });
+                        caption.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') { e.preventDefault(); caption.blur(); }
+                        });
+                    }
+                });
+            }
             const GRID_SIZE = 44; // px snap size (matches background grid)
             const STORAGE_POS_GAMES = 'wavex.games.pos.v1';
             const STORAGE_POS_APPS  = 'wavex.apps.pos.v1';
@@ -5584,6 +6523,31 @@ function escapeHtml(s) {
             desktops.forEach(({ root, key, type }) => {
                 const bounds = () => root.getBoundingClientRect();
                 const positions = loadPositions(key);
+
+                // Rehydrate persisted folders into the Games grid only
+                if (type === 'games') {
+                    // Upgrade pre-existing folders to have editable captions with persistence
+                    upgradeExistingFolderCards(root);
+                    const existingIds = new Set(Array.from(root.querySelectorAll('.game-card')).map(e => e.id).filter(Boolean));
+                    const folders = loadFolders();
+                    folders.forEach(f => {
+                        if (!existingIds.has(f.id)) {
+                            const node = createFolderCard(f);
+                            root.appendChild(node);
+                            existingIds.add(f.id);
+                        } else {
+                            // apply saved position/name to existing node
+                            const node = document.getElementById(f.id);
+                            if (node) {
+                                node.style.left = (f.x ?? 12) + 'px';
+                                node.style.top  = (f.y ?? 12) + 'px';
+                                node.setAttribute('data-title', f.name || 'Folder');
+                                const cap = node.querySelector('.game-caption');
+                                if (cap) cap.textContent = f.name || 'Folder';
+                            }
+                        }
+                    });
+                }
                 // Keep a copy of initial DOM order by title for sort reset/reference
                 const initialOrder = Array.from(root.querySelectorAll('.game-card')).map(el => el);
                 root.__initialOrder = initialOrder;
@@ -5745,6 +6709,12 @@ function escapeHtml(s) {
                         card.style.top  = ny + 'px';
                         const id = ensureId(card, 0);
                         positions[id] = { x: nx, y: ny };
+                        // if it's a folder card on games grid, persist its position in folder model too
+                        if (type === 'games' && card.classList.contains('folder-card')) {
+                            const folders = loadFolders();
+                            const f = folders.find(x => x.id === card.id);
+                            if (f) { f.x = nx; f.y = ny; saveFolders(folders); }
+                        }
                     });
                     savePositions(key, positions);
                     originals.forEach((_, card) => card.classList.remove('dragging'));
@@ -5996,6 +6966,63 @@ function escapeHtml(s) {
                         localStorage.removeItem(STORAGE_POS_GAMES);
                         root.__autoLayout(original.length ? original : Array.from(root.querySelectorAll('.game-card')));
                     });
+
+                    // Context menu: add New Folder action with persistence
+                    const gridEl = document.getElementById('games-grid');
+                    if (gridEl && !gridEl.__foldersWired) {
+                        gridEl.__foldersWired = true;
+
+                        // build a shared context menu if not present
+                        let deskMenu = document.querySelector('.desktop-context');
+                        function findDesktopMenuWithNewFolder() {
+                            const menus = Array.from(document.querySelectorAll('.desktop-context'));
+                            return menus.find(m => m.textContent && m.textContent.includes('New Folder'));
+                        }
+                        deskMenu = findDesktopMenuWithNewFolder() || deskMenu;
+                        // Click handler on document to catch "New Folder"
+                        document.addEventListener('click', (ev) => {
+                            const item = ev.target.closest && ev.target.closest('.desktop-context .menu-item[data-action="new-folder"]');
+                            if (!item) return;
+                            // Create model
+                            const folders = loadFolders();
+                            const id = 'folder-' + Date.now();
+                            const name = 'New Folder';
+                            // drop near viewport center of grid
+                            const b = gridEl.getBoundingClientRect();
+                            const x = Math.max(12, Math.round((b.width / 2) / 44) * 44);
+                            const y = Math.max(12, Math.round((b.height / 3) / 44) * 44);
+                            const folder = { id, name, x, y, items: [] };
+                            folders.push(folder);
+                            saveFolders(folders);
+                            // Create DOM
+                            const node = createFolderCard(folder);
+                            gridEl.appendChild(node);
+                            // focus caption to rename
+                            const cap = node.querySelector('.game-caption');
+                            if (cap) {
+                                // small delay to ensure in DOM
+                                setTimeout(() => { cap.focus(); document.execCommand && document.execCommand('selectAll', false, null); }, 30);
+                            }
+                        });
+
+                        // Wire per-card "Add to Folder…" flow if the lightweight picker exists in page
+                        const cardMenu = Array.from(document.querySelectorAll('.desktop-context')).find(m => m.textContent && m.textContent.includes('Add to Folder'));
+                        if (cardMenu) {
+                            // The existing code that opens the picker will ultimately call into this utility:
+                            window.__wavexAddCardToFolder = function(cardId, folderId) {
+                                const folders = loadFolders();
+                                const map = loadCardFolderMap();
+                                const f = folders.find(x => x.id === folderId);
+                                if (!f) return;
+                                // ensure items array
+                                f.items = Array.isArray(f.items) ? f.items : [];
+                                if (!f.items.includes(cardId)) f.items.push(cardId);
+                                map[cardId] = folderId;
+                                saveFolders(folders);
+                                saveCardFolderMap(map);
+                            };
+                        }
+                    }
                 }
             });
         })();
