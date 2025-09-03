@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wave-X</title>
     <style>
-        /* Old Windows-style cursors with hard reset (handles all elements, including SVGs/iframes overlay cases) */
+     
 :root {
-            /* Site-wide custom PNG cursor embedded as data URL (hotspot near tip) with default fallback */
+         
             --cursor-default:
               url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACECAYAAABu9c2rAAAACXBIWXMAAAsSAAALEgHS3X78AAABc0lEQVR4nO3QMaqDQBQF0f//h3u3mG+v0n2l1m0pQv1yC5y8cVQm0Y2k1JvQyYzv5w7g7mJ9cF3rF3z8HnH2b8zv3r4AABgqzv2mA1rA9b9gqYqg1b8QyQfQx4m9m5v6Q9JvI5wqg8bSJh6hVw4nqR3hQvGJrXy3VbJqf9lqYb0Vtqv1q9gQp8hGfYtqk2qX2tqkZ7V0qvY3qgqX9a0qfYPqkA6l8nYvGkUe5YV3eYpQf0s8b8qgGfYfQmYf0qg8b8kYb9o4bYj1b3X6pBz8g8f0f+0nJ3t0+3lEAAAAAABg9k7xZ7h4kU3g4mYJj3kqJj8kqJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJh8kKJj+qvZl+q7f3bqf+fX9tQwAAAAAAAAAAACAh3cYJr+9y9o9g0b7yJgAAAAAAADg1l8Bf8cCq1wqv2gAAAAASUVORK5CYII=") 2 2, default;
-            /* Keep system fallbacks for others until separate .cur files are available */
+        
             --cursor-pointer: pointer;
             --cursor-text: text;
 
-            /* Other tokens (fallback to system) */
+     
             --cursor-move: move;
             --cursor-ew: ew-resize;
             --cursor-ns: ns-resize;
@@ -22,20 +22,20 @@
             --cursor-nwse: nwse-resize;
         }
 
-        /* Baseline everywhere, including pseudo-elements and SVG */
+      
         html, body {
             cursor: var(--cursor-default) !important;
         }
-        /* inherit on everything to wipe previous component-level cursor rules */
+   
         *, *::before, *::after, svg, svg * {
             cursor: inherit !important;
         }
-        /* Ensure the canvas layer also picks up the custom cursor */
+     
         #matrixCanvas {
             cursor: inherit !important;
         }
 
-        /* Interactive: force hand */
+    
         a, button, [role="button"],
         input[type="button"], input[type="submit"], input[type="reset"],
         .px-btn, .tab, .app-btn, .px-tab, .px-tab-close,
@@ -46,18 +46,18 @@
         .tips-bar .tip.active {
             cursor: var(--cursor-pointer) !important;
         }
-        /* Also hand on clickable titlebar controls */
+   
         .app-controls .app-btn {
             cursor: var(--cursor-pointer) !important;
         }
 
-        /* Text inputs/areas and contenteditable: I‑beam */
+
         input[type="text"], input[type="search"], input[type="password"],
         input[type="email"], input[type="url"], input[type="tel"], input[type="number"],
         textarea, [contenteditable="true"] {
             cursor: var(--cursor-text) !important;
         }
-        /* generic input/select fallback: if user hovers right on the chrome */
+     
         input, select {
             cursor: var(--cursor-text) !important;
         }
