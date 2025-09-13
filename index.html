@@ -4555,6 +4555,11 @@ function createAppWindow(url, titleText) {
             const controls = document.createElement('div');
             controls.className = 'app-controls';
 
+            const btnPopout = document.createElement('button');
+            btnPopout.className = 'app-btn';
+            btnPopout.title = 'Open in new tab (reduce lag)';
+            btnPopout.textContent = 'Open in new tab';
+
             const btnFullscreen = document.createElement('button');
             btnFullscreen.className = 'app-btn';
             btnFullscreen.title = 'Fullscreen';
@@ -4565,6 +4570,7 @@ function createAppWindow(url, titleText) {
             btnClose.title = 'Close';
             btnClose.innerHTML = '✕';
 
+            controls.appendChild(btnPopout);
             controls.appendChild(btnFullscreen);
             controls.appendChild(btnClose);
 
@@ -4700,6 +4706,26 @@ function createAppWindow(url, titleText) {
                     win.style.height = '';
                 }
             });
+
+            // Open current game in a new real browser tab with a fullscreen iframe
+            if (url && url !== 'about:blank') {
+                btnPopout.addEventListener('click', () => {
+                    try {
+                        const src = iframe && iframe.src ? iframe.src : url;
+                        const w = window.open('about:blank', '_blank');
+                        if (!w) return;
+                        const safeTitle = (titleText || 'Game').toString().slice(0, 60);
+                        const doc = w.document;
+                        doc.open();
+                        doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;height:100%;background:#000}iframe{position:fixed;inset:0;border:0;width:100%;height:100%;}</style></head><body><iframe src="${src}" allowfullscreen></iframe></body></html>`);
+                        doc.close();
+                        try { w.focus(); } catch {}
+                    } catch {}
+                });
+            } else {
+                // Hide the popout button for blank/internal windows
+                btnPopout.style.display = 'none';
+            }
 
             // close
             btnClose.addEventListener('click', () => {
