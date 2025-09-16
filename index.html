@@ -1653,6 +1653,9 @@
                 <button class="tab active" data-tab="games" aria-controls="games" aria-selected="true" role="tab">
                     🎮 Games
                 </button>
+                <button class="tab" data-tab="apps" aria-controls="apps" aria-selected="false" role="tab" title="Apps">
+                    🧩 Apps
+                </button>
                 <button class="tab" data-tab="wave-proxy" aria-controls="wave-proxy" aria-selected="false" role="tab">
                     🌊 Proxy
                 </button>
@@ -1960,6 +1963,17 @@
 
     <!-- App Windows Layer -->
     <div id="windows-layer" aria-live="polite"></div>
+
+    <!-- Apps Tab -->
+    <div class="content" id="apps" role="tabpanel" aria-labelledby="tab-apps" style="display:none;">
+        <div class="games-grid" id="apps-grid">
+            <!-- CrazyGames app card -->
+            <div class="game-card" data-url="https://embeddr.rhw.one/embed#https://www.crazygames.com/" data-title="CrazyGames" data-image="https://www.crazygames.com/favicon.ico">
+                <div class="game-thumb" aria-hidden="true" style="background: center/cover no-repeat url('https://www.crazygames.com/favicon.ico'); border-radius:16px; overflow:hidden;"></div>
+                <div class="game-caption">CrazyGames</div>
+            </div>
+        </div>
+    </div>
 
 
 <div class="content" id="customization">
