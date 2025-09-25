@@ -4233,7 +4233,7 @@ launch.addEventListener('click', () => {
         // Run script; when done: open window only (no crash shake), then reset typing
         try {
             window.__MatrixFX && window.__MatrixFX.runScript(lines, () => {
-                const url = 'https://uvv2.rhw.one/active/';
+                const url = 'https://mypps.classlink.courter.com';
                 const win = createAppWindow(url, 'Wave‑X Proxy');
                 // expose handle globally for control buttons
                 window.__proxyAppWin = win;
@@ -4302,7 +4302,7 @@ launch.addEventListener('click', () => {
 
                 // New Tab: open another in-site window to same start page
                 btnNewTab?.addEventListener('click', () => {
-                    createAppWindow('https://uvv2.rhw.one/active/', 'Wave‑X Proxy');
+                    createAppWindow('https://mypps.classlink.courter.com', 'Wave‑X Proxy');
                 });
 
                 // Fullscreen: toggle maximize on the proxy window if open, else launch then maximize
@@ -4360,7 +4360,7 @@ launch.addEventListener('click', () => {
                     window.__proxyAppWin = win;
                     setTimeout(() => {
                         const iframe = win.querySelector('iframe.app-iframe');
-                        if (iframe) iframe.src = 'https://uvv2.rhw.one/active/';
+                        if (iframe) iframe.src = 'https://mypps.classlink.courter.com';
                     }, 50);
                 });
 
