@@ -27,24 +27,40 @@
 > A lightweight, static HTML proxy project made for fun and learning.  
 > Built by [**JustA5thGrader**](https://github.com/justa5thgrader).
 
----
+🌐 About
 
-## 🌐 About
+Wave-x-Pr0xy is a lightweight, front-end HTML proxy layout.
+It’s not a backend proxy server — instead, it’s a web interface concept built for beginners who want to explore how simple proxies and UIs can work together.
 
-**Wave-x-Pr0xy** is a simple front-end proxy interface that runs on pure HTML.  
-It’s not meant to be fancy — it’s built to be easy to host, easy to modify, and simple to understand.  
-Perfect for anyone learning how web proxies and static hosting work.
+Perfect for:
 
----
+Students learning HTML structure
 
-## ✨ Features
+People testing static hosting setups
 
-- 🧱 100% HTML – no backend required  
-- 🌍 Works on nearly any web host  
-- 🧠 Clean and easy to read code  
-- ⚙️ Can be used as a base for more advanced proxy tools  
-- 🎨 Minimal, fast, and lightweight
+Developers experimenting with proxy UIs
 
----
+✨ Features
 
-## 📂 Project Structure
+⚡ Fully static — no server required
+
+🎨 Clean and modifiable layout
+
+🌍 Works on GitHub Pages or any static host
+
+🧠 Easy to read, easy to remix
+
+💻 Educational and simple by design
+
+📂 Directory Layout Wave-x-Pr0xy/
+│
+├── index.html          # Main interface file
+├── C rasher.html       # Additional test file
+├── wave-x temp/        # Experimental or temp directory
+├── secret/             # Hidden or personal files
+└── README.md           # Documentation
+🚀 Quick Start
+Clone the repository
+git clone https://github.com/justa5thgrder/Wave-x-Pr0xy.git
+cd Wave-x-Pr0xy
+
