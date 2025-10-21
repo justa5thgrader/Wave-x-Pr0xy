@@ -1,1 +1,385 @@
 
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xtroller Control Panel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(to bottom, #000000, #1a1a1a); 
+            color: #e0e0e0; 
+            margin: 0; 
+            padding: 0; 
+            overflow-x: hidden; 
+            position: relative; 
+        }
+        /* Canvas removed for minimalist theme */
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            position: relative; 
+            z-index: 1; 
+        }
+        h1 { 
+            text-align: center; 
+            color: #ffffff; 
+            margin-bottom: 30px; 
+            font-weight: 600; 
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+        @keyframes fadeInUp { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        /* Tabs removed for single layout */
+        .content { 
+            display: block; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 8px; 
+            padding: 20px; 
+            min-height: 400px; 
+            animation: fadeInContent 0.5s ease-out; 
+        }
+        @keyframes fadeInContent { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        h2 { 
+            color: #ffffff; 
+            border-bottom: 1px solid rgba(255,255,255,0.2); 
+            padding-bottom: 10px; 
+            font-weight: 500;
+        }
+        button { 
+            background: rgba(255,255,255,0.05); 
+            color: #e0e0e0; 
+            border: 1px solid rgba(255,255,255,0.2); 
+            padding: 12px 24px; 
+            cursor: pointer; 
+            border-radius: 6px; 
+            margin: 8px; 
+            transition: all 0.3s ease; 
+            font-family: inherit; 
+            font-weight: 500;
+        }
+        button:hover { 
+            background: rgba(255,255,255,0.15); 
+            border-color: rgba(255,255,255,0.3); 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .trick-btn { 
+            display: block; 
+            width: 100%; 
+            margin: 10px 0; 
+        }
+        #prompter { 
+            width: 100%; 
+            height: 150px; 
+            background: rgba(255,255,255,0.05); 
+            color: #e0e0e0; 
+            border: 1px solid rgba(255,255,255,0.2); 
+            padding: 10px; 
+            font-family: inherit; 
+            resize: vertical; 
+            border-radius: 6px;
+        }
+        #output { 
+            background: rgba(0,0,0,0.5); 
+            color: #e0e0e0; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            padding: 10px; 
+            min-height: 100px; 
+            margin-top: 10px; 
+            overflow-y: auto; 
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .troll { 
+            color: #ff6b6b; 
+        }
+        /* Blink animation removed for minimalism */
+        .fake-code { 
+            background: rgba(255,255,255,0.05); 
+            border-left: 3px solid rgba(255,255,255,0.3); 
+            padding: 10px; 
+            margin: 10px 0; 
+            font-size: 12px; 
+            white-space: pre-wrap; 
+        }
+        /* Scroll animation removed */
+        /* Minimalist overlays rethemed */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+        }
+        .overlay.active { display: flex; }
+        .search-bar { 
+            width: 80%; 
+            padding: 12px; 
+            font-size: 16px; 
+            margin-bottom: 20px; 
+            background: rgba(255,255,255,0.1); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            color: #e0e0e0; 
+            border-radius: 6px;
+        }
+        .search-result { 
+            color: #ffffff; 
+            cursor: pointer; 
+            margin: 5px 0; 
+            padding: 10px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+        .search-result:hover { 
+            background: rgba(255,255,255,0.15); 
+        }
+        .warning-box {
+            background: rgba(255,107,107,0.2);
+            color: #ff6b6b;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,107,107,0.3);
+        }
+        .pulse {
+            animation: gentlePulse 2s ease-in-out infinite;
+        }
+        @keyframes gentlePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        @keyframes spin { 
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); } 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        
+        
+        
+    <div id="hacking-tools" class="content">
+            
+            
+            <button class="trick-btn" onclick="chromebookCrasher()">Chromebook Crasher</button>
+            
+            
+            
+            
+            
+            
+            
+            
+        </div></div>
+
+    <!-- Hacking Overlays -->
+    
+
+    
+    
+    <script>
+        function chromebookCrasher() {
+            // Heavy CPU hog to lag Chromebook
+            let workers = [];
+            for (let i = 0; i < navigator.hardwareConcurrency || 4; i++) {
+                let worker = new Worker('data:application/javascript,' + encodeURIComponent(`
+                    while (true) {
+                        let sum = 0;
+                        for (let j = 0; j < 1e8; j++) sum += Math.sin(j);
+                    }
+                `));
+                workers.push(worker);
+            }
+            alert('Chromebook crashing... High CPU exploit activated! (Close tabs or refresh)');
+            setTimeout(() => workers.forEach(w => w.terminate()), 10000);
+        }
+
+        function fakeChromebookCrash() {
+            document.getElementById('chromeCrash').classList.add('active');
+            setTimeout(() => document.getElementById('chromeCrash').classList.remove('active'), 10000);
+        }
+
+        function overheatSimulator() {
+            document.getElementById('overheat').classList.add('active');
+            document.body.classList.add('overheat');
+            let count = 10;
+            let countdown = setInterval(() => {
+                count--;
+                document.getElementById('countdown').textContent = count;
+                if (count <= 0) {
+                    clearInterval(countdown);
+                    location.reload();
+                }
+            }, 1000);
+        }
+
+        // Severe hacking tools
+        function ddosSimulator() {
+            alert('DDoS attack simulation initiated! Flooding target server with requests. Your browser may lag heavily.');
+            let workers = [];
+            for (let i = 0; i < (navigator.hardwareConcurrency * 2) || 8; i++) {
+                let worker = new Worker('data:application/javascript,' + encodeURIComponent(`
+                    while (true) {
+                        let arr = new Uint8Array(10000000);
+                        crypto.getRandomValues(arr);
+                        arr.sort(() => Math.random() - 0.5);
+                    }
+                `));
+                workers.push(worker);
+            }
+            setTimeout(() => {
+                workers.forEach(w => w.terminate());
+                alert('DDoS simulation ended. Target overwhelmed (in simulation).');
+            }, 20000);
+        }
+
+        function malwareInjector() {
+            const overlay = document.createElement('div');
+            overlay.id = 'malwareOverlay';
+            overlay.className = 'overlay active';
+            overlay.style.background = 'rgba(255, 0, 0, 0.95)';
+            overlay.innerHTML = `
+                <h1 style="color: #ff0000;">MALWARE ALERT</h1>
+                <p>Your system is infected! Ransomware deploying...</p>
+                <div style="width: 100%; height: 20px; background: #333; border-radius: 10px; overflow: hidden; margin: 20px 0;">
+                    <div id="malwareProgress" style="height: 100%; background: #ff0000; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <p>Files encrypted: <span id="encCount">0</span></p>
+                <button onclick="location.reload()" style="background: #ff0000; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Pay Ransom to Decrypt</button>
+            `;
+            document.body.appendChild(overlay);
+            let enc = 0;
+            const interval = setInterval(() => {
+                enc += Math.floor(Math.random() * 5) + 1;
+                document.getElementById('encCount').textContent = enc;
+                const progress = Math.min((enc / 50) * 100, 100);
+                document.getElementById('malwareProgress').style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    overlay.innerHTML += '<p style="color: #ff0000; font-size: 18px;">All files locked! Bitcoin required for key.</p>';
+                }
+            }, 300);
+            setTimeout(() => {
+                overlay.remove();
+            }, 30000);
+        }
+
+        function networkFlood() {
+            alert('Network flood attack starting: Simulating massive data packets. Expect high bandwidth usage and lag!');
+            let startTime = Date.now();
+            const interval = setInterval(() => {
+                const dataSize = 5000000; // 5MB fake data
+                const data = new ArrayBuffer(dataSize);
+                const view = new Uint8Array(data);
+                for (let i = 0; i < view.length; i++) {
+                    view[i] = Math.floor(Math.random() * 256);
+                }
+                // Simulate upload
+                if (Date.now() - startTime > 30000) {
+                    clearInterval(interval);
+                    alert('Flood complete. Network saturated (simulation).');
+                }
+            }, 50);
+            setTimeout(() => clearInterval(interval), 30000);
+        }
+
+        function passwordCracker() {
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay active';
+            overlay.innerHTML = `
+                <h1>Brute Force Password Cracker</h1>
+                <p>Cracking admin password... This may take time.</p>
+                <div style="width: 100%; height: 20px; background: #333; border-radius: 10px; overflow: hidden;">
+                    <div id="crackProgress" style="height: 100%; background: #00ff00; width: 0%;"></div>
+                </div>
+                <p>Attempts: <span id="attemptCount">0</span></p>
+                <p>Speed: 1M attempts/sec (simulated)</p>
+            `;
+            document.body.appendChild(overlay);
+            let attempts = 0;
+            const passwords = ['admin', 'password123', 'letmein', 'qwerty', '123456'];
+            const interval = setInterval(() => {
+                attempts += 1000000; // Simulate high speed
+                document.getElementById('attemptCount').textContent = attempts.toLocaleString();
+                const progress = Math.min((attempts / 100000000) * 100, 100); // Fake to 100 at 100M
+                document.getElementById('crackProgress').style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    const crackedPw = passwords[Math.floor(Math.random() * passwords.length)];
+                    overlay.innerHTML += `<p style="color: #00ff00;">Cracked! Password: <strong>${crackedPw}</strong></p><button onclick="this.parentElement.remove(); parentElement.remove();" style="margin-top: 10px; padding: 10px; background: #333; color: white; border: none; border-radius: 5px;">Close</button>`;
+                }
+            }, 200);
+        }
+
+        function backdoorInstaller() {
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay active';
+            overlay.style.background = 'rgba(0, 100, 0, 0.95)';
+            overlay.innerHTML = `
+                <h1>Backdoor Installed</h1>
+                <p>Remote access granted. Persistent shell active.</p>
+                <div style="font-size: 40px; margin: 20px 0;">🔒➡️🔓</div>
+                <p>Commands: ls, whoami, shutdown (simulated)</p>
+                <div style="background: #000; color: #00ff00; padding: 10px; border-radius: 5px; margin: 10px 0; font-family: monospace;">
+                    > root@target:~# whoami<br>root
+                </div>
+                <button onclick="location.reload()" style="background: #00ff00; color: black; border: none; padding: 10px 20px; border-radius: 5px;">Revoke Access</button>
+            `;
+            document.body.appendChild(overlay);
+            // Simulate ongoing access log
+            const logInterval = setInterval(() => {
+                const commands = ['ping 127.0.0.1', 'netstat -an', 'ps aux', 'cat /etc/passwd'];
+                const logDiv = overlay.querySelector('div[style*="background: #000"]');
+                if (logDiv) {
+                    logDiv.innerHTML += `<br>> ${commands[Math.floor(Math.random() * commands.length)]}<br>[executed]`;
+                }
+            }, 2000);
+            setTimeout(() => {
+                clearInterval(logInterval);
+                overlay.remove();
+            }, 15000);
+        }
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            // Content is always visible, no init needed
+        });
+    </script>
+    <style>
+        @keyframes spin { 
+            100% { transform: rotate(360deg); } 
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+
+<div id="sCLExtInstalled" data-version="8.1" style="display: none;">1</div></body></html>
