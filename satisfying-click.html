@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satisfying Click Effects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: radial-gradient(circle at center, #0a0a2e 0%, #16213e 50%, #0f0f23 100%);
+            cursor: crosshair;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            z-index: 100;
+            pointer-events: none;
+            animation: fadeOut 5s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        #stats {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            color: white;
+            font-family: monospace;
+            font-size: 18px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            z-index: 10;
+        }
+
+        #stats div {
+            margin-bottom: 8px;
+        }
+
+        .click-counter {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .controls-toggle {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            font-family: monospace;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .controls-toggle:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        #controls {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            font-family: monospace;
+            font-size: 14px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            transform: translateX(100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #controls.open {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #controls h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #00ffff;
+            text-align: center;
+        }
+
+        .effect-selector {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .effect-btn {
+            padding: 10px 15px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-family: monospace;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .effect-btn:hover {
+            background: rgba(0, 255, 255, 0.15);
+        }
+
+        .effect-btn.active {
+            background: rgba(0, 255, 255, 0.4);
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .effect-list {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .control-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .color-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.active {
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .click-mode-btn {
+            padding: 8px 12px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+            font-family: monospace;
+            cursor: pointer;
+            margin: 2px;
+            transition: all 0.2s;
+        }
+
+        .click-mode-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+        .click-mode-btn.active {
+            background: rgba(0, 255, 255, 0.5);
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .slider {
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .grid-style-btn {
+            padding: 6px 10px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 2px;
+            transition: all 0.2s;
+        }
+
+        .grid-style-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+        .grid-style-btn.active {
+            background: rgba(0, 255, 255, 0.5);
+            border-color: #00ffff;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            #stats {
+                bottom: 20px;
+                left: 20px;
+                font-size: 14px;
+            }
+
+            #stats div {
+                margin-bottom: 5px;
+            }
+
+            #instructions {
+                font-size: 20px;
+                padding: 0 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #instructions {
+                font-size: 18px;
+            }
+
+            .click-counter {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div id="instructions">
+        Click or tap anywhere for satisfying effects!<br>
+        <span style="font-size: 16px; opacity: 0.8;">Try different areas for different patterns</span>
+    </div>
+
+    <div id="stats">
+        <div>Clicks: <span class="click-counter" id="clickCount">0</span></div>
+        <div>Particles: <span class="click-counter" id="particleCount">0</span></div>
+        <div>Energy: <span class="click-counter" id="energyLevel">100</span></div>
+    </div>
+
+    <div class="controls-toggle" id="controlsToggle">🎛️ Controls</div>
+
+    <div id="controls">
+        <h3>🎛️ Controls</h3>
+
+        <div class="effect-selector">
+            <div class="control-label" style="width: 100%; text-align: center; margin-bottom: 8px; font-weight: bold;">Choose Visual Effect (15 Satisfying Experiences)</div>
+            <div class="effect-list" style="max-height: 300px; overflow-y: auto;">
+                <button class="effect-btn active" data-effect="fluid">🌊 Fluid Physics</button>
+                <button class="effect-btn" data-effect="geodesic">🔷 Crystal Lattice</button>
+                <button class="effect-btn" data-effect="aurora">🌈 Aurora Waves</button>
+                <button class="effect-btn" data-effect="magnetic">🧲 Magnetic Field</button>
+                <button class="effect-btn" data-effect="fractal">🌌 Fractal Vortex</button>
+                <button class="effect-btn" data-effect="jelly">🍬 Jelly Bubbles</button>
+                <button class="effect-btn" data-effect="circuit">🔌 Circuit Board</button>
+                <button class="effect-btn" data-effect="nebula">🌠 Nebula Galaxy</button>
+                <button class="effect-btn" data-effect="helix">🧬 DNA Helix</button>
+                <button class="effect-btn" data-effect="sparks">⚡ Electric Sparks</button>
+                <button class="effect-btn" data-effect="fire">🔥 Fire Plasma</button>
+                <button class="effect-btn" data-effect="water">💧 Liquid Flow</button>
+                <button class="effect-btn" data-effect="ice">🧊 Crystal Ice</button>
+                <button class="effect-btn" data-effect="lightning">🌩️ Thunder Storm</button>
+                <button class="effect-btn" data-effect="energy">⚛️ Quantum Field</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">Color Scheme</div>
+            <div class="color-buttons">
+                <button class="color-btn" style="background: linear-gradient(45deg, #00ffff, #0080ff);" data-scheme="blue" title="Blue/Cyan (Default)"></button>
+                <button class="color-btn" style="background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #0000ff, #ff00ff);" data-scheme="rainbow" title="Rainbow"></button>
+                <button class="color-btn" style="background: linear-gradient(45deg, #ff0080, #8000ff);" data-scheme="purple" title="Magenta/Purple"></button>
+                <button class="color-btn" style="background: linear-gradient(45deg, #ffff00, #ff8000);" data-scheme="warm" title="Warm Colors"></button>
+                <button class="color-btn" style="background: linear-gradient(45deg, #00ff80, #0080ff);" data-scheme="cool" title="Cool Mint"></button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">Click Mode</div>
+            <button class="click-mode-btn active" data-mode="normal">Normal</button>
+            <button class="click-mode-btn" data-mode="explosion">Explosion</button>
+            <button class="click-mode-btn" data-mode="ripple">Ripple</button>
+            <button class="click-mode-btn" data-mode="wave">Wave</button>
+            <button class="click-mode-btn" data-mode="pulse">Pulse</button>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">Ball Size: <span id="sizeValue">1.0x</span></div>
+            <input type="range" class="slider" id="sizeSlider" min="0.5" max="3.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">Click Force: <span id="forceValue">12x</span></div>
+            <input type="range" class="slider" id="forceSlider" min="5" max="25" step="1" value="12">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">Grid Style</div>
+            <button class="grid-style-btn active" data-style="default">Default</button>
+            <button class="grid-style-btn" data-style="dense">Dense</button>
+            <button class="grid-style-btn" data-style="sparse">Sparse</button>
+            <button class="grid-style-btn" data-style="diagonal">Diagonal</button>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">Connection Style</div>
+            <button class="grid-style-btn active" data-connection="lines">Lines</button>
+            <button class="grid-style-btn" data-connection="curved">Curved</button>
+            <button class="grid-style-btn" data-connection="dotted">Dotted</button>
+            <button class="grid-style-btn" data-connection="animated">Pulsing</button>
+        </div>
+    </div>
+
+    <script>
+        class SatisfyingEffects {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: 0, y: 0, down: false };
+                this.gridSize = 40;
+                this.interactionRadius = 120;
+                this.maxParticles = 900;
+                this.clickCount = 0;
+                this.energyLevel = 100;
+                this.trailOpacity = 0.03;
+
+                // Customization settings
+                this.settings = {
+                    visualEffect: 'fluid',
+                    colorScheme: 'blue',
+                    clickMode: 'normal',
+                    ballSize: 1.0,
+                    clickForce: 12,
+                    gridStyle: 'default',
+                    connectionStyle: 'lines'
+                };
+
+                // Create initial particles
+                this.create_particles();
+
+                this.resizeCanvas();
+                this.bindEvents();
+                this.setupControls();
+                this.animate();
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.width = this.canvas.width;
+                this.height = this.canvas.height;
+                this.create_particles();
+            }
+
+            bindEvents() {
+                this.canvas.addEventListener('mousedown', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    this.mouse.down = true;
+                    this.handleClick(e);
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                this.canvas.addEventListener('mouseup', () => {
+                    this.mouse.down = false;
+                });
+
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.mouse.x = touch.clientX;
+                    this.mouse.y = touch.clientY;
+                    this.mouse.down = true;
+                    this.handleClick({ clientX: touch.clientX, clientY: touch.clientY });
+                });
+
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.mouse.x = touch.clientX;
+                    this.mouse.y = touch.clientY;
+                });
+
+                this.canvas.addEventListener('touchend', () => {
+                    this.mouse.down = false;
+                });
+
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
+
+            create_particles() {
+                this.particles = [];
+                const cols = Math.floor(this.width / this.gridSize) + 1;
+                const rows = Math.floor(this.height / this.gridSize) + 1;
+
+                // Performance optimization: limit particles for dense grid
+                const maxParticles = this.settings.gridStyle === 'dense' ? 400 : 900; // Half the particles for dense grid
+                const totalParticles = Math.min(cols * rows, maxParticles);
+
+                for (let i = 0; i < totalParticles; i++) {
+                    const x = (i % cols) * this.gridSize;
+                    const y = Math.floor(i / cols) * this.gridSize;
+
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        ox: x,
+                        oy: y,
+                        vx: 0,
+                        vy: 0
+                    });
+                }
+            }
+
+            handleClick(e) {
+                const x = e.clientX;
+                const y = e.clientY;
+                this.clickCount++;
+
+                switch (this.settings.clickMode) {
+                    case 'normal':
+                        this.createNormalClick(x, y);
+                        break;
+                    case 'explosion':
+                        this.createExplosionClick(x, y);
+                        break;
+                    case 'ripple':
+                        this.createRippleClick(x, y);
+                        break;
+                    case 'wave':
+                        this.createWaveClick(x, y);
+                        break;
+                    case 'pulse':
+                        this.createPulseClick(x, y);
+                        break;
+                }
+
+                document.getElementById('clickCount').textContent = this.clickCount;
+            }
+
+            createNormalClick(x, y) {
+                for (let particle of this.particles) {
+                    const dx = particle.x - x;
+                    const dy = particle.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < this.interactionRadius) {
+                        const amount = (this.interactionRadius - dist) / this.interactionRadius;
+                        const angle = Math.atan2(dy, dx);
+                        const randomFactor = 0.8 + Math.random() * 0.4;
+                        const force = this.settings.clickForce;
+                        particle.vx += Math.cos(angle) * amount * force * randomFactor;
+                        particle.vy += Math.sin(angle) * amount * force * randomFactor;
+                    }
+                }
+            }
+
+            createExplosionClick(x, y) {
+                const blastRadius = this.interactionRadius * 1.5;
+                const force = this.settings.clickForce;
+                for (let particle of this.particles) {
+                    const dx = particle.x - x;
+                    const dy = particle.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < blastRadius) {
+                        const amount = 1 - (dist / blastRadius);
+                        const angle = Math.atan2(dy, dx);
+                        particle.vx += Math.cos(angle) * amount * force * 1.8;
+                        particle.vy += Math.sin(angle) * amount * force * 1.8;
+                    }
+                }
+            }
+
+            createRippleClick(x, y) {
+                const force = this.settings.clickForce;
+                this.createNormalClick(x, y);
+                setTimeout(() => this.createExpansiveRipples(x, y, force * 0.6), 100);
+                setTimeout(() => this.createExpansiveRipples(x, y, force * 0.4), 200);
+            }
+
+            createWaveClick(x, y) {
+                const force = this.settings.clickForce;
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    setTimeout(() => {
+                        this.createDirectionalWave(x, y, angle, force);
+                    }, i * 20);
+                }
+            }
+
+            createPulseClick(x, y) {
+                const force = this.settings.clickForce;
+                this.createInwardPulse(x, y, force * 0.5);
+                setTimeout(() => this.createOutwardPulse(x, y, force), 50);
+            }
+
+            createExpansiveRipples(x, y, force) {
+                for (let particle of this.particles) {
+                    const dx = particle.x - x;
+                    const dy = particle.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist > 20 && dist < this.interactionRadius) {
+                        const amount = (this.interactionRadius - dist) / this.interactionRadius;
+                        const angle = Math.atan2(dy, dx);
+                        particle.vx += Math.cos(angle) * amount * force * 0.8;
+                        particle.vy += Math.sin(angle) * amount * force * 0.8;
+                    }
+                }
+            }
+
+            createDirectionalWave(x, y, angle, force) {
+                for (let particle of this.particles) {
+                    const dx = particle.x - x;
+                    const dy = particle.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    const particleAngle = Math.atan2(dy, dx);
+                    let angleDiff = Math.abs(particleAngle - angle);
+                    if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+
+                    if (dist < this.interactionRadius && angleDiff < Math.PI / 8) {
+                        const amount = (this.interactionRadius - dist) / this.interactionRadius;
+                        particle.vx += Math.cos(angle) * amount * force * 1.2;
+                        particle.vy += Math.sin(angle) * amount * force * 1.2;
+                    }
+                }
+            }
+
+            createInwardPulse(x, y, force) {
+                for (let particle of this.particles) {
+                    const dx = particle.x - x;
+                    const dy = particle.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < this.interactionRadius) {
+                        const amount = (this.interactionRadius - dist) / this.interactionRadius;
+                        const angle = Math.atan2(dy, dx);
+                        particle.vx -= Math.cos(angle) * amount * force * 0.3;
+                        particle.vy -= Math.sin(angle) * amount * force * 0.3;
+                    }
+                }
+            }
+
+            createOutwardPulse(x, y, force) {
+                for (let particle of this.particles) {
+                    const dx = particle.x - x;
+                    const dy = particle.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < this.interactionRadius) {
+                        const amount = (this.interactionRadius - dist) / this.interactionRadius;
+                        const angle = Math.atan2(dy, dx);
+                        particle.vx += Math.cos(angle) * amount * force * 1.5;
+                        particle.vy += Math.sin(angle) * amount * force * 1.5;
+                    }
+                }
+            }
+
+            update() {
+                // Physics simulation
+                for (let a = 0; a < this.particles.length; a++) {
+                    for (let b = a + 1; b < this.particles.length; b++) {
+                        const p1 = this.particles[a];
+                        const p2 = this.particles[b];
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < this.gridSize * 2 && dist > 0) {
+                            const force = (this.gridSize * 2 - dist) / this.gridSize;
+                            const angle = Math.atan2(dy, dx);
+                            const push = force * 0.15;
+                            p1.vx -= Math.cos(angle) * push;
+                            p1.vy -= Math.sin(angle) * push;
+                            p2.vx += Math.cos(angle) * push;
+                            p2.vy += Math.sin(angle) * push;
+                        }
+                    }
+                }
+
+                if (this.mouse.down) {
+                    for (let particle of this.particles) {
+                        const dx = particle.x - this.mouse.x;
+                        const dy = particle.y - this.mouse.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < this.interactionRadius) {
+                            const amount = (this.interactionRadius - dist) / this.interactionRadius;
+                            const angle = Math.atan2(dy, dx);
+                            const randomFactor = 0.8 + Math.random() * 0.4;
+                            const force = this.settings.clickForce;
+                            particle.vx += Math.cos(angle) * amount * force * randomFactor;
+                            particle.vy += Math.sin(angle) * amount * force * randomFactor;
+                        }
+                    }
+                }
+
+                // Spring forces and damping
+                for (let particle of this.particles) {
+                    const dx = particle.x - particle.ox;
+                    const dy = particle.y - particle.oy;
+                    particle.vx -= dx * 0.01;
+                    particle.vy -= dy * 0.01;
+                    particle.vx *= 0.97;
+                    particle.vy *= 0.97;
+
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+
+                    // Boundaries
+                    if (particle.x < 0) {
+                        particle.x = 0;
+                        particle.vx *= -0.9;
+                    }
+                    if (particle.x > this.width) {
+                        particle.x = this.width;
+                        particle.vx *= -0.9;
+                    }
+                    if (particle.y < 0) {
+                        particle.y = 0;
+                        particle.vy *= -0.9;
+                    }
+                    if (particle.y > this.height) {
+                        particle.y = this.height;
+                        particle.vy *= -0.9;
+                    }
+                }
+
+                // Update stats
+                document.getElementById('particleCount').textContent = this.particles.length;
+                let totalEnergy = 0;
+                for (let particle of this.particles) {
+                    totalEnergy += Math.abs(particle.vx) + Math.abs(particle.vy);
+                }
+            }
+
+            draw() {
+                // Clear background with slight fade
+                this.ctx.fillStyle = this.trailOpacity < 0.05 ? 'rgba(10, 10, 46, 0.08)' : 'rgba(10, 10, 46, 0.05)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                this.ctx.save();
+                this.ctx.globalCompositeOperation = 'lighter';
+
+                // Different rendering approaches for each visual effect
+                switch (this.settings.visualEffect) {
+                    case 'fluid':
+                        this.drawFluidEffect();
+                        break;
+                    case 'geodesic':
+                        this.drawGeodesicEffect();
+                        break;
+                    case 'aurora':
+                        this.drawAuroraEffect();
+                        break;
+                    case 'magnetic':
+                        this.drawMagneticEffect();
+                        break;
+                    case 'fractal':
+                        this.drawFractalEffect();
+                        break;
+                    case 'jelly':
+                        this.drawJellyEffect();
+                        break;
+                    case 'circuit':
+                        this.drawCircuitEffect();
+                        break;
+                    case 'nebula':
+                        this.drawNebulaEffect();
+                        break;
+                    case 'helix':
+                        this.drawHelixEffect();
+                        break;
+                    case 'sparks':
+                        this.drawSparksEffect();
+                        break;
+                    case 'fire':
+                        this.drawFireEffect();
+                        break;
+                    case 'water':
+                        this.drawWaterEffect();
+                        break;
+                    case 'ice':
+                        this.drawIceEffect();
+                        break;
+                    case 'lightning':
+                        this.drawLightningEffect();
+                        break;
+                    case 'energy':
+                        this.drawEnergyEffect();
+                        break;
+                }
+
+                this.ctx.restore();
+            }
+
+            drawFluidEffect() {
+                this.drawFluidMesh();
+                this.drawConnections();
+                this.drawParticles();
+            }
+
+            drawGeodesicEffect() {
+                // Crystal Lattice - geometric hexagons and triangles
+                const time = Date.now() * 0.001;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 30 % 360 : 180;
+
+                this.ctx.strokeStyle = `hsl(${baseHue}, 70%, 60%)`;
+                this.ctx.lineWidth = 2;
+
+                // Draw hexagonal crystal lattice
+                for (let i = 0; i < this.particles.length; i++) {
+                    const particle = this.particles[i];
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+
+                    // Draw crystal facets only for active particles
+                    if (speed > 0.5) {
+                        this.ctx.globalAlpha = Math.min(0.8, speed * 0.3);
+
+                        // Hexagonal crystal shapes
+                        const sides = Math.floor(speed * 2) + 3;
+                        const radius = Math.max(5, speed * 3);
+
+                        this.ctx.beginPath();
+                        for (let j = 0; j <= sides; j++) {
+                            const angle = (j / sides) * Math.PI * 2;
+                            const x = particle.x + Math.cos(angle) * radius;
+                            const y = particle.y + Math.sin(angle) * radius;
+                            if (j === 0) this.ctx.moveTo(x, y);
+                            else this.ctx.lineTo(x, y);
+                        }
+                        this.ctx.stroke();
+
+                        // Internal crystal geometry
+                        this.ctx.globalAlpha *= 0.5;
+                        this.ctx.beginPath();
+                        for (let j = 0; j <= sides; j++) {
+                            const angle = (j / sides) * Math.PI * 2 + Math.PI / sides;
+                            const x = particle.x + Math.cos(angle) * radius * 0.6;
+                            const y = particle.y + Math.sin(angle) * radius * 0.6;
+                            if (j === 0) this.ctx.moveTo(x, y);
+                            else this.ctx.lineTo(x, y);
+                        }
+                        this.ctx.stroke();
+                    }
+                }
+
+                // Geometric connections between crystals
+                for (let a = 0; a < this.particles.length; a++) {
+                    for (let b = a + 1; b < this.particles.length; b++) {
+                        const p1 = this.particles[a];
+                        const p2 = this.particles[b];
+                        const dist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+
+                        if (dist < 80 && dist > 0) {
+                            const alpha = (80 - dist) / 80;
+                            this.ctx.globalAlpha = alpha * 0.4;
+                            this.ctx.strokeStyle = `hsl(${baseHue + dist * 0.5}, 80%, 50%)`;
+                            this.ctx.lineWidth = 0.5;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p1.x, p1.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            drawAuroraEffect() {
+                // Aurora Waves - flowing Northern Lights effect (Performance Optimized)
+                const time = Date.now() * 0.003;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 10 % 360 : 200;
+
+                // PERFORMANCE: Reduced from 8 to 4 waves, larger step size
+                const waveCount = Math.min(4, this.particles.length > 200 ? 3 : 4);
+
+                // Draw aurora waves across the screen
+                for (let wave = 0; wave < waveCount; wave++) {
+                    const waveOffset = wave * Math.PI * 0.3;
+                    const hue = (baseHue + wave * 20) % 360;
+
+                    this.ctx.strokeStyle = `hsl(${hue}, 70%, 50%)`;
+                    this.ctx.lineWidth = 3;
+                    this.ctx.globalAlpha = 0.6;
+
+                    this.ctx.beginPath();
+                    // PERFORMANCE: Increased step size from 2 to 4 pixels for fewer calculations
+                    for (let x = 0; x <= this.width; x += 4) {
+                        const baseY = this.height * 0.3
+                                + Math.sin(x * 0.005 + time * 0.3 + waveOffset) * 40
+                                + Math.sin(x * 0.008 + time * 0.5 + waveOffset) * 20
+                                + Math.sin(x * 0.015 + time * 0.7 + waveOffset) * 10;
+
+                        // PERFORMANCE: Check only nearby particles (within 150px range)
+                        let influence = 0;
+                        let nearestDist = 150;
+                        for (let p of this.particles) {
+                            const dx = x - p.x;
+                            const dy = baseY - p.y;
+                            const distSq = dx * dx + dy * dy; // Avoid sqrt for performance
+                            if (distSq < 22500) { // 150^2 = 22500
+                                const dist = Math.sqrt(distSq);
+                                const newInfluence = (150 - dist) / 150;
+                                if (newInfluence > influence) {
+                                    influence = newInfluence;
+                                    nearestDist = dist;
+                                }
+                            }
+                        }
+
+                        const y = baseY + (influence > 0 ? Math.sin(time + nearestDist * 0.01) * 20 * influence : 0);
+
+                        if (x === 0) this.ctx.moveTo(x, y);
+                        else this.ctx.lineTo(x, y);
+                    }
+                    this.ctx.stroke();
+                }
+
+                // Particle aurora streams - PERFORMANCE: Reduced particle count and simplified
+                const activeParticles = this.particles.filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.3).slice(0, 50); // Max 50 trails
+                activeParticles.forEach(particle => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const length = Math.min(30, speed * 8); // Reduced length
+                    const angle = Math.atan2(particle.vy, particle.vx);
+
+                    this.ctx.globalAlpha = Math.min(0.6, speed * 0.2);
+                    this.ctx.strokeStyle = `hsl(${baseHue + speed * 30}, 90%, 60%)`;
+                    this.ctx.lineWidth = 1.5; // Thinner lines
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(particle.x, particle.y);
+                    this.ctx.lineTo(
+                        particle.x - Math.cos(angle) * length,
+                        particle.y - Math.sin(angle) * length
+                    );
+                    this.ctx.stroke();
+
+                    // Particle aura smaller and less frequent
+                    if (speed > 1) {
+                        const auraSize = Math.max(2, speed * 3);
+                        this.ctx.globalAlpha *= 0.3;
+                        this.ctx.fillStyle = `hsl(${baseHue + speed * 20}, 80%, 70%)`;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, auraSize, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                });
+            }
+
+            drawMagneticEffect() {
+                // Magnetic Field Lines - physics-like field visualization (HIGHLY OPTIMIZED)
+                const time = Date.now() * 0.002;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 15 % 360 : 280;
+
+                // PERFORMANCE: Process only active particles and limit field lines
+                const activeCenters = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.5)
+                    .slice(0, Math.min(25, this.particles.length)); // Max 25 magnetic centers
+
+                // Draw simplified field lines with pre-computed magnetic field
+                activeCenters.forEach(center => {
+                    const speed = Math.sqrt(center.vx ** 2 + center.vy ** 2);
+                    const fieldLines = Math.min(3, Math.floor(speed) + 1); // Max 3 field lines per particle
+
+                    for (let fieldLine = 0; fieldLine < fieldLines; fieldLine++) {
+                        const angle = (fieldLine / fieldLines) * Math.PI * 2 + time * 0.3;
+                        const radius = Math.min(100, speed * 30); // Reduced max radius
+
+                        // PERFORMANCE: Simple circular field lines with minimal distortion
+                        const steps = 12; // Reduced from 20 to 12
+                        const stepAngle = Math.PI * 2 / steps;
+
+                        this.ctx.strokeStyle = `hsl(${baseHue + fieldLine * 25}, 70%, 50%)`;
+                        this.ctx.lineWidth = 1;
+                        this.ctx.globalAlpha = 0.3;
+
+                        this.ctx.beginPath();
+                        for (let step = 0; step <= steps; step++) {
+                            const currentAngle = angle + step * stepAngle + time * 0.1;
+                            const x = center.x + Math.cos(currentAngle) * radius;
+                            const y = center.y + Math.sin(currentAngle) * radius;
+
+                            if (x < 0 || x > this.width || y < 0 || y > this.height) continue;
+
+                            if (step === 0) this.ctx.moveTo(x, y);
+                            else this.ctx.lineTo(x, y);
+                        }
+                        this.ctx.stroke();
+                    }
+                });
+
+                // PERFORMANCE: Simplified magnetic poles - only for active particles
+                const poleParticles = activeCenters.slice(0, Math.min(10, activeCenters.length));
+                poleParticles.forEach(particle => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const size = 3 + speed; // Smaller, simpler poles
+                    const hue = baseHue + Math.atan2(particle.vy, particle.vx) * 30 % 360; // Simpler calculation
+
+                    // Single magnetic pole (combined north/south as one indicator)
+                    this.ctx.globalAlpha = 0.6;
+                    this.ctx.fillStyle = `hsl(${hue}, 90%, 70%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Simple inner "pole" indicator
+                    this.ctx.fillStyle = `hsl(${hue + 180}, 90%, 50%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, size * 0.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                // PERFORMANCE: Simple connecting field lines between nearby active particles
+                activeCenters.forEach((center, index) => {
+                    for (let j = index + 1; j < Math.min(index + 3, activeCenters.length); j++) {
+                        const other = activeCenters[j];
+                        const dx = other.x - center.x;
+                        const dy = other.y - center.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 120 && dist > 30) {
+                            const hue = baseHue + dist;
+                            this.ctx.strokeStyle = `hsl(${hue % 360}, 60%, 40%)`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.globalAlpha = 0.2;
+
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(center.x, center.y);
+                            this.ctx.lineTo(other.x, other.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+            }
+
+            drawFractalEffect() {
+                // Fractal Vortex - recursively generated fractal patterns
+                const time = Date.now() * 0.001;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 20 % 360 : 300;
+
+                // Centered fractal vortex
+                const centerX = this.width / 2;
+                const centerY = this.height / 2;
+
+                // Draw fractal branches from particles
+                this.particles.forEach(particle => {
+                    if (Math.sqrt(particle.vx ** 2 + particle.vy ** 2) > 0.2) {
+                        this.drawFractalBranch(particle.x, particle.y, particle.vx, particle.vy, 5, baseHue);
+                    }
+                });
+
+                // Central vortex attractor
+                const vortexSize = 200;
+                for (let angle = 0; angle < Math.PI * 4; angle += 0.1) {
+                    const radius = angle * 8 + time * 50;
+                    if (radius > vortexSize) break;
+
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+
+                    // Check particle influence
+                    let influence = 0;
+                    this.particles.forEach(particle => {
+                        const dist = Math.sqrt((x - particle.x) ** 2 + (y - particle.y) ** 2);
+                        if (dist < 100) {
+                            influence += (100 - dist) / 100;
+                        }
+                    });
+
+                    if (influence > 0.1) {
+                        const hue = baseHue + angle * 30 + time * 50;
+                        this.ctx.globalAlpha = influence * 0.6;
+                        this.ctx.fillStyle = `hsl(${hue % 360}, 70%, 60%)`;
+                        this.ctx.fillRect(x - 2, y - 2, 4, 4);
+                    }
+                }
+            }
+
+            drawFractalBranch(x, y, vx, vy, depth, hue) {
+                if (depth <= 0) return;
+
+                const length = Math.sqrt(vx ** 2 + vy ** 2) * 8 / depth;
+                const angle = Math.atan2(vy, vx);
+
+                const endX = x + Math.cos(angle) * length;
+                const endY = y + Math.sin(angle) * length;
+
+                // Draw branch
+                this.ctx.globalAlpha = 0.6 / depth;
+                this.ctx.strokeStyle = `hsl(${hue + depth * 20}, 80%, 50%)`;
+                this.ctx.lineWidth = depth;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, y);
+                this.ctx.lineTo(endX, endY);
+                this.ctx.stroke();
+
+                // Recursive branches
+                if (depth > 2) {
+                    const branchAngle1 = angle + Math.PI / 4;
+                    const branchAngle2 = angle - Math.PI / 4;
+                    const branchForce = Math.sqrt(vx ** 2 + vy ** 2) * 0.8;
+
+                    setTimeout(() => {
+                        this.drawFractalBranch(endX, endY,
+                            Math.cos(branchAngle1) * branchForce,
+                            Math.sin(branchAngle1) * branchForce,
+                            depth - 1, hue + 30);
+                        this.drawFractalBranch(endX, endY,
+                            Math.cos(branchAngle2) * branchForce,
+                            Math.sin(branchAngle2) * branchForce,
+                            depth - 1, hue - 30);
+                    }, 1);
+                }
+
+                // Particle at branch end
+                this.ctx.globalAlpha = 0.8;
+                this.ctx.fillStyle = `hsl(${hue + depth * 40}, 90%, 70%)`;
+                this.ctx.beginPath();
+                this.ctx.arc(endX, endY, 3 / depth, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+
+            drawJellyEffect() {
+                // Jelly Bubbles - elastic jelly-like blobs that jiggle
+                const time = Date.now() * 0.002;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 8 % 360 : 320;
+
+                // Draw jelly bubbles around active particles - PERFORMANCE: Limit to 100 bubbles max
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.1)
+                    .slice(0, 100); // Max 100 jelly bubbles
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const jiggle = Math.sin(time * 2 + index) * speed * 0.5;
+                    const radius = Math.max(8, speed * 5 + jiggle);
+                    const hue = (baseHue + index * 10) % 360;
+
+                    // Jelly blob with slight jiggle
+                    this.ctx.globalAlpha = 0.7;
+                    this.ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x + jiggle * 0.5, particle.y + jiggle * 0.3, radius * 0.9, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Jelly shine/highlight
+                    this.ctx.globalAlpha = 0.4;
+                    this.ctx.fillStyle = `hsl(${hue + 20}, 90%, 80%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x + jiggle * 0.3, particle.y + jiggle * 0.2, radius * 0.4, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                // Connecting jelly tendrils - simplified for performance
+                activeParticles.forEach((particle, index) => {
+                    for (let j = index + 1; j < Math.min(index + 3, activeParticles.length); j++) {
+                        const other = activeParticles[j];
+                        const dx = other.x - particle.x;
+                        const dy = other.y - particle.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 80) {
+                            const alpha = (80 - dist) / 80;
+                            const hue = baseHue + dist;
+
+                            this.ctx.globalAlpha = alpha * 0.3;
+                            this.ctx.strokeStyle = `hsl(${hue % 360}, 70%, 50%)`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(particle.x, particle.y);
+                            this.ctx.lineTo(other.x, other.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+            }
+
+            drawCircuitEffect() {
+                // Circuit Board - electronic circuit patterns with glowing nodes
+                const time = Date.now() * 0.003;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 12 % 360 : 120;
+
+                // Circuit nodes - PERFORMANCE: Limit to active particles only
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.2)
+                    .slice(0, 120); // Max 120 circuit nodes
+
+                // Draw circuit nodes with pulsing glow
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const pulse = Math.sin(time * 3 + index * 0.5) * 0.3 + 0.7;
+                    const size = Math.max(3, speed * 2);
+                    const hue = (baseHue + index * 15) % 360;
+
+                    // Circuit node core
+                    this.ctx.globalAlpha = pulse * 0.8;
+                    this.ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Circuit node glow
+                    this.ctx.globalAlpha = pulse * 0.4;
+                    this.ctx.fillStyle = `hsl(${hue}, 90%, 80%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, size * 1.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                // Circuit connections - simplified geometric patterns
+                activeParticles.forEach((particle, index) => {
+                    for (let j = index + 1; j < Math.min(index + 4, activeParticles.length); j++) {
+                        const other = activeParticles[j];
+                        const dx = other.x - particle.x;
+                        const dy = other.y - particle.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 60) {
+                            const alpha = (60 - dist) / 60;
+                            const hue = baseHue + dist * 2;
+
+                            // Straight line circuit trace
+                            this.ctx.globalAlpha = alpha * 0.6;
+                            this.ctx.strokeStyle = `hsl(${hue % 360}, 70%, 50%)`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(particle.x, particle.y);
+                            this.ctx.lineTo(other.x, other.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+            }
+
+            drawNebulaEffect() {
+                // Nebula Galaxy - cosmic cloud formations with swirling colors
+                const time = Date.now() * 0.001;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 6 % 360 : 240;
+
+                // Nebula clouds from active particles - PERFORMANCE: Limited calculation
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.15)
+                    .slice(0, 80); // Max 80 nebula centers
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const swirl = Math.sin(time + index * 0.3);
+                    const cloudSize = Math.max(15, speed * 8);
+                    const hue = (baseHue + index * 8) % 360;
+
+                    // Nebula cloud core
+                    this.ctx.globalAlpha = 0.4;
+                    this.ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(
+                        particle.x + swirl * 5,
+                        particle.y + swirl * 3,
+                        cloudSize,
+                        0, Math.PI * 2
+                    );
+                    this.ctx.fill();
+
+                    // Nebula cloud tendrils - simplified
+                    for (let r = 0; r < 3; r++) {
+                        const angle = (r / 3) * Math.PI * 2 + time * 0.5 + index * 0.1;
+                        const dist = cloudSize * (0.8 + r * 0.4);
+
+                        this.ctx.globalAlpha = 0.2 / (r + 1);
+                        this.ctx.fillStyle = `hsl(${(hue + r * 30) % 360}, 60%, 40%)`;
+
+                        const tendrilX = particle.x + Math.cos(angle) * dist + swirl * 2;
+                        const tendrilY = particle.y + Math.sin(angle) * dist + swirl * 1.5;
+
+                        this.ctx.beginPath();
+                        this.ctx.arc(tendrilX, tendrilY, cloudSize * 0.3, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                });
+
+                // Cosmic connections - sparse to avoid lag
+                activeParticles.forEach((particle, index) => {
+                    if (index % 3 === 0) { // Every 3rd particle
+                        const nearest = activeParticles
+                            .filter((p, i) => i !== index)
+                            .sort((a, b) => {
+                                const da = Math.sqrt((a.x - particle.x) ** 2 + (a.y - particle.y) ** 2);
+                                const db = Math.sqrt((b.x - particle.x) ** 2 + (b.y - particle.y) ** 2);
+                                return da - db;
+                            })[0];
+
+                        if (nearest) {
+                            const dx = nearest.x - particle.x;
+                            const dy = nearest.y - particle.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+
+                            if (dist < 100) {
+                                const alpha = (100 - dist) / 100;
+                                this.ctx.globalAlpha = alpha * 0.3;
+                                this.ctx.strokeStyle = `hsl(${baseHue + dist}, 80%, 60%)`;
+                                this.ctx.lineWidth = 1;
+                                this.ctx.beginPath();
+                                this.ctx.moveTo(particle.x, particle.y);
+                                this.ctx.lineTo(nearest.x, nearest.y);
+                                this.ctx.stroke();
+                            }
+                        }
+                    }
+                });
+            }
+
+            drawHelixEffect() {
+                // DNA Helix - double helix structure with connected strands
+                const time = Date.now() * 0.002;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 10 % 360 : 200;
+
+                // DNA strands from particle motion - PERFORMANCE: Simplified rendering
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.1)
+                    .slice(0, 60); // Max 60 helix segments
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const strandOffset = index % 2 === 0 ? 3 : -3; // Alternate strands
+                    const twist = Math.sin(time * 2 + index * 0.2) * 2;
+                    const hue = (baseHue + index * 12) % 360;
+
+                    // Helix nucleotides
+                    this.ctx.globalAlpha = 0.8;
+                    this.ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(
+                        particle.x + strandOffset + twist,
+                        particle.y + twist * 0.5,
+                        Math.max(2, speed * 1.5),
+                        0, Math.PI * 2
+                    );
+                    this.ctx.fill();
+                });
+
+                // Connecting backbone curves - simplified
+                for (let i = 0; i < activeParticles.length - 2; i += 3) {
+                    const p1 = activeParticles[i];
+                    const p2 = activeParticles[i + 3];
+
+                    if (p2) {
+                        // Left strand
+                        this.ctx.globalAlpha = 0.4;
+                        this.ctx.strokeStyle = `hsl(${baseHue + 40}, 70%, 50%)`;
+                        this.ctx.lineWidth = 1;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(p1.x - 3, p1.y);
+                        this.ctx.lineTo(p2.x - 3, p2.y);
+                        this.ctx.stroke();
+
+                        // Right strand
+                        this.ctx.strokeStyle = `hsl(${baseHue + 80}, 70%, 50%)`;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(p1.x + 3, p1.y);
+                        this.ctx.lineTo(p2.x + 3, p2.y);
+                        this.ctx.stroke();
+
+                        // Cross links (rungs)
+                        const alpha = 0.6;
+                        this.ctx.globalAlpha = alpha * 0.3;
+                        this.ctx.strokeStyle = `hsl(${baseHue + 120}, 70%, 50%)`;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(p1.x - 3, p1.y);
+                        this.ctx.lineTo(p1.x + 3, p1.y);
+                        this.ctx.stroke();
+                    }
+                }
+            }
+
+            drawSparksEffect() {
+                // Electric Sparks - crackling electricity with branching lightning
+                const time = Date.now() * 0.005;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 20 % 360 : 50;
+
+                // Electric spark centers - PERFORMANCE: Limited sparks
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.3)
+                    .slice(0, 40); // Max 40 spark centers
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const sparkCount = Math.min(3, Math.floor(speed) + 1);
+
+                    for (let spark = 0; spark < sparkCount; spark++) {
+                        const angle = (spark / sparkCount) * Math.PI * 2 + time + index * 0.5;
+                        const length = Math.min(25, speed * 8);
+                        const hue = (baseHue + index * 20 + spark * 30) % 360;
+
+                        // Branching spark segments
+                        let currentX = particle.x;
+                        let currentY = particle.y;
+                        const segmentLength = 3;
+
+                        for (let seg = 0; seg < length / segmentLength; seg++) {
+                            const jiggle = (Math.random() - 0.5) * 2;
+                            const nextX = currentX + Math.cos(angle) * segmentLength + jiggle;
+                            const nextY = currentY + Math.sin(angle) * segmentLength + jiggle;
+
+                            this.ctx.globalAlpha = (length / segmentLength - seg) / (length / segmentLength) * 0.8;
+                            this.ctx.strokeStyle = `hsl(${hue}, 90%, 70%)`;
+                            this.ctx.lineWidth = Math.max(1, 3 - seg * 0.1);
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(currentX, currentY);
+                            this.ctx.lineTo(nextX, nextY);
+                            this.ctx.stroke();
+
+                            currentX = nextX;
+                            currentY = nextY;
+
+                            // Branch occasionally
+                            if (seg > 2 && Math.random() < 0.1) {
+                                const branchAngle = angle + (Math.random() - 0.5) * Math.PI;
+                                angle = branchAngle;
+                            }
+                        }
+                    }
+
+                    // Spark core
+                    this.ctx.globalAlpha = 0.9;
+                    this.ctx.fillStyle = `hsl(${baseHue + index * 25}, 100%, 80%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, Math.max(2, speed * 1.5), 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+            }
+
+            drawFireEffect() {
+                // Fire Plasma - upward flickering flames with heat distortion
+                const time = Date.now() * 0.004;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 15 % 360 : 20;
+
+                // Flame centers - PERFORMANCE: Limit to active particles
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.2)
+                    .slice(0, 90); // Max 90 flame centers
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const flicker = Math.sin(time * 4 + index * 0.7) * 0.3 + 0.7;
+                    const flameHeight = Math.max(10, speed * 6);
+
+                    // Flame base (red/orange)
+                    this.ctx.globalAlpha = flicker * 0.6;
+                    this.ctx.fillStyle = `hsl(${baseHue}, 90%, 50%)`;
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(particle.x, particle.y, 4, flameHeight * 0.8, 0, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Flame middle (yellow)
+                    this.ctx.globalAlpha = flicker * 0.4;
+                    this.ctx.fillStyle = `hsl(${baseHue + 30}, 90%, 60%)`;
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(particle.x, particle.y - flameHeight * 0.3, 3, flameHeight * 0.6, 0, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Flame tip (light yellow/white)
+                    this.ctx.globalAlpha = flicker * 0.3;
+                    this.ctx.fillStyle = `hsl(${baseHue + 60}, 80%, 80%)`;
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(particle.x, particle.y - flameHeight * 0.7, 2, flameHeight * 0.4, 0, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                // Heat distortion waves - simplified
+                activeParticles.forEach((particle, index) => {
+                    if (index % 4 === 0) { // Every 4th particle
+                        const radius = 12 + Math.sin(time * 2 + index) * 4;
+                        const hue = (baseHue + 40) % 360;
+
+                        this.ctx.globalAlpha = 0.2;
+                        this.ctx.strokeStyle = `hsl(${hue}, 70%, 60%)`;
+                        this.ctx.lineWidth = 1;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                    }
+                });
+            }
+
+            drawWaterEffect() {
+                // Liquid Flow - flowing water-like ripples and drops
+                const time = Date.now() * 0.003;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 10 % 360 : 200;
+
+                // Water droplets - PERFORMANCE: Limit to active particles
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.1)
+                    .slice(0, 100); // Max 100 water droplets
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const ripple = Math.sin(time * 3 + index * 0.4) * 0.5;
+                    const radius = Math.max(5, speed * 4);
+                    const hue = (baseHue + index * 6) % 360;
+
+                    // Water droplet
+                    this.ctx.globalAlpha = 0.7;
+                    this.ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(
+                        particle.x,
+                        particle.y + ripple,
+                        radius * 0.9,
+                        radius * 1.1,
+                        ripple * 0.3,
+                        0, Math.PI * 2
+                    );
+                    this.ctx.fill();
+
+                    // Water surface highlight
+                    this.ctx.globalAlpha = 0.5;
+                    this.ctx.fillStyle = `hsl(${hue + 30}, 90%, 80%)`;
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(
+                        particle.x - radius * 0.3,
+                        particle.y + ripple - radius * 0.2,
+                        radius * 0.3,
+                        radius * 0.2,
+                        ripple * 0.2,
+                        0, Math.PI * 2
+                    );
+                    this.ctx.fill();
+                });
+
+                // Flowing current lines - simplified
+                activeParticles.forEach((particle, index) => {
+                    for (let j = index + 1; j < Math.min(index + 2, activeParticles.length); j++) {
+                        const other = activeParticles[j];
+                        const dx = other.x - particle.x;
+                        const dy = other.y - particle.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 70) {
+                            const alpha = (70 - dist) / 70;
+                            this.ctx.globalAlpha = alpha * 0.4;
+                            this.ctx.strokeStyle = `hsl(${baseHue + 20}, 70%, 50%)`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(particle.x, particle.y);
+                            this.ctx.lineTo(other.x, other.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+            }
+
+            drawIceEffect() {
+                // Crystal Ice - geometric ice crystals with frost patterns
+                const time = Date.now() * 0.001;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 5 % 360 : 180;
+
+                // Ice crystals - PERFORMANCE: Limit crystallization
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.15)
+                    .slice(0, 80); // Max 80 crystal centers
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const crystalSides = 6; // Hexagonal ice crystals
+                    const radius = Math.max(8, speed * 6);
+                    const hue = (baseHue + index * 10) % 360;
+
+                    // Draw hexagonal ice crystal
+                    this.ctx.globalAlpha = 0.6;
+                    this.ctx.fillStyle = `hsl(${hue}, 30%, 80%)`; // Light blue-white
+                    this.ctx.strokeStyle = `hsl(${hue + 20}, 40%, 90%)`;
+                    this.ctx.lineWidth = 2;
+
+                    this.ctx.beginPath();
+                    for (let i = 0; i < crystalSides; i++) {
+                        const angle = (i / crystalSides) * Math.PI * 2;
+                        const x = particle.x + Math.cos(angle) * radius;
+                        const y = particle.y + Math.sin(angle) * radius;
+                        if (i === 0) this.ctx.moveTo(x, y);
+                        else this.ctx.lineTo(x, y);
+                    }
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.stroke();
+
+                    // Crystal facets and internal structure - simplified
+                    this.ctx.globalAlpha = 0.3;
+                    this.ctx.fillStyle = `hsl(${hue + 40}, 20%, 90%)`;
+                    this.ctx.strokeStyle = `hsl(${hue + 40}, 30%, 95%)`;
+
+                    const innerRadius = radius * 0.6;
+                    this.ctx.beginPath();
+                    for (let i = 0; i < crystalSides; i++) {
+                        const angle = (i / crystalSides) * Math.PI * 2;
+                        const x = particle.x + Math.cos(angle) * innerRadius;
+                        const y = particle.y + Math.sin(angle) * innerRadius;
+                        if (i === 0) this.ctx.moveTo(x, y);
+                        else this.ctx.lineTo(x, y);
+                    }
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.stroke();
+                });
+
+                // Frost connections
+                activeParticles.forEach((particle, index) => {
+                    for (let j = index + 1; j < Math.min(index + 3, activeParticles.length); j++) {
+                        const other = activeParticles[j];
+                        const dist = Math.sqrt((other.x - particle.x) ** 2 + (other.y - particle.y) ** 2);
+
+                        if (dist < 90) {
+                            const alpha = (90 - dist) / 90;
+                            this.ctx.globalAlpha = alpha * 0.2;
+                            this.ctx.strokeStyle = `hsl(${baseHue + 30}, 50%, 80%)`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(particle.x, particle.y);
+                            this.ctx.lineTo(other.x, other.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+            }
+
+            drawLightningEffect() {
+                // Thunder Storm - lightning bolts and storm clouds
+                const time = Date.now() * 0.006;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 25 % 360 : 50;
+
+                // Lightning strike centers - PERFORMANCE: Limited strikes
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.4)
+                    .slice(0, 30); // Max 30 lightning centers
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const boltCount = Math.min(2, Math.floor(speed * 0.5) + 1);
+
+                    for (let bolt = 0; bolt < boltCount; bolt++) {
+                        const baseAngle = (index + bolt) * Math.PI * 0.5;
+                        const length = Math.min(40, speed * 15);
+
+                        // Draw lightning bolt segments
+                        let currentX = particle.x;
+                        let currentY = particle.y;
+                        let segmentCount = 8;
+
+                        this.ctx.lineWidth = 2;
+                        for (let seg = 0; seg < segmentCount; seg++) {
+                            const intensity = 1 - seg / segmentCount;
+                            const angleOffset = (Math.random() - 0.5) * Math.PI * 0.5;
+                            const segmentAngle = baseAngle + angleOffset;
+                            const segmentLength = length / segmentCount;
+
+                            const nextX = currentX + Math.cos(segmentAngle) * segmentLength;
+                            const nextY = currentY + Math.sin(segmentAngle) * segmentLength;
+
+                            this.ctx.globalAlpha = intensity * 0.9;
+                            this.ctx.strokeStyle = `hsl(${baseHue + seg * 10}, 100%, 80%)`;
+                            this.ctx.lineWidth = Math.max(1, 3 - seg * 0.2);
+
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(currentX, currentY);
+                            this.ctx.lineTo(nextX, nextY);
+                            this.ctx.stroke();
+
+                            currentX = nextX;
+                            currentY = nextY;
+                        }
+                    }
+
+                    // Storm cloud effect
+                    const cloudRadius = Math.max(12, speed * 8);
+                    this.ctx.globalAlpha = 0.4;
+                    this.ctx.fillStyle = `hsl(${(baseHue + 180) % 360}, 20%, 30%)`; // Dark for clouds
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y + cloudRadius * 0.5, cloudRadius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+            }
+
+            drawEnergyEffect() {
+                // Quantum Field - energy rings and particle fields
+                const time = Date.now() * 0.004;
+                const baseHue = this.settings.colorScheme === 'rainbow' ? time * 18 % 360 : 300;
+
+                // Energy quanta - PERFORMANCE: Limited to active particles
+                const activeParticles = this.particles
+                    .filter(p => Math.sqrt(p.vx ** 2 + p.vy ** 2) > 0.1)
+                    .slice(0, 70); // Max 70 quantum particles
+
+                activeParticles.forEach((particle, index) => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    const quantumRadius = Math.max(6, speed * 4);
+                    const ringCount = Math.min(3, Math.floor(speed) + 1);
+                    const hue = (baseHue + index * 15) % 360;
+
+                    // Quantum energy rings
+                    for (let ring = 0; ring < ringCount; ring++) {
+                        const ringRadius = quantumRadius * (1 + ring * 0.8);
+                        const ringAlpha = 0.6 / (ring + 1);
+
+                        this.ctx.globalAlpha = ringAlpha;
+                        this.ctx.strokeStyle = `hsl(${hue + ring * 30}, 80%, 60%)`;
+                        this.ctx.lineWidth = Math.max(1, 3 - ring);
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, ringRadius, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                    }
+
+                    // Quantum core
+                    this.ctx.globalAlpha = 0.8;
+                    this.ctx.fillStyle = `hsl(${hue + 60}, 90%, 70%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, quantumRadius * 0.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                // Quantum field connections - simplified matrix
+                activeParticles.forEach((particle, index) => {
+                    for (let j = index + 1; j < Math.min(index + 4, activeParticles.length); j++) {
+                        const other = activeParticles[j];
+                        const dx = other.x - particle.x;
+                        const dy = other.y - particle.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 80) {
+                            const alpha = (80 - dist) / 80;
+                            const hue = baseHue + dist * 1.5;
+
+                            this.ctx.globalAlpha = alpha * 0.3;
+                            this.ctx.strokeStyle = `hsl(${hue % 360}, 70%, 50%)`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(particle.x, particle.y);
+                            this.ctx.lineTo(other.x, other.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+            }
+
+            drawFluidMesh() {
+                let strokeStyle = 'rgba(0, 255, 255, 0.3)';
+
+                switch (this.settings.colorScheme) {
+                    case 'rainbow':
+                        strokeStyle = `hsl(${Date.now() * 0.001 % 360}, 70%, 50%)`;
+                        break;
+                    case 'purple':
+                        strokeStyle = 'rgba(255, 0, 255, 0.4)';
+                        break;
+                    case 'warm':
+                        strokeStyle = 'rgba(255, 165, 0, 0.4)';
+                        break;
+                    case 'cool':
+                        strokeStyle = 'rgba(0, 255, 128, 0.4)';
+                        break;
+                }
+
+                this.ctx.strokeStyle = strokeStyle;
+                this.ctx.lineWidth = 1;
+
+                const cols = Math.floor(this.width / this.gridSize) + 1;
+                const maxDist = this.gridSize * 1.5;
+
+                if (this.settings.gridStyle === 'diagonal') {
+                    // Diagonal grid with both horizontal and diagonal lines
+                    for (let y = 0; y < Math.floor(this.height / this.gridSize); y++) {
+                        for (let x = 0; x < cols - 1; x++) {
+                            const i1 = y * cols + x;
+                            const i2 = y * cols + x + 1;
+
+                            if (i1 < this.particles.length && i2 < this.particles.length) {
+                                const p1 = this.particles[i1];
+                                const p2 = this.particles[i2];
+                                const dist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+
+                                if (dist < maxDist) {
+                                    const alpha = (maxDist - dist) / maxDist;
+                                    this.ctx.globalAlpha = alpha * 0.4;
+                                    this.ctx.beginPath();
+                                    this.ctx.moveTo(p1.x, p1.y);
+                                    this.ctx.lineTo(p2.x, p2.y);
+                                    this.ctx.stroke();
+                                }
+                            }
+
+                            // Diagonal connections
+                            const i3 = (y + 1) * cols + x;
+                            if (i1 < this.particles.length && i3 < this.particles.length) {
+                                const p1 = this.particles[i1];
+                                const p3 = this.particles[i3];
+                                const dist = Math.sqrt((p3.x - p1.x) ** 2 + (p3.y - p1.y) ** 2);
+
+                                if (dist < maxDist * 1.4) {
+                                    const alpha = (maxDist * 1.4 - dist) / (maxDist * 1.4);
+                                    this.ctx.globalAlpha = alpha * 0.3;
+                                    this.ctx.beginPath();
+                                    this.ctx.moveTo(p1.x, p1.y);
+                                    this.ctx.lineTo(p3.x, p3.y);
+                                    this.ctx.stroke();
+                                }
+                            }
+                        }
+                    }
+
+                    // Vertical grid lines for diagonal pattern
+                    for (let x = 0; x < cols; x++) {
+                        for (let y = 0; y < Math.floor(this.height / this.gridSize) - 1; y++) {
+                            const i1 = y * cols + x;
+                            const i2 = (y + 1) * cols + x;
+
+                            if (i1 < this.particles.length && i2 < this.particles.length) {
+                                const p1 = this.particles[i1];
+                                const p2 = this.particles[i2];
+                                const dist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+
+                                if (dist < maxDist) {
+                                    const alpha = (maxDist - dist) / maxDist;
+                                    this.ctx.globalAlpha = alpha * 0.3;
+                                    this.ctx.beginPath();
+                                    this.ctx.moveTo(p1.x, p1.y);
+                                    this.ctx.lineTo(p2.x, p2.y);
+                                    this.ctx.stroke();
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Regular grid (horizontal and vertical)
+                    // Horizontal connections
+                    for (let y = 0; y < Math.floor(this.height / this.gridSize); y++) {
+                        for (let x = 0; x < cols - 1; x++) {
+                            const i1 = y * cols + x;
+                            const i2 = y * cols + x + 1;
+
+                            if (i1 < this.particles.length && i2 < this.particles.length) {
+                                const p1 = this.particles[i1];
+                                const p2 = this.particles[i2];
+                                const dist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+
+                                if (dist < maxDist) {
+                                    const alpha = (maxDist - dist) / maxDist;
+                                    this.ctx.globalAlpha = alpha * 0.4;
+                                    this.ctx.beginPath();
+                                    this.ctx.moveTo(p1.x, p1.y);
+                                    this.ctx.lineTo(p2.x, p2.y);
+                                    this.ctx.stroke();
+                                }
+                            }
+                        }
+                    }
+
+                    // Vertical connections
+                    for (let x = 0; x < cols; x++) {
+                        for (let y = 0; y < Math.floor(this.height / this.gridSize) - 1; y++) {
+                            const i1 = y * cols + x;
+                            const i2 = (y + 1) * cols + x;
+
+                            if (i1 < this.particles.length && i2 < this.particles.length) {
+                                const p1 = this.particles[i1];
+                                const p2 = this.particles[i2];
+                                const dist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+
+                                if (dist < maxDist) {
+                                    const alpha = (maxDist - dist) / maxDist;
+                                    this.ctx.globalAlpha = alpha * 0.4;
+                                    this.ctx.beginPath();
+                                    this.ctx.moveTo(p1.x, p1.y);
+                                    this.ctx.lineTo(p2.x, p2.y);
+                                    this.ctx.stroke();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            drawConnections() {
+                let lineStyle = 'lineTo';
+                let connectionStep = 1; // Performance optimization: skip some connections for dense modes
+
+                switch (this.settings.connectionStyle) {
+                    case 'curved':
+                        lineStyle = 'quadraticCurveTo';
+                        break;
+                    case 'dotted':
+                        this.ctx.setLineDash([5, 5]);
+                        connectionStep = 2; // Performance: draw every 2nd connection for dotted mode
+                        break;
+                    case 'animated':
+                        this.ctx.globalAlpha *= 0.7 + Math.sin(Date.now() * 0.005) * 0.3;
+                        connectionStep = 1;
+                        break;
+                }
+
+                // Performance optimization: reduce total distance check for dense grid
+                const maxDistance = this.settings.gridStyle === 'dense' ? 40 : 60;
+
+                for (let a = 0; a < this.particles.length; a += connectionStep) {
+                    for (let b = a + connectionStep; b < this.particles.length; b += connectionStep) {
+                        const p1 = this.particles[a];
+                        const p2 = this.particles[b];
+                        const dist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+
+                        if (dist < maxDistance && dist > 0) {
+                            const alpha = 1 - dist / maxDistance;
+                            let hue = 180;
+
+                            switch (this.settings.colorScheme) {
+                                case 'rainbow':
+                                    hue = (Date.now() * 0.001 + a + b) * 30 % 360;
+                                    break;
+                                case 'purple':
+                                    hue = 280;
+                                    break;
+                                case 'warm':
+                                    hue = 20;
+                                    break;
+                                case 'cool':
+                                    hue = 140;
+                                    break;
+                            }
+
+                            this.ctx.globalAlpha = alpha * 0.3;
+                            this.ctx.strokeStyle = `hsl(${hue}, 70%, 50%)`;
+                            this.ctx.lineWidth = 2;
+
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p1.x, p1.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+
+                this.ctx.setLineDash([]);
+            }
+
+            drawParticles() {
+                this.particles.forEach(particle => {
+                    const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
+                    let hue = 180;
+                    let saturation = 100;
+                    let lightness = 60;
+
+                    switch (this.settings.colorScheme) {
+                        case 'rainbow':
+                            hue = (Date.now() * 0.001 + particle.x + particle.y) * 20 % 360;
+                            break;
+                        case 'purple':
+                            hue = 270 + speed * 20;
+                            saturation = 80;
+                            break;
+                        case 'warm':
+                            hue = 30 + speed * 25;
+                            break;
+                        case 'cool':
+                            hue = 150 + speed * 20;
+                            saturation = 85;
+                            break;
+                    }
+
+                    const size = Math.max(1, speed * 2) * this.settings.ballSize;
+
+                    this.ctx.globalAlpha = 0.8;
+                    this.ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, size * 1.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    this.ctx.globalAlpha = 1;
+                    this.ctx.fillStyle = `hsl(${hue + 15}, ${saturation}%, ${lightness + 10}%)`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+            }
+
+            animate() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+
+            setupControls() {
+                document.querySelectorAll('.color-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const scheme = btn.dataset.scheme;
+                        this.settings.colorScheme = scheme;
+
+                        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+
+                        const backgrounds = {
+                            blue: 'radial-gradient(circle at center, #0a0a2e 0%, #16213e 50%, #0f0f23 100%)',
+                            rainbow: 'radial-gradient(circle at center, #1a0033 0%, #2d1b69 50%, #0f0f23 100%)',
+                            purple: 'radial-gradient(circle at center, #1a0a1e 0%, #2d1b3d 50%, #0f0f23 100%)',
+                            warm: 'radial-gradient(circle at center, #1a0a02 0%, #2d1b0d 50%, #0f0f23 100%)',
+                            cool: 'radial-gradient(circle at center, #0a1a0e 0%, #1b2d1e 50%, #0f0f23 100%)'
+                        };
+                        document.body.style.background = backgrounds[scheme];
+                    });
+                });
+
+                document.querySelectorAll('.click-mode-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const mode = btn.dataset.mode;
+                        this.settings.clickMode = mode;
+
+                        document.querySelectorAll('.click-mode-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                });
+
+                const sizeSlider = document.getElementById('sizeSlider');
+                const sizeValue = document.getElementById('sizeValue');
+                sizeSlider.addEventListener('input', (e) => {
+                    this.settings.ballSize = parseFloat(e.target.value);
+                    sizeValue.textContent = this.settings.ballSize.toFixed(1) + 'x';
+                });
+
+                const forceSlider = document.getElementById('forceSlider');
+                const forceValue = document.getElementById('forceValue');
+                forceSlider.addEventListener('input', (e) => {
+                    this.settings.clickForce = parseInt(e.target.value);
+                    forceValue.textContent = this.settings.clickForce + 'x';
+                });
+
+                document.querySelectorAll('[data-style]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const style = btn.dataset.style;
+                        this.settings.gridStyle = style;
+
+                        document.querySelectorAll('[data-style]').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+
+                        const sizes = {
+                            default: 40,
+                            dense: 25,
+                            sparse: 60,
+                            diagonal: 35
+                        };
+                        this.gridSize = sizes[style];
+                        this.create_particles();
+                    });
+                });
+
+                document.querySelectorAll('[data-connection]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const connection = btn.dataset.connection;
+                        this.settings.connectionStyle = connection;
+
+                        document.querySelectorAll('[data-connection]').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                });
+
+                document.querySelectorAll('.effect-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const effect = btn.dataset.effect;
+                        this.settings.visualEffect = effect;
+
+                        document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                });
+
+                // Add toggle controls functionality
+                const controlsToggle = document.getElementById('controlsToggle');
+                const controls = document.getElementById('controls');
+
+                controlsToggle.addEventListener('click', () => {
+                    controls.classList.toggle('open');
+                });
+
+                // Close controls when clicking outside
+                controls.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!controls.contains(e.target) && e.target !== controlsToggle) {
+                        controls.classList.remove('open');
+                    }
+                });
+            }
+        }
+
+        const effects = new SatisfyingEffects();
+    </script>
+
+    <div style="position: absolute; bottom: 10px; right: 10px; color: white; font-size: 12px; opacity: 0.7;">
+        Customizable Satisfying Effects - Perfect for your needs!
+    </div>
+</body>
+</html>
